@@ -11,15 +11,30 @@ protected class Parser.Stream (σ α : Type _) extends Stream σ α where
 
 namespace Parser.Stream
 
-/-- make a `Parser.Stream` from a `Stream` -/
-@[inline, nolint unusedArguments]
-def mkOfStream (σ α : Type _) [Stream σ α] := σ
+/-- wrapper to make a `Parser.Stream` from a plain `Stream` -/
+@[nolint unusedArguments] def mkOfStream (σ α : Type _) [Stream σ α] := σ
 
 instance (σ α : Type _) [self : Stream σ α] : Parser.Stream (mkOfStream σ α) α where
   toStream := self
   Position := σ
   getPosition s := s
   setPosition _ p := p
+
+instance : Parser.Stream Substring Char where
+  Position := String.Pos
+  getPosition s := s.startPos
+  setPosition s p :=
+    if p ≤ s.stopPos
+    then {s with startPos := p}
+    else {s with startPos := s.stopPos}
+
+instance (α) : Parser.Stream (Subarray α) α where
+  Position := Nat
+  getPosition s := s.start
+  setPosition s p :=
+    if h : p ≤ s.stop
+    then {s with start := p, h₁ := h}
+    else {s with start := s.stop, h₁ := Nat.le_refl s.stop}
 
 /-- `OfString` is a view of a string along with a position along that string -/
 structure OfString where
