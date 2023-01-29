@@ -16,6 +16,14 @@ variable {ε σ α β γ} [Parser.Stream σ α] [Parser.Error ε σ α] {m} [Mon
     | none => unexpected x
   | none => unexpected
 
+/-- `endOfInput` succeeds only when there is no input left -/
+@[inline] def endOfInput : ParserT ε σ α m Unit := do
+  match Stream.next? (← StateT.get).stream with
+  | some (x, s) =>
+    StateT.set {stream := s, dirty := true}
+    unexpected x
+  | none => return
+
 /-- `tokenFilter test` accepts and returns token `t` if `test t = true`, otherwise fails -/
 @[inline] def tokenFilter (test : α → Bool) : ParserT ε σ α m α :=
   tokenMap fun c => if test c then some c else none
@@ -66,10 +74,6 @@ def lookAhead (p : ParserT ε σ α m β) : ParserT ε σ α m β := do
 /-- `peek` returns the next token, without consuming any input -/
 @[inline] def peek : ParserT ε σ α m α :=
   lookAhead anyToken
-
-/-- `endOfInput` succeeds only when there is no input left -/
-@[inline] def endOfInput : ParserT ε σ α m Unit :=
-  notFollowedBy anyToken
 
 /-- `optionD default p` tries to parse `p`, and returns `default` if `p` fails -/
 @[inline] def optionD (default : β) (p : ParserT ε σ α m β) : ParserT ε σ α m β :=
