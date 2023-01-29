@@ -15,13 +15,13 @@ namespace Parser.Stream
 /-- wrapper to make a `Parser.Stream` from a plain `Stream` -/
 @[nolint unusedArguments] def mkDefault (σ α) [Stream σ α] := σ
 
-instance (σ α) [self : Stream σ α] : Parser.Stream (mkDefault σ α) α where
+@[reducible] instance (σ α) [self : Stream σ α] : Parser.Stream (mkDefault σ α) α where
   toStream := self
   Position := σ
   getPosition s := s
   setPosition _ p := p
 
-instance : Parser.Stream Substring Char where
+@[reducible] instance : Parser.Stream Substring Char where
   Position := String.Pos
   getPosition s := s.startPos
   setPosition s p :=
@@ -29,7 +29,7 @@ instance : Parser.Stream Substring Char where
     then {s with startPos := p}
     else {s with startPos := s.stopPos}
 
-instance (α) : Parser.Stream (Subarray α) α where
+@[reducible] instance (α) : Parser.Stream (Subarray α) α where
   Position := Nat
   getPosition s := s.start
   setPosition s p :=
@@ -37,17 +37,13 @@ instance (α) : Parser.Stream (Subarray α) α where
     then {s with start := p, h₁ := h}
     else {s with start := s.stop, h₁ := Nat.le_refl s.stop}
 
-instance : Parser.Stream ByteSubarray UInt8 where
+@[reducible] instance : Parser.Stream ByteSubarray UInt8 where
   Position := Nat
   getPosition s := s.start
   setPosition s p :=
     if h : p ≤ s.stop
     then {s with start := p, sound := ⟨h, s.sound.2⟩}
     else {s with start := s.stop, sound := ⟨Nat.le_refl s.stop, s.sound.2⟩}
-  next? s :=
-    if h : s.start < s.stop
-    then some (s.get ⟨0, Nat.sub_pos_of_lt h⟩, {s with start := s.start+1, sound := ⟨Nat.succ_le_of_lt h, s.sound.2⟩})
-    else none
 
 /-- `OfList` is a view of an `List` along with a position along that array -/
 structure OfList (α : Type _) where
@@ -73,7 +69,7 @@ def OfList.setPosition {α} (s : OfList α) (p : Nat) : OfList α :=
 @[inline] def mkOfList {α} (data : List α) (pos : Nat := 0) : OfList α :=
   OfList.setPosition {next := data} pos
 
-instance (α) : Parser.Stream (OfList α) α where
+@[reducible] instance (α) : Parser.Stream (OfList α) α where
   Position := Nat
   getPosition s := s.past.length
   setPosition := OfList.setPosition
@@ -81,6 +77,5 @@ instance (α) : Parser.Stream (OfList α) α where
     match s with
     | ⟨x :: rest, past⟩ => some (x, ⟨rest, x :: past⟩)
     | _ => none
-instance (α) : Repr (Parser.Stream.Position (OfList α) α) := inferInstanceAs (Repr Nat)
 
 end Parser.Stream

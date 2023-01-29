@@ -70,4 +70,10 @@ termination_by loop => bs.size - i
 instance : ForIn m ByteSubarray UInt8 where
   forIn := ByteSubarray.forIn
 
+instance : Stream ByteSubarray UInt8 where
+  next? s :=
+    if h : s.start < s.stop
+    then some (s.get ⟨0, Nat.sub_pos_of_lt h⟩, {s with start := s.start+1, sound := ⟨Nat.succ_le_of_lt h, s.sound.2⟩})
+    else none
+
 end ByteSubarray
