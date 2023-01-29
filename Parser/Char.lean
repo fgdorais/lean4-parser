@@ -18,11 +18,11 @@ def chars (tks : String) : ParserT ε σ Char m String :=
       return acc
 
 /-- `string tks` accepts and returns string `tks`, otherwise fails -/
-def string [Parser.Error ε Stream.OfString Char] (tks : String) : ParserT ε Stream.OfString Char m String :=
+def string [Parser.Error ε Substring Char] (tks : String) : ParserT ε Substring Char m String :=
   withErrorMessage s!"expected {repr tks}" do
-    let ⟨str, pos⟩ ← State.stream <$> StateT.get
-    if String.substrEq tks 0 str pos tks.endPos.byteIdx then
-      setPosition (pos + tks.endPos)
+    let ⟨str, start, stop⟩ ← State.stream <$> StateT.get
+    if start + tks.endPos < stop ∧ String.substrEq tks 0 str start tks.endPos.byteIdx then
+      setPosition (start + tks.endPos)
       return tks
     else
       unexpected

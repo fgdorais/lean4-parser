@@ -8,13 +8,14 @@ protected class Parser.Stream (σ α : Type _) extends Stream σ α where
   getPosition : σ → Position
   /-- set current `Parser.Stream` position -/
   setPosition (s : σ) : Position → σ
+attribute [reducible] Parser.Stream.Position
 
 namespace Parser.Stream
 
 /-- wrapper to make a `Parser.Stream` from a plain `Stream` -/
-@[nolint unusedArguments] def mkOfStream (σ α : Type _) [Stream σ α] := σ
+@[nolint unusedArguments] def mkDefault (σ α) [Stream σ α] := σ
 
-instance (σ α : Type _) [self : Stream σ α] : Parser.Stream (mkOfStream σ α) α where
+instance (σ α) [self : Stream σ α] : Parser.Stream (mkDefault σ α) α where
   toStream := self
   Position := σ
   getPosition s := s
@@ -36,72 +37,17 @@ instance (α) : Parser.Stream (Subarray α) α where
     then {s with start := p, h₁ := h}
     else {s with start := s.stop, h₁ := Nat.le_refl s.stop}
 
-/-- `OfString` is a view of a string along with a position along that string -/
-structure OfString where
-  /-- token string -/
-  data : String
-  /-- position -/
-  pos : String.Pos := 0
-
-/-- make a `Parser.Stream` from a `String` -/
-@[inline] def mkOfString (data : String) (pos : String.Pos := 0) : OfString where
-  data := data
-  pos := pos
-
-instance : Parser.Stream OfString Char where
-  Position := String.Pos
-  getPosition s := s.pos
-  setPosition s p := {s with pos := p}
-  next? s :=
-    match s.data.get? s.pos with
-    | some x => some (x, {s with pos := s.data.next s.pos})
-    | none => none
-instance : Repr (Parser.Stream.Position OfString Char) := inferInstanceAs (Repr String.Pos)
-
-/-- `OfByteArray` is a view of a `ByteArray` along with a position along that array -/
-structure OfByteArray where
-  /-- token array -/
-  data : ByteArray
-  /-- position -/
-  pos : Nat := 0
-
-/-- make a `Parser.Stream` from a `ByteArray` -/
-@[inline] def mkOfByteArray (data : ByteArray) (pos : Nat := 0) : OfByteArray where
-  data := data
-  pos := pos
-
-instance : Parser.Stream OfByteArray UInt8 where
+instance : Parser.Stream ByteSubarray UInt8 where
   Position := Nat
-  getPosition s := s.pos
-  setPosition s p := {s with pos := p}
+  getPosition s := s.start
+  setPosition s p :=
+    if h : p ≤ s.stop
+    then {s with start := p, sound := ⟨h, s.sound.2⟩}
+    else {s with start := s.stop, sound := ⟨Nat.le_refl s.stop, s.sound.2⟩}
   next? s :=
-    if hpos : s.pos < s.data.size then
-      some (s.data.get ⟨s.pos, hpos⟩, {s with pos := s.pos + 1})
-    else
-      none
-instance : Repr (Parser.Stream.Position OfByteArray UInt8) := inferInstanceAs (Repr Nat)
-
-/-- `OfArray` is a view of an `Array` along with a position along that array -/
-structure OfArray (α : Type _) where
-  /-- token array -/
-  data : Array α
-  /-- position -/
-  pos : Nat := 0
-
-/-- make a `Parser.Stream` from an `Array` -/
-@[inline] def mkOfArray {α} (data : Array α) (pos : Nat := 0) : OfArray α where
-  data := data
-  pos := pos
-
-instance : Parser.Stream (OfArray α) α where
-  Position := Nat
-  getPosition s := s.pos
-  setPosition s p := {s with pos := p}
-  next? s :=
-    match s.data.get? s.pos with
-    | some x => some (x, {s with pos := s.pos + 1})
-    | none => none
-instance (α) : Repr (Parser.Stream.Position (OfArray α) α) := inferInstanceAs (Repr Nat)
+    if h : s.start < s.stop
+    then some (s.get ⟨0, Nat.sub_pos_of_lt h⟩, {s with start := s.start+1, sound := ⟨Nat.succ_le_of_lt h, s.sound.2⟩})
+    else none
 
 /-- `OfList` is a view of an `List` along with a position along that array -/
 structure OfList (α : Type _) where
