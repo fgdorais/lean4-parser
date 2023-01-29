@@ -11,11 +11,10 @@ variable {ε σ} [Parser.Stream σ Char] [Parser.Error ε σ Char] {m} [Monad m]
 /-- `chars tks` accepts and returns string `tks`, otherwise fails -/
 def chars (tks : String) : ParserT ε σ Char m String :=
   withErrorMessage s!"expected {repr tks}" do
-    withBacktracking do
-      let mut acc : String := ""
-      for tk in tks.data do
-        acc := acc.push (← token tk)
-      return acc
+    let mut acc : String := ""
+    for tk in tks.data do
+      acc := acc.push (← token tk)
+    return acc
 
 /-- `string tks` accepts and returns string `tks`, otherwise fails -/
 def string [Parser.Error ε Substring Char] (tks : String) : ParserT ε Substring Char m String :=
