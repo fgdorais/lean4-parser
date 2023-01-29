@@ -7,7 +7,7 @@ protected structure Parser.State (σ α : Type _) [Parser.Stream σ α] where
   /-- parser stream -/
   stream : σ
   /-- whether the parser has consumed any input -/
-  dirty : Bool
+  dirty : Bool := false
 
 /-- parser result -/
 inductive Parser.Result (ε σ α : Type _)
@@ -48,10 +48,6 @@ variable {ε σ α β γ} [Parser.Stream σ α] [Parser.Error ε σ α] {m} [Mon
   let s ← StateT.get
   return s.dirty
 
-/- override default `OrElse` so that second is run only when the first has consumed no input -/
-@[inline] instance : OrElse (ParserT ε σ α m β) where
-  orElse p q := try p catch e => if (← hasConsumed) then throw e else q ()
-
 /-- get stream position from parser -/
 @[inline] def getPosition : ParserT ε σ α m (Stream.Position σ α) := do
   let s ← StateT.get
@@ -82,5 +78,20 @@ variable {ε σ α β γ} [Parser.Stream σ α] [Parser.Error ε σ α] {m} [Mon
   catch e =>
     setPosition savePos false
     throw e
+
+/- override default `OrElse` so that the first consumes no input when it fails -/
+@[inline] instance : OrElse (ParserT ε σ α m β) where
+  orElse p q :=
+    try withBacktracking p
+    catch _ => q ()
+
+/-- `first ps` tries parsers from the list `ps` until one succeeds -/
+def first (ps : List (ParserT ε σ α m β)) (combine : ε → ε → ε := fun _ => id): ParserT ε σ α m β :=
+  let rec go : List (ParserT ε σ α m β) → ε → ParserT ε σ α m β
+  | [], e => throw e
+  | p :: ps, e =>
+    try withBacktracking p
+    catch f => go ps (combine e f)
+  do go ps (Error.unexpected (← getPosition) none)
 
 end Parser
