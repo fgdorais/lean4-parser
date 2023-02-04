@@ -13,35 +13,40 @@ protected structure Parser.State (σ α : Type _) [Parser.Stream σ α] where
 inductive Parser.Result (ε σ α : Type _)
 | ok : σ → α → Result ε σ α
 | error : ε → Result ε σ α
+deriving Repr
 
 /-- `ParserT ε σ α` monad transformer to parse tokens of type `α` from the stream `σ` with error type `ε` -/
 @[nolint unusedArguments]
-def ParserT.{u} (ε σ : Type u) (α : Type _) [Parser.Stream σ α] [Parser.Error ε σ α] (m : Type _ → Type _) :=
-  StateT (Parser.State σ α) (ExceptT ε m)
-instance (ε σ α m) [Parser.Stream σ α] [Parser.Error ε σ α] [Monad m] : Monad (ParserT ε σ α m) := inferInstanceAs (Monad (StateT (Parser.State σ α) (ExceptT ε m)))
-instance (ε σ α m) [Parser.Stream σ α] [Parser.Error ε σ α] [Monad m] : MonadExcept ε (ParserT ε σ α m) := inferInstanceAs (MonadExcept ε (StateT (Parser.State σ α) (ExceptT ε m)))
+def ParserT.{u} (ε σ : Type u) (α : Type _) (m : Type _ → Type _) [Parser.Stream σ α] [Parser.Error ε σ α] :=
+  StateT (Parser.State σ α) m
+instance (ε σ α m) [Parser.Stream σ α] [Parser.Error ε σ α] [Monad m] : Monad (ParserT ε σ α m) := inferInstanceAs (Monad (StateT (Parser.State σ α) m))
+instance (ε σ α m) [Parser.Stream σ α] [Parser.Error ε σ α] [Monad m] [MonadExceptOf ε m] : MonadExceptOf ε (ParserT ε σ α m) := inferInstanceAs (MonadExceptOf ε (StateT (Parser.State σ α) m))
 
 /-- run parser transformer -/
-protected def ParserT.run.{u} {ε σ : Type u} {α β m} [Parser.Stream σ α] [Parser.Error ε σ α] [Monad m] (p : ParserT ε σ α m β) (s : σ) : m (Parser.Result ε σ β) := do
-  return match (← StateT.run (m := ExceptT ε m) p {stream := s, dirty := false}) with
-  | .ok (val, s) => .ok s.stream val
-  | .error e => .error e
+@[inline] protected def ParserT.run.{u} {ε σ : Type u} {α β m} [Parser.Stream σ α] [Parser.Error ε σ α] [Monad m] [MonadExceptOf ε m] (p : ParserT ε σ α m β) (s : σ) : m (Parser.Result ε σ β) :=
+  try
+    let (val, s) ← StateT.run p {stream := s}
+    return .ok s.stream val
+  catch e =>
+    return .error e
 
 /-- `Parser ε σ α` monad to parse tokens of type `α` from the stream `σ` with error type `ε` -/
-abbrev Parser (ε σ α) [Parser.Stream σ α] [Parser.Error ε σ α] := ParserT ε σ α Id
+abbrev Parser (ε σ α) [Parser.Stream σ α] [Parser.Error ε σ α] := ParserT ε σ α (Except ε)
 
 /-- run parser -/
-protected abbrev Parser.run {ε σ α β} [Parser.Stream σ α] [Parser.Error ε σ α] (p : Parser ε σ α β) (s : σ) : Parser.Result ε σ β :=
-  ParserT.run p s
+@[inline] protected def Parser.run {ε σ α β} [Parser.Stream σ α] [Parser.Error ε σ α] (p : Parser ε σ α β) (s : σ) : Parser.Result ε σ β :=
+  match ParserT.run p s with
+  | .ok v => v
+  | .error e => .error e
 
 /-- `SimpleParserT σ α` monad transformer to parse tokens of type `α` from the stream `σ` with simple error handling -/
 abbrev SimpleParserT (σ α) [Parser.Stream σ α] (m) := ParserT (Parser.Error.Simple σ α) σ α m
 
 /-- `SimpleParser σ α` monad to parse tokens of type `α` from the stream `σ` with simple error handling -/
-abbrev SimpleParser (σ α) [Parser.Stream σ α] := ParserT (Parser.Error.Simple σ α) σ α Id
+abbrev SimpleParser (σ α) [Parser.Stream σ α] := Parser (Parser.Error.Simple σ α) σ α
 
 namespace Parser
-variable {ε σ α β γ} [Parser.Stream σ α] [Parser.Error ε σ α] {m} [Monad m]
+variable {ε σ α m β γ} [Parser.Stream σ α] [Parser.Error ε σ α] [Monad m] [MonadExceptOf ε m]
 
 /-- check whether parser has consumed any input -/
 @[inline] def hasConsumed : ParserT ε σ α m Bool := do
@@ -62,7 +67,7 @@ variable {ε σ α β γ} [Parser.Stream σ α] [Parser.Error ε σ α] {m} [Mon
   }
 
 /-- throw error on unexpected input -/
-@[inline] def unexpected (input : Option α := none) : ParserT ε σ α m β := do
+@[inline] def throwUnexpected (input : Option α := none) : ParserT ε σ α m β := do
   throw (Error.unexpected (← getPosition) input)
 
 /-- add message on parser error -/
@@ -86,7 +91,7 @@ variable {ε σ α β γ} [Parser.Stream σ α] [Parser.Error ε σ α] {m} [Mon
     catch _ => q ()
 
 /-- `first ps` tries parsers from the list `ps` until one succeeds -/
-def first (ps : List (ParserT ε σ α m β)) (combine : ε → ε → ε := fun _ => id): ParserT ε σ α m β :=
+def first (ps : List (ParserT ε σ α m β)) (combine : ε → ε → ε := fun _ => id) : ParserT ε σ α m β :=
   let rec go : List (ParserT ε σ α m β) → ε → ParserT ε σ α m β
   | [], e => throw e
   | p :: ps, e =>

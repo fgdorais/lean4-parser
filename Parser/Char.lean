@@ -1,7 +1,7 @@
 import Parser.Basic
 
 namespace Parser.Char
-variable {ε σ} [Parser.Stream σ Char] [Parser.Error ε σ Char] {m} [Monad m]
+variable {ε σ m} [Parser.Stream σ Char] [Parser.Error ε σ Char] [Monad m] [MonadExceptOf ε m]
 
 /-- `char tk` accepts and returns character `tk`, otherwise fails -/
 @[inline] def char (tk : Char) : ParserT ε σ Char m Char :=
@@ -24,7 +24,7 @@ def string [Parser.Error ε Substring Char] (tks : String) : ParserT ε Substrin
       setPosition (start + tks.endPos)
       return tks
     else
-      unexpected
+      throwUnexpected
 
 /-- parse space (U+0020) -/
 @[inline] def space : ParserT ε σ Char m Char :=
