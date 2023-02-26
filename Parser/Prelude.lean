@@ -3,28 +3,26 @@ import Unicode
 
 structure ByteSubarray extends ByteArray where
   start : Nat
-  stop : Nat
-  sound : start ≤ stop ∧ stop ≤ toByteArray.size
+  size  : Nat
+  valid : start + size ≤ toByteArray.size := by simp_arith [*]
+
+abbrev ByteSubarray.stop (bs : ByteSubarray) : Nat := bs.start + bs.size
 
 def ByteArray.toByteSubarray (bs : ByteArray) : ByteSubarray where
   toByteArray := bs
   start := 0
-  stop := bs.size
-  sound := ⟨Nat.zero_le bs.size, Nat.le_refl bs.size⟩
+  size := bs.size
 
 namespace ByteSubarray
 variable (bs : ByteSubarray)
 
 @[inline] def extract : ByteArray := bs.toByteArray.extract bs.start bs.stop
 
-@[inline] def size : Nat := bs.stop - bs.start
-
 @[inline] def get (i : Fin bs.size) : UInt8 :=
-  have : i.val + bs.start < bs.toByteArray.size := calc
-    _ < bs.size + bs.start := Nat.add_lt_add_right i.isLt bs.start
-    _ = bs.stop := Nat.sub_add_cancel bs.sound.1
-    _ ≤ bs.toByteArray.size := bs.sound.2
-  bs.toByteArray[i.val + bs.start]'this
+  have : bs.start + i.val < bs.toByteArray.size := calc
+    _ < bs.start + bs.size := Nat.add_lt_add_left i.isLt bs.start
+    _ ≤ bs.toByteArray.size := bs.valid
+  bs.toByteArray[bs.start + i.val]'this
 
 instance : GetElem ByteSubarray Nat UInt8 fun bs i => i < bs.size where
   getElem xs i h := xs.get ⟨i, h⟩
@@ -38,9 +36,23 @@ instance : GetElem ByteSubarray Nat UInt8 fun bs i => i < bs.size where
 abbrev get! (i : Nat) : UInt8 := getD bs i default
 
 def popFront : ByteSubarray :=
-  if h : bs.start < bs.stop
-  then { bs with start := bs.start + 1, sound := ⟨Nat.le_of_lt_succ (Nat.add_lt_add_right h 1), bs.sound.2⟩ }
+  if h : bs.size ≥ 1 then
+    have : (bs.start+1) + (bs.size-1) = bs.start + bs.size := by
+      rw [Nat.add_assoc, Nat.add_sub_cancel' h]
+    {bs with start := bs.start+1, size := bs.size-1, valid := by rw [this]; exact bs.valid}
   else bs
+
+def slice (start stop : Nat) (h : start ≤ stop ∧ stop ≤ bs.size := by simp_arith [*]) : ByteSubarray where
+  toByteArray := bs.toByteArray
+  start := bs.start + start
+  size := stop - start
+  valid := by
+    rw [Nat.add_assoc]
+    rw [Nat.add_sub_cancel' h.1]
+    apply Nat.le_trans _ bs.valid
+    apply Nat.add_le_add_left h.2
+
+@[simp] theorem size_slice (start stop : Nat) (h : start ≤ stop ∧ stop ≤ bs.size := by simp_arith [*]) : (bs.slice start stop h).size = stop - start := rfl
 
 @[inline] unsafe def forInUnsafe {α m} [Monad m] (bs : ByteSubarray) (a : α) (f : UInt8 → α → m (ForInStep α)) : m α :=
   let sz := USize.ofNat bs.stop
@@ -72,8 +84,9 @@ instance : ForIn m ByteSubarray UInt8 where
 
 instance : Stream ByteSubarray UInt8 where
   next? s :=
-    if h : s.start < s.stop
-    then some (s.get ⟨0, Nat.sub_pos_of_lt h⟩, {s with start := s.start+1, sound := ⟨Nat.succ_le_of_lt h, s.sound.2⟩})
-    else none
+    if h : s.size > 0 then
+      some (s.get ⟨0, h⟩, s.popFront)
+    else
+      none
 
 end ByteSubarray

@@ -41,9 +41,10 @@ namespace Parser.Stream
   Position := Nat
   getPosition s := s.start
   setPosition s p :=
-    if h : p ≤ s.stop
-    then {s with start := p, sound := ⟨h, s.sound.2⟩}
-    else {s with start := s.stop, sound := ⟨Nat.le_refl s.stop, s.sound.2⟩}
+    if h : p ≤ s.start + s.size then
+      {s with start := p, size := s.start + s.size - p, valid := by rw [Nat.add_sub_cancel' h]; exact s.valid}
+    else
+      {s with start := s.stop, size := 0, valid := by rw [ByteSubarray.stop]; exact s.valid}
 
 /-- `OfList` is a view of an `List` along with a position along that array -/
 structure OfList (α : Type _) where
