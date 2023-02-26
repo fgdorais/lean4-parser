@@ -1,5 +1,5 @@
 {"version": 4,
- "packagesDir": "./lake-packages",
+ "packagesDir": "lake-packages",
  "packages":
  [{"git":
    {"url": "https://github.com/xubaiw/Unicode.lean",
@@ -10,6 +10,6 @@
   {"git":
    {"url": "https://github.com/leanprover/std4.git",
     "subDir?": null,
-    "rev": "7977f08b1c427b4e8070ba4cc1f599617ebda867",
+    "rev": "9a43e832fc20cf0b94f5041b9bec70945d409d12",
     "name": "std",
     "inputRev?": "main"}}]}
