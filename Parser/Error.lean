@@ -23,6 +23,9 @@ private def Simple.toString {σ α} [Repr α] [Parser.Stream σ α] [Repr (Parse
 instance (σ α) [Repr α] [Parser.Stream σ α] [Repr (Parser.Stream.Position σ α)] : ToString (Simple σ α) where
   toString e := Simple.toString e
 
+instance (σ α) [Repr α] [Parser.Stream σ α] [ToString (Simple σ α)] : Repr (Simple σ α) where
+  reprPrec result _ := Std.Format.text $ toString result
+
 instance  (σ α) [Parser.Stream σ α] : Parser.Error (Simple σ α) σ α where
   unexpected := Simple.unexpected
   addMessage := Simple.addMessage
