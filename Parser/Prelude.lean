@@ -1,5 +1,5 @@
 import Std
-import Unicode
+import UnicodeData
 
 structure ByteSubarray extends ByteArray where
   start : Nat

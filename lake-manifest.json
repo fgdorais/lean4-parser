@@ -2,14 +2,14 @@
  "packagesDir": "lake-packages",
  "packages":
  [{"git":
-   {"url": "https://github.com/xubaiw/Unicode.lean",
+   {"url": "https://github.com/fgdorais/UnicodeData",
     "subDir?": null,
-    "rev": "6dd6ae3a3839c8350a91876b090eda85cf538d1d",
-    "name": "Unicode",
+    "rev": "fb9efcfc2b832c2aff45a220779f35b79f62da11",
+    "name": "UnicodeData",
     "inputRev?": "main"}},
   {"git":
    {"url": "https://github.com/leanprover/std4.git",
     "subDir?": null,
-    "rev": "9a43e832fc20cf0b94f5041b9bec70945d409d12",
-    "name": "std",
+    "rev": "7d37ab32aac2004fa32e1df5b38d878c2301cd71",
+    "name": "Std",
     "inputRev?": "main"}}]}

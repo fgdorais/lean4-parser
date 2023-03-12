@@ -6,6 +6,6 @@ package Parser
 @[default_target]
 lean_lib Parser
 
-require std from git "https://github.com/leanprover/std4.git"@"main"
+require Std from git "https://github.com/leanprover/std4.git"@"main"
 
-require Unicode from git "https://github.com/xubaiw/Unicode.lean"@"main"
+require UnicodeData from git "https://github.com/fgdorais/UnicodeData"@"main"
