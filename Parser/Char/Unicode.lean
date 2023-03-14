@@ -83,7 +83,7 @@ def decimalNumber : ParserT ε σ Char m Char :=
 /-- parse letter number (general category Nl) -/
 def letterNumber : ParserT ε σ Char m Char :=
   withErrorMessage "expected letter number (Nl)" do
-    tokenFilter Unicode.isDigitNumber
+    tokenFilter Unicode.isLetterNumber
 
 /-- parse other number (general category No) -/
 def otherNumber : ParserT ε σ Char m Char :=
@@ -200,9 +200,9 @@ def privateUse : ParserT ε σ Char m Char :=
   withErrorMessage "expected private-use character (Co)" do
     tokenFilter Unicode.isPrivateUse
 
-/-- parse noncharacter (general category Cn) -/
+/-- parse unassigned character (general category Cn) -/
 def noncharacter : ParserT ε σ Char m Char :=
-  withErrorMessage "expected noncharacter (Cn)" do
+  withErrorMessage "expected unassigned character (Cn)" do
     tokenFilter Unicode.isUnassigned
 
 end Parser.Char.Unicode
