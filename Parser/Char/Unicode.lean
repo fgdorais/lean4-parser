@@ -8,10 +8,15 @@ import Parser.Char.Basic
 namespace Parser.Char.Unicode
 variable {ε σ m} [Parser.Stream σ Char] [Parser.Error ε σ Char] [Monad m] [MonadExceptOf ε m]
 
-/-- parse alphabetic character -/
-def alphabetic : ParserT ε σ Char m Char :=
-  withErrorMessage "expected alphabetic character" do
+/-- parse alphabetic letter character -/
+def alpha : ParserT ε σ Char m Char :=
+  withErrorMessage "expected letter" do
     tokenFilter Unicode.isAlphabetic
+
+/-- parse alphabetic letter or digit character -/
+def alphanum : ParserT ε σ Char m Char :=
+  withErrorMessage "expected letter or digit" do
+    tokenFilter fun c => Unicode.isAlphabetic c || Unicode.isDecimal c
 
 /-- parse lowercase letter character -/
 def lowercase : ParserT ε σ Char m Char :=
@@ -28,7 +33,7 @@ def uppercase : ParserT ε σ Char m Char :=
   withErrorMessage "expected uppercase letter" do
     tokenFilter Unicode.isUppercase
 
-/-- parse white space character -/
+/-- parse whitespace character -/
 def whitespace : ParserT ε σ Char m Char :=
   withErrorMessage "expected whitespace" do
     tokenFilter Unicode.isWhiteSpace

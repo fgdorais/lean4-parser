@@ -61,34 +61,86 @@ def eol : ParserT ε σ Char m Char :=
   withErrorMessage "expected newline" do
     crlf <|> lf
 
+namespace ASCII
+
 /-- parse whitespace -/
 def whitespace : ParserT ε σ Char m Char :=
   withErrorMessage "expected whitespace" do
-    tokenFilter Char.isWhitespace
+    tokenFilter fun c => c == ' ' || c >= '\t' && c <= '\r'
 
-/-- parse upper case letter -/
-def upper : ParserT ε σ Char m Char :=
+/-- parse uppercase letter -/
+def uppercase : ParserT ε σ Char m Char :=
   withErrorMessage "expected uppercase letter" do
-    tokenFilter Char.isUpper
+    tokenFilter fun c => c >= 'A' && c <= 'Z'
 
-/-- parse lower case letter -/
-def lower : ParserT ε σ Char m Char :=
+/-- parse lowercase letter -/
+def lowercase : ParserT ε σ Char m Char :=
   withErrorMessage "expected lowercase letter" do
-    tokenFilter Char.isLower
+    tokenFilter fun c => c >= 'a' && c <= 'z'
 
-/-- parse letter -/
-def letter : ParserT ε σ Char m Char :=
+/-- parse alphabetic letter -/
+def alpha : ParserT ε σ Char m Char :=
   withErrorMessage "expected letter" do
-    tokenFilter Char.isAlpha
+    tokenFilter fun c => c >= 'A' && c <= 'Z' ||  c >= 'a' && c <= 'z'
 
-/-- parse digit -/
-def digit : ParserT ε σ Char m Char :=
-  withErrorMessage "expected digit" do
-    tokenFilter Char.isDigit
-
-/-- parse letter or digit -/
+/-- parse alphabetic letter or digit -/
 def alphanum : ParserT ε σ Char m Char :=
   withErrorMessage "expected letter or digit" do
-    tokenFilter Char.isAlphanum
+    tokenFilter fun c => c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' ||  c >= 'a' && c <= 'z'
+
+/-- parse decimal digit -/
+def digit : ParserT ε σ Char m (Char × Fin 10) :=
+  withErrorMessage "expected digit" do
+    tokenMap fun c =>
+      if h : 48 <= c.toNat ∧ c.toNat <= 57 then
+        let val := c.toNat - 48
+        have h : val < 10 := by
+          apply Nat.lt_succ_of_le
+          apply Nat.le_of_add_le_add_right (b:=48)
+          rw [Nat.sub_add_cancel h.left]
+          exact h.right
+        some (c, ⟨val, h⟩)
+      else
+        none
+
+/-- parse hexadecimal digit -/
+def hexDigit : ParserT ε σ Char m (Char × Fin 16) :=
+  withErrorMessage "expected digit" do
+    tokenMap fun c =>
+      if hn : 48 <= c.toNat ∧ c.toNat <= 57 then
+        let val := c.toNat - 48
+        have h : val < 16 := by
+          apply Nat.lt_succ_of_le
+          apply Nat.le_of_add_le_add_right (b:=48)
+          rw [Nat.sub_add_cancel hn.left]
+          apply Nat.le_trans hn.right
+          decide
+        some (c, ⟨val, h⟩)
+      else if hu : 65 <= c.toNat ∧ c.toNat <= 70 then
+        let val := c.toNat - 55
+        have h0 : 55 <= c.toNat := by
+          apply Nat.le_trans _ hu.left
+          decide
+        have h : val < 16 := by
+          apply Nat.lt_succ_of_le
+          apply Nat.le_of_add_le_add_right (b:=55)
+          rw [Nat.sub_add_cancel h0]
+          exact hu.right
+        some (c, ⟨val, h⟩)
+      else if hu : 97 <= c.toNat ∧ c.toNat <= 102 then
+        let val := c.toNat - 87
+        have h0 : 87 <= c.toNat := by
+          apply Nat.le_trans _ hu.left
+          decide
+        have h : val < 16 := by
+          apply Nat.lt_succ_of_le
+          apply Nat.le_of_add_le_add_right (b:=87)
+          rw [Nat.sub_add_cancel h0]
+          exact hu.right
+        some (c, ⟨val, h⟩)
+      else
+        none
+
+end ASCII
 
 end Parser.Char
