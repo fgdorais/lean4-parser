@@ -15,4 +15,4 @@ require Std from git
   "https://github.com/leanprover/std4" @ "main"
 
 require UnicodeBasic from git
-  "https://github.com/fgdorais/lean4-unicode-basic" @ "proplist"
+  "https://github.com/fgdorais/lean4-unicode-basic" @ "main"
