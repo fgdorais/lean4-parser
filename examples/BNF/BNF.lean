@@ -1,4 +1,28 @@
+/-
+Copyright © 2022 François G. Dorais, Kyrill Serdyuk, Emma Shroyer. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+-/
+
 import Parser
+
+/-!
+  The string `BNF.bnf` below represents BNF syntax in BNF. In this example, we
+  will write a BNF parser and verify that it can correctly parse its own
+  syntax!
+
+  There are many BNF variants and there is no official one. The common feature
+  of these variants is that BNF syntax avoids parentheses and has only two
+  combinators: concatenation and alternative. Rule identifiers must consist
+  only of letters, numbers and hyphens `-` and must start with a letter.
+  Each rule is terminated by an end-of-line marker.
+
+  The BNF variant below simplifies the syntax for literals by only allowing
+  single-quoted literals and single quotes within literals must be doubled.
+  Thus `''''` represents one single quote and `''''''` represents two. The
+  characters that can occur in literals are limited to ASCII letters, digits,
+  and a selected list of symbols. Literals can also contain end-of-line
+  marker.
+-/
 
 namespace BNF
 
@@ -80,6 +104,7 @@ instance : ToString Syntax :=
   ## BNF Parser ##
 -/
 
+/-- BNF parser monad -/
 abbrev BNFParser := SimpleParser Substring Char
 
 namespace BNFParser
@@ -173,7 +198,7 @@ partial def exprAlt : BNFParser ExprAlt :=
 def rule : BNFParser (String × ExprAlt) :=
   withErrorMessage "<rule>" do
     let name ← spaces *> char '<' *> name <* char '>'
-    let _ ← spaces *> chars "::="
+    let _ ← spaces *> string "::="
     let expr ← exprAlt <* lineEnd
     return (name, expr)
 
