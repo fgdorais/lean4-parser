@@ -4,7 +4,7 @@
  [{"git":
    {"url": "https://github.com/fgdorais/lean4-unicode-basic",
     "subDir?": null,
-    "rev": "094a439c736cd96468bd95265204a4bc177d5d61",
+    "rev": "c45147f20ba9bd74a538b06fd34e19274233d9c4",
     "name": "UnicodeBasic",
     "inputRev?": "main"}},
   {"git":

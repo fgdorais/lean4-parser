@@ -41,7 +41,7 @@ def whitespace : ParserT ε σ Char m Char :=
 /-- parse decimal digit character -/
 def digit : ParserT ε σ Char m (Char × Fin 10) :=
   withErrorMessage "expected decimal digit" do
-    tokenMap fun c => Unicode.toDigit? c >>= (c,.)
+    tokenMap fun c => Unicode.getDigit? c >>= (c,.)
 
 /-!
   ## General Category ##
