@@ -11,15 +11,20 @@ import Parser.Stream
 namespace Parser
 variable {ε σ α β γ} [Parser.Stream σ α] [Parser.Error ε σ α] {m} [Monad m] [MonadExceptOf ε m]
 
+/-- `tokenAux next?` reads a token from the stream using `next?` -/
+@[inline] def tokenAux (next? : σ → Option (α × σ)) : ParserT ε σ α m α := do
+  match next? (← StateT.get).stream with
+  | some (tok, stream) =>
+    StateT.set {stream := stream, dirty := true}
+    return tok
+  | none => throwUnexpected
+
 /-- `tokenMap test` accepts token `t` with result `x` if `test t = some x`, otherise fails -/
 @[specialize] def tokenMap (test : α → Option β) : ParserT ε σ α m β := do
-  match Stream.next? (← StateT.get).stream with
-  | some (x, s) =>
-    StateT.set {stream := s, dirty := true}
-    match test x with
-    | some y => return y
-    | none => throwUnexpected x
-  | none => throwUnexpected
+  let tok ← tokenAux Stream.next?
+  match test tok with
+  | some x => return x
+  | none => throwUnexpected tok
 
 /-- `endOfInput` succeeds only when there is no input left -/
 @[inline] def endOfInput : ParserT ε σ α m Unit := do
