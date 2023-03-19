@@ -169,7 +169,7 @@ private partial def foldAux (f : γ → β → γ) (y : γ) (p : ParserT ε σ �
       let _ ← p
       drop n p
 
-/-- `dropUpto n p` parses up to `n` occurrences of `p`, ignoring all outputs from `p` -/
+/-- `dropUpTo n p` parses up to `n` occurrences of `p`, ignoring all outputs from `p` -/
 @[inline] def dropUpTo (n : Nat) (p : ParserT ε σ α m β) : ParserT ε σ α m Unit :=
   match n with
   | 0 => return
@@ -193,6 +193,26 @@ private partial def foldAux (f : γ → β → γ) (y : γ) (p : ParserT ε σ �
 /-- `dropUntil stop p` runs `p` until `stop` succeeds, returns the output of `stop` ignoring all outputs from `p` -/
 @[inline] def dropUntil (stop : ParserT ε σ α m γ) (p : ParserT ε σ α m β) : ParserT ε σ α m γ :=
   dropMany (notFollowedBy stop *> p) *> stop
+
+/-- `count p` parses occurrences of `p` until it fails, and returns the count of successes -/
+@[inline] def count (p : ParserT ε σ α m β) : ParserT ε σ α m Nat := do
+  foldAux (fun n _ => n+1) 0 p
+
+/-- `countUpTo n p` parses up to `n` occurrences of `p` until it fails, and returns the count of successes -/
+@[inline] def countUpTo (n : Nat) (p : ParserT ε σ α m β) : ParserT ε σ α m Nat :=
+  let rec loop : Nat → Nat → ParserT ε σ α m Nat
+  | 0, c => return c
+  | n+1, c =>
+    try
+      let _ ← withBacktracking p
+      loop n (c+1)
+    catch _ =>
+      return c
+  loop n 0
+
+/-- `countUntil stop p` counts zero or more occurrences of `p` until `stop` succeeds, and returns an array of the returned values of `p` and the output of `stop` -/
+@[inline] def countUntil (stop : ParserT ε σ α m γ) (p : ParserT ε σ α m β) : ParserT ε σ α m (Nat × γ) := do
+  return (← count (notFollowedBy stop *> p), ← stop)
 
 /-- `sepBy1 p sep` parses one or more occurrences of `p`, separated by `sep`, returns an array of values returned by `p` -/
 @[inline] def sepBy1 (sep : ParserT ε σ α m Unit) (p : ParserT ε σ α m β) : ParserT ε σ α m (Array β) := do
