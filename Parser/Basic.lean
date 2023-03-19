@@ -26,14 +26,6 @@ variable {ε σ α β γ} [Parser.Stream σ α] [Parser.Error ε σ α] {m} [Mon
   | some x => return x
   | none => throwUnexpected tok
 
-/-- `endOfInput` succeeds only when there is no input left -/
-@[inline] def endOfInput : ParserT ε σ α m Unit := do
-  match Stream.next? (← StateT.get).stream with
-  | some (x, s) =>
-    StateT.set {stream := s, dirty := true}
-    throwUnexpected x
-  | none => return
-
 /-- `tokenFilter test` accepts and returns token `t` if `test t = true`, otherwise fails -/
 @[inline] def tokenFilter (test : α → Bool) : ParserT ε σ α m α :=
   tokenMap fun c => if test c then some c else none
@@ -70,16 +62,20 @@ def lookAhead (p : ParserT ε σ α m β) : ParserT ε σ α m β := do
     throw e
 
 /-- `notFollowedBy p` succeeds only if `p` fails -/
-@[inline] def notFollowedBy (p : ParserT ε σ α m β) : ParserT ε σ α m Unit :=
+@[inline] def notFollowedBy (p : ParserT ε σ α m β) : ParserT ε σ α m Unit := do
   try
     let _ ← lookAhead p
-    throwUnexpected
   catch _ =>
     return
+  throwUnexpected
 
 /-- `anyToken` accepts any single token and returns that token -/
 @[inline] def anyToken : ParserT ε σ α m α :=
   tokenMap some
+
+/-- `endOfInput` succeeds only when there is no input left -/
+@[inline] def endOfInput : ParserT ε σ α m Unit :=
+  notFollowedBy anyToken
 
 /-- `peek` returns the next token, without consuming any input -/
 @[inline] def peek : ParserT ε σ α m α :=
