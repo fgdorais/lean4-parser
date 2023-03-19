@@ -90,11 +90,15 @@ def lookAhead (p : ParserT ε σ α m β) : ParserT ε σ α m β := do
 
 /-- `option? p` parses `p` returns `some x` if `p` returns `x`, and returns `none` if `p` fails -/
 @[inline] def option? (p : ParserT ε σ α m β) : ParserT ε σ α m (Option β) :=
-  option! (some <$> p)
+  optionD none (some <$> p)
 
 /-- `optional p` tries to parse `p`, ignoring the output, never fails -/
 @[inline] def optional (p : ParserT ε σ α m β) : ParserT ε σ α m Unit :=
   option! (p *> return)
+
+/-- `test p` returns `true` if `p` succeeds and `false` otherwise, never fails -/
+@[inline] def test (p : ParserT ε σ α m β) : ParserT ε σ α m Bool :=
+  Option.isSome <$> option? p
 
 @[specialize]
 private partial def foldAux (f : γ → β → γ) (y : γ) (p : ParserT ε σ α m β) : ParserT ε σ α m γ :=
