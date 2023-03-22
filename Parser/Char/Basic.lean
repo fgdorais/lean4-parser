@@ -34,27 +34,22 @@ def string [Parser.Error ε Substring Char] (tks : String) : ParserT ε Substrin
 @[inline] def space : ParserT ε σ Char m Char :=
   withErrorMessage "expected space (U+0020)" <| token ' '
 
-/-- parse tab (U+0009) -/
+/-- parse horizontal tab (U+0009) -/
 @[inline] def tab : ParserT ε σ Char m Char :=
-  withErrorMessage "expected tab (U+0009)" <| token '\t'
+  withErrorMessage "expected horizontal tab (U+0009)" <| token '\t'
 
 /-- parse line feed (U+000A) -/
-@[inline] def lf : ParserT ε σ Char m Char :=
+@[inline] def ASCII.lf : ParserT ε σ Char m Char :=
   withErrorMessage "expected line feed (U+000A)" <| token '\n'
 
 /-- parse carriage return (U+000D) -/
-@[inline] def cr : ParserT ε σ Char m Char :=
+@[inline] def ASCII.cr : ParserT ε σ Char m Char :=
   withErrorMessage "expected carriage return (U+000D)" <| token '\r'
 
-/-- parse carriage return (U+000D) and line feed (U+000A) -/
-@[inline] def crlf : ParserT ε σ Char m Char :=
-  withErrorMessage "expected carriage return (U+000D) and line feed (U+000A)" do
-    withBacktracking (cr *> lf)
-
 /-- parse end of line -/
-def eol : ParserT ε σ Char m Char :=
+@[inline] def eol : ParserT ε σ Char m Char :=
   withErrorMessage "expected newline" do
-    crlf <|> lf
+    (ASCII.cr *> ASCII.lf) <|> ASCII.lf
 
 namespace ASCII
 
