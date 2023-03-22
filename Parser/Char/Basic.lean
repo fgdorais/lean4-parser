@@ -76,12 +76,12 @@ def lowercase : ParserT ε σ Char m Char :=
 /-- parse alphabetic letter -/
 def alpha : ParserT ε σ Char m Char :=
   withErrorMessage "expected letter" do
-    tokenFilter fun c => c >= 'A' && c <= 'Z' ||  c >= 'a' && c <= 'z'
+    tokenFilter fun c => if c >= 'a' then c <= 'z' else c >= 'A' && c <= 'Z'
 
 /-- parse alphabetic letter or digit -/
 def alphanum : ParserT ε σ Char m Char :=
   withErrorMessage "expected letter or digit" do
-    tokenFilter fun c => c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' ||  c >= 'a' && c <= 'z'
+    tokenFilter fun c => if c >= 'a' then c <= 'z' else if c >= 'A' then c <= 'Z' else c >= '0' && c <= '9'
 
 /-- parse decimal digit -/
 def digit : ParserT ε σ Char m (Fin 10) :=
