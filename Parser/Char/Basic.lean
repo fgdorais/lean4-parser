@@ -10,8 +10,7 @@ variable {ε σ m} [Parser.Stream σ Char] [Parser.Error ε σ Char] [Monad m] [
 
 /-- `char tk` accepts and returns character `tk`, otherwise fails -/
 @[inline] def char (tk : Char) : ParserT ε σ Char m Char :=
-  withErrorMessage s!"expected {repr tk}" do
-    tokenFilter (. == tk)
+  withErrorMessage s!"expected {repr tk}" <| token tk
 
 /-- `chars tks` accepts and returns string `tks`, otherwise fails -/
 def chars (tks : String) : ParserT ε σ Char m String :=
@@ -33,23 +32,19 @@ def string [Parser.Error ε Substring Char] (tks : String) : ParserT ε Substrin
 
 /-- parse space (U+0020) -/
 @[inline] def space : ParserT ε σ Char m Char :=
-  withErrorMessage "expected space (U+0020)" do
-    tokenFilter (. == ' ')
+  withErrorMessage "expected space (U+0020)" <| token ' '
 
 /-- parse tab (U+0009) -/
 @[inline] def tab : ParserT ε σ Char m Char :=
-  withErrorMessage "expected tab (U+0009)" do
-    tokenFilter (. == '\t')
+  withErrorMessage "expected tab (U+0009)" <| token '\t'
 
 /-- parse line feed (U+000A) -/
 @[inline] def lf : ParserT ε σ Char m Char :=
-  withErrorMessage "expected line feed (U+000A)" do
-    tokenFilter (. == '\n')
+  withErrorMessage "expected line feed (U+000A)" <| token '\n'
 
 /-- parse carriage return (U+000D) -/
 @[inline] def cr : ParserT ε σ Char m Char :=
-  withErrorMessage "expected carriage return (U+000D)" do
-    tokenFilter (. == '\r')
+  withErrorMessage "expected carriage return (U+000D)" <| token '\r'
 
 /-- parse carriage return (U+000D) and line feed (U+000A) -/
 @[inline] def crlf : ParserT ε σ Char m Char :=
@@ -89,57 +84,34 @@ def alphanum : ParserT ε σ Char m Char :=
     tokenFilter fun c => c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' ||  c >= 'a' && c <= 'z'
 
 /-- parse decimal digit -/
-def digit : ParserT ε σ Char m (Char × Fin 10) :=
-  withErrorMessage "expected digit" do
+def digit : ParserT ε σ Char m (Fin 10) :=
+  withErrorMessage "expected decimal digit" do
     tokenMap fun c =>
-      if h : 48 <= c.toNat ∧ c.toNat <= 57 then
-        let val := c.toNat - 48
-        have h : val < 10 := by
-          apply Nat.lt_succ_of_le
-          apply Nat.le_of_add_le_add_right (b:=48)
-          rw [Nat.sub_add_cancel h.left]
-          exact h.right
-        some (c, ⟨val, h⟩)
-      else
-        none
+      if c.toNat < '0'.toNat then none else
+        let val := c.toNat - '0'.toNat
+        if h : val < 10 then
+          some ⟨val, h⟩
+        else
+          none
 
 /-- parse hexadecimal digit -/
-def hexDigit : ParserT ε σ Char m (Char × Fin 16) :=
-  withErrorMessage "expected digit" do
+def hexDigit : ParserT ε σ Char m (Fin 16) :=
+  withErrorMessage "expected hexadecimal digit" do
     tokenMap fun c =>
-      if hn : 48 <= c.toNat ∧ c.toNat <= 57 then
-        let val := c.toNat - 48
-        have h : val < 16 := by
-          apply Nat.lt_succ_of_le
-          apply Nat.le_of_add_le_add_right (b:=48)
-          rw [Nat.sub_add_cancel hn.left]
-          apply Nat.le_trans hn.right
-          decide
-        some (c, ⟨val, h⟩)
-      else if hu : 65 <= c.toNat ∧ c.toNat <= 70 then
-        let val := c.toNat - 55
-        have h0 : 55 <= c.toNat := by
-          apply Nat.le_trans _ hu.left
-          decide
-        have h : val < 16 := by
-          apply Nat.lt_succ_of_le
-          apply Nat.le_of_add_le_add_right (b:=55)
-          rw [Nat.sub_add_cancel h0]
-          exact hu.right
-        some (c, ⟨val, h⟩)
-      else if hu : 97 <= c.toNat ∧ c.toNat <= 102 then
-        let val := c.toNat - 87
-        have h0 : 87 <= c.toNat := by
-          apply Nat.le_trans _ hu.left
-          decide
-        have h : val < 16 := by
-          apply Nat.lt_succ_of_le
-          apply Nat.le_of_add_le_add_right (b:=87)
-          rw [Nat.sub_add_cancel h0]
-          exact hu.right
-        some (c, ⟨val, h⟩)
-      else
-        none
+      if c < '0' then none else
+        let val := c.toNat - '0'.toNat
+        if h : val < 10 then
+          some ⟨val, Nat.lt_trans h (by decide)⟩
+        else if c < 'A' then none else
+          let val := val - ('A'.toNat - '9'.toNat - 1)
+          if h : val < 16 then
+            some ⟨val, h⟩
+          else if c < 'a' then none else
+            let val := val - ('a'.toNat - 'A'.toNat)
+            if h : val < 16 then
+              some ⟨val, h⟩
+            else
+              none
 
 end ASCII
 
