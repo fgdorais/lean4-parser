@@ -11,12 +11,12 @@ variable {ε σ m} [Parser.Stream σ Char] [Parser.Error ε σ Char] [Monad m] [
 /-- parse alphabetic letter character -/
 def alpha : ParserT ε σ Char m Char :=
   withErrorMessage "expected letter" do
-    tokenFilter Unicode.isAlphabetic
+    tokenFilter Unicode.isAlpha
 
 /-- parse alphabetic letter or digit character -/
 def alphanum : ParserT ε σ Char m Char :=
   withErrorMessage "expected letter or digit" do
-    tokenFilter fun c => Unicode.isAlphabetic c || Unicode.isDecimal c
+    tokenFilter Unicode.isAlphanum
 
 /-- parse lowercase letter character -/
 def lowercase : ParserT ε σ Char m Char :=
@@ -39,9 +39,14 @@ def whitespace : ParserT ε σ Char m Char :=
     tokenFilter Unicode.isWhiteSpace
 
 /-- parse decimal digit character -/
-def digit : ParserT ε σ Char m (Char × Fin 10) :=
+def digit : ParserT ε σ Char m (Fin 10) :=
   withErrorMessage "expected decimal digit" do
-    tokenMap fun c => Unicode.getDigit? c >>= (c,.)
+    tokenMap Unicode.getDigit?
+
+/-- parse hexadecimal digit character -/
+def hexDigit : ParserT ε σ Char m (Fin 16) :=
+  withErrorMessage "expected hexadecimal decimal digit" do
+    tokenMap Unicode.getHexDigit?
 
 /-!
   ## General Category ##
