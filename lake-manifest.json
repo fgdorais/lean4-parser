@@ -4,12 +4,12 @@
  [{"git":
    {"url": "https://github.com/fgdorais/lean4-unicode-basic",
     "subDir?": null,
-    "rev": "c7360dcdfc4ef13e1accbe83280656d8348839fa",
+    "rev": "48db86538a78aa845ac1f117c9a2246df7ea4c05",
     "name": "UnicodeBasic",
     "inputRev?": "main"}},
   {"git":
    {"url": "https://github.com/leanprover/std4",
     "subDir?": null,
-    "rev": "529a6587a15f1a4ce22a96c422d90f5235b0fecd",
+    "rev": "ed1f8fe3a5d7709d41843ad90899ae1d1962eb38",
     "name": "Std",
     "inputRev?": "main"}}]}

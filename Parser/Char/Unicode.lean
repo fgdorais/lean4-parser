@@ -13,11 +13,6 @@ def alpha : ParserT ε σ Char m Char :=
   withErrorMessage "expected letter" do
     tokenFilter Unicode.isAlpha
 
-/-- parse alphabetic letter or digit character -/
-def alphanum : ParserT ε σ Char m Char :=
-  withErrorMessage "expected letter or digit" do
-    tokenFilter Unicode.isAlphanum
-
 /-- parse lowercase letter character -/
 def lowercase : ParserT ε σ Char m Char :=
   withErrorMessage "expected lowercase letter" do
