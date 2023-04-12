@@ -111,7 +111,7 @@ private partial def foldAux (f : γ → β → γ) (y : γ) (p : ParserT ε σ �
   rest y
 
 /-- `foldl f q p` -/
-@[inline] partial def foldl (f : γ → β → γ) (q : ParserT ε σ α m γ) (p : ParserT ε σ α m β) : ParserT ε σ α m γ := do
+@[inline] def foldl (f : γ → β → γ) (q : ParserT ε σ α m γ) (p : ParserT ε σ α m β) : ParserT ε σ α m γ := do
   foldAux f (← q) p
 
 /-- `foldr f p q` -/

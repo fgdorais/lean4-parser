@@ -21,9 +21,11 @@ def ByteArray.toByteSubarray (bs : ByteArray) : ByteSubarray where
 namespace ByteSubarray
 variable (bs : ByteSubarray)
 
-@[inline] def extract : ByteArray := bs.toByteArray.extract bs.start bs.stop
+@[inline]
+def extract : ByteArray := bs.toByteArray.extract bs.start bs.stop
 
-@[inline] def get (i : Fin bs.size) : UInt8 :=
+@[inline]
+def get (i : Fin bs.size) : UInt8 :=
   have : bs.start + i.val < bs.toByteArray.size := calc
     _ < bs.start + bs.size := Nat.add_lt_add_left i.isLt bs.start
     _ ≤ bs.toByteArray.size := bs.valid
@@ -32,10 +34,12 @@ variable (bs : ByteSubarray)
 instance : GetElem ByteSubarray Nat UInt8 fun bs i => i < bs.size where
   getElem xs i h := xs.get ⟨i, h⟩
 
-@[inline] def get? (i : Nat) : Option UInt8 :=
+@[inline]
+def get? (i : Nat) : Option UInt8 :=
   if h : i < bs.size then some (bs.get ⟨i, h⟩) else none
 
-@[inline] def getD (i : Nat) (default : UInt8) : UInt8 :=
+@[inline]
+def getD (i : Nat) (default : UInt8) : UInt8 :=
   if h : i < bs.size then bs.get ⟨i, h⟩ else default
 
 abbrev get! (i : Nat) : UInt8 := getD bs i default
