@@ -129,7 +129,7 @@ def symbol : BNFParser Char :=
 /-- Parser for <digit> -/
 def digit : BNFParser Char :=
   withErrorMessage "<digit>" do
-    Prod.fst <$> ASCII.digit
+    ASCII.numeric
 
 /-- Parser for <letter> -/
 def letter : BNFParser Char :=
