@@ -6,16 +6,16 @@ Released under Apache 2.0 license as described in the file LICENSE.
 import Parser.Prelude
 import Parser.Stream
 
-/-- parser error type -/
+/-- Parser error class -/
 protected class Parser.Error (ε σ : Type _) (α : outParam (Type _)) [Parser.Stream σ α] where
-  /-- unexpected input -/
+  /-- Unexpected input -/
   unexpected : Stream.Position σ → Option α → ε
-  /-- add error message -/
+  /-- Add error message -/
   addMessage : ε → Stream.Position σ → String → ε
 
 namespace Parser.Error
 
-/-- simple error type -/
+/-- Simple error type -/
 inductive Simple (σ α) [Parser.Stream σ α]
 | unexpected : Stream.Position σ → Option α → Simple σ α
 | addMessage : Simple σ α → Stream.Position σ → String → Simple σ α
