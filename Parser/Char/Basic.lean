@@ -30,66 +30,92 @@ def string [Parser.Error ε Substring Char] (tks : String) : ParserT ε Substrin
     else
       throwUnexpected
 
-/-- parse space (U+0020) -/
+/-- Parse space (U+0020) -/
 @[inline] def space : ParserT ε σ Char m Char :=
   withErrorMessage "expected space (U+0020)" <| token ' '
 
-/-- parse horizontal tab (U+0009) -/
+/-- Parse horizontal tab (U+0009) -/
 @[inline] def tab : ParserT ε σ Char m Char :=
   withErrorMessage "expected horizontal tab (U+0009)" <| token '\t'
 
-/-- parse line feed (U+000A) -/
+/-- Parse line feed (U+000A) -/
 @[inline] def ASCII.lf : ParserT ε σ Char m Char :=
   withErrorMessage "expected line feed (U+000A)" <| token '\n'
 
-/-- parse carriage return (U+000D) -/
+/-- Parse carriage return (U+000D) -/
 @[inline] def ASCII.cr : ParserT ε σ Char m Char :=
   withErrorMessage "expected carriage return (U+000D)" <| token '\r'
 
-/-- parse end of line -/
+/-- Parse end of line -/
 @[inline] def eol : ParserT ε σ Char m Char :=
   withErrorMessage "expected newline" do
     (ASCII.cr *> ASCII.lf) <|> ASCII.lf
 
 namespace ASCII
 
-/-- parse whitespace -/
+/-- Parse whitespace character -/
 def whitespace : ParserT ε σ Char m Char :=
-  withErrorMessage "expected whitespace" do
+  withErrorMessage "expected whitespace character" do
     tokenFilter fun c => c == ' ' || c >= '\t' && c <= '\r'
 
-/-- parse uppercase letter -/
+/-- Parse uppercase letter character (`A`..`Z`) -/
 def uppercase : ParserT ε σ Char m Char :=
-  withErrorMessage "expected uppercase letter" do
+  withErrorMessage "expected uppercase letter character" do
     tokenFilter fun c => c >= 'A' && c <= 'Z'
 
-/-- parse lowercase letter -/
+/-- Parse lowercase letter character (`a`..`z`)-/
 def lowercase : ParserT ε σ Char m Char :=
-  withErrorMessage "expected lowercase letter" do
+  withErrorMessage "expected lowercase letter character" do
     tokenFilter fun c => c >= 'a' && c <= 'z'
 
-/-- parse alphabetic letter -/
+/-- Parse alphabetic character (`A`..`Z` and `a`..`z`) -/
 def alpha : ParserT ε σ Char m Char :=
-  withErrorMessage "expected letter" do
+  withErrorMessage "expected alphabetic character" do
     tokenFilter fun c => if c >= 'a' then c <= 'z' else c >= 'A' && c <= 'Z'
 
-/-- parse alphabetic letter or digit -/
+/-- Parse numeric character (`0`..`9`)-/
+def numeric : ParserT ε σ Char m Char :=
+  withErrorMessage "expected decimal digit character" do
+    tokenFilter fun c => c >= '0' && c <= '9'
+
+/-- Parse alphabetic letter or digit (`A`..`Z`, `a`..`z` and `0`..`9`) -/
 def alphanum : ParserT ε σ Char m Char :=
-  withErrorMessage "expected letter or digit" do
+  withErrorMessage "expected letter or digit character" do
     tokenFilter fun c => if c >= 'a' then c <= 'z' else if c >= 'A' then c <= 'Z' else c >= '0' && c <= '9'
 
-/-- parse decimal digit -/
+/-- Parse decimal digit (`0`-`9`) -/
 def digit : ParserT ε σ Char m (Fin 10) :=
   withErrorMessage "expected decimal digit" do
     tokenMap fun c =>
-      if c.toNat < '0'.toNat then none else
+      if c < '0' then none else
         let val := c.toNat - '0'.toNat
         if h : val < 10 then
           some ⟨val, h⟩
         else
           none
 
-/-- parse hexadecimal digit -/
+/-- Parse binary digit (`0`..`1`) -/
+def binDigit : ParserT ε σ Char m (Fin 2) :=
+  withErrorMessage "expected binary digit" do
+    tokenMap fun
+    | '0' => some ⟨0, Nat.zero_lt_succ 1⟩
+    | '1' => some ⟨1, Nat.succ_lt_succ (Nat.zero_lt_succ 0)⟩
+    | _ => none
+
+/-- Parse octal digit (`0`..`7`) -/
+def octDigit : ParserT ε σ Char m (Fin 8) :=
+  withErrorMessage "expected octal digit" do
+    tokenMap fun c =>
+      if c >= '0' then
+        let val := c.toNat - '0'.toNat
+        if h : val < 8 then
+          some ⟨val, h⟩
+        else
+          none
+      else
+        none
+
+/-- Parse hexadecimal digit (`0`..`9`, `A`..`F` and `a`..`f`) -/
 def hexDigit : ParserT ε σ Char m (Fin 16) :=
   withErrorMessage "expected hexadecimal digit" do
     tokenMap fun c =>
