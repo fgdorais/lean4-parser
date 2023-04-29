@@ -81,12 +81,20 @@ def setPosition (pos : Stream.Position σ) (dirty? : Option Bool := none) : Pars
 def throwUnexpected (input : Option α := none) : ParserT ε σ α m β := do
   throw (Error.unexpected (← getPosition) input)
 
+/-- Throw error with additional message -/
+@[inline]
+def throwErrorWithMessage (e : ε) (msg : String) : ParserT ε σ α m β := do
+  throw (Error.addMessage e (← getPosition) msg)
+
 /-- Add message on parser error -/
 @[inline]
 def withErrorMessage (msg : String) (p : ParserT ε σ α m β) : ParserT ε σ α m β := do
   try p
-  catch e =>
-    throw (Error.addMessage e (← getPosition) msg)
+  catch e => throwErrorWithMessage e msg
+
+@[inline]
+def throwUnexpectedWithMessage (input : Option α := none) (msg : String) : ParserT ε σ α m β := do
+  throwErrorWithMessage (Error.unexpected (← getPosition) input) msg
 
 /-- `withBacktracking p` parses `p` but does not consume any input on error -/
 @[inline]
