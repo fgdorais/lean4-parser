@@ -13,7 +13,7 @@ Then add `import Parser` at the top of any Lean file where you plan to use this 
 
 ## Acknowledgements
 
-Original work for the Lean 4 Parser library was done by[François G. Dorais](https://github.com/fgdorais), [Kyrill Serdyuk](https://github.com/lliryk), and [Emma Shroyer](https://github.com/emma-shroyer).
+Original work for the Lean 4 Parser library was done by [François G. Dorais](https://github.com/fgdorais), [Kyrill Serdyuk](https://github.com/lliryk), and [Emma Shroyer](https://github.com/emma-shroyer).
 This work was partly supported by the CEMS REU program at The University of Vermont.
 
 -----
