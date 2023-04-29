@@ -155,12 +155,12 @@ private partial def foldAux (f : γ → β → γ) (y : γ) (p : ParserT ε σ �
 
 /-- `takeUntil stop p` parses zero or more occurrences of `p` until `stop` succeeds, and returns an array of the returned values of `p` and the output of `stop` -/
 partial def takeUntil [Inhabited γ] (stop : ParserT ε σ α m γ) (p : ParserT ε σ α m β) : ParserT ε σ α m (Array β × γ) :=
-  -- FIXME: `Inhabited γ` is not necessary here
+  let inst := Inhabited.mk do return ((#[] : Array β), (← stop))
   let rec loop (acc : Array β) : ParserT ε σ α m (Array β × γ) := do
     try
       return (acc, ← stop)
     catch _ =>
-      let _ := inferInstanceAs (Inhabited γ)
+      let _ := inst
       loop <| acc.push (← p)
   loop #[]
 
@@ -220,13 +220,13 @@ partial def dropUntil (stop : ParserT ε σ α m γ) (p : ParserT ε σ α m β)
   loop n 0
 
 /-- `countUntil stop p` counts zero or more occurrences of `p` until `stop` succeeds, and returns an array of the returned values of `p` and the output of `stop` -/
-partial def countUntil [Inhabited γ] (stop : ParserT ε σ α m γ) (p : ParserT ε σ α m β) : ParserT ε σ α m (Nat × γ) := do
-  -- FIXME: `Inhabited γ` is not necessary here
+partial def countUntil (stop : ParserT ε σ α m γ) (p : ParserT ε σ α m β) : ParserT ε σ α m (Nat × γ) := do
+  let inst := Inhabited.mk do return (0, (← stop))
   let rec loop (ct : Nat) := do
     try
       return (ct, ← stop)
     catch _ =>
-      let _ := inferInstanceAs (Inhabited γ)
+      let _ := inst
       drop 1 p
       loop (ct+1)
   loop 0
