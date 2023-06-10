@@ -26,7 +26,7 @@ private def hexNum (n : Nat := 0) : Parser ε σ Char (Nat × Nat) :=
   foldl (fun (r : Nat × Nat) (d : Fin 16) => (r.1 <<< 4 + d, r.2+1)) (pure (n,0)) ASCII.hexDigit
 
 /-- Parse a `Nat` -/
-def parseNat (decimalOnly := false) : Parser ε σ Char Nat := do
+def parseNat (decimalOnly := true) : Parser ε σ Char Nat := do
   match ← ASCII.digit with
   | ⟨0, _⟩ =>
     if decimalOnly then
@@ -50,13 +50,10 @@ where
     Prod.fst <$> ASCII.hexNum n
 
 /-- Parse an `Int` -/
-def parseInt : Parser ε σ Char Int := do
-  let s ← option? (char '+' <|> char '-')
-  let ⟨n, digits⟩ ← ASCII.decNum
-  if digits = 0 then throwUnexpected
-  match s with
-  | some '-' => return -n
-  | _ => return n
+def parseInt (decimalOnly := true) : Parser ε σ Char Int := do
+  match ← option? (char '+' <|> char '-') with
+  | some '-' => Int.negOfNat <$> parseNat decimalOnly
+  | _ => Int.ofNat <$> parseNat decimalOnly
 
 /-- Parse scientific notation -/
 @[inline]
