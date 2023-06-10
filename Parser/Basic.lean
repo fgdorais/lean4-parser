@@ -83,7 +83,7 @@ def lookAhead (p : ParserT ε σ α m β) : ParserT ε σ α m β := do
 
 /-- `optionD default p` tries to parse `p`, and returns `default` if `p` fails -/
 @[inline] def optionD (default : β) (p : ParserT ε σ α m β) : ParserT ε σ α m β :=
-  try p catch _ => return default
+  try withBacktracking p catch _ => return default
 
 /-- `option! p` tries to parse `p`, and returns `Inhabited.default` if `p` fails -/
 @[inline] def option! [Inhabited β] (p : ParserT ε σ α m β) : ParserT ε σ α m β :=
