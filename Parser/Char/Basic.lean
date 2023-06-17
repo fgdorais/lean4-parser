@@ -83,6 +83,11 @@ def alphanum : ParserT ε σ Char m Char :=
   withErrorMessage "expected letter or digit character" do
     tokenFilter fun c => if c >= 'a' then c <= 'z' else if c >= 'A' then c <= 'Z' else c >= '0' && c <= '9'
 
+/-- Parse control character -/
+def control : ParserT ε σ Char m Char :=
+  withErrorMessage "expected control character" do
+    tokenFilter fun c => c.val < 0x20 || c.val == 0x7f
+
 /-- Parse decimal digit (`0`-`9`) -/
 def digit : ParserT ε σ Char m (Fin 10) :=
   withErrorMessage "expected decimal digit" do
