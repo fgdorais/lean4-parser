@@ -1,15 +1,19 @@
-{"version": 4,
+{"version": 5,
  "packagesDir": "lake-packages",
  "packages":
  [{"git":
    {"url": "https://github.com/fgdorais/lean4-unicode-basic",
     "subDir?": null,
-    "rev": "f09250282cea3ed8c010f430264d9e8e50d7bc32",
+    "rev": "2491e781ae478b6e6f1d86a7157f1c58fc50f895",
+    "opts": {},
     "name": "UnicodeBasic",
-    "inputRev?": "main"}},
+    "inputRev?": "main",
+    "inherited": false}},
   {"git":
    {"url": "https://github.com/leanprover/std4",
     "subDir?": null,
-    "rev": "7448fde12377334ce249a25a0ff60ee060a7ede1",
+    "rev": "54da53d93077d8bd1e3f0a9d318d50387fed1fd6",
+    "opts": {},
     "name": "Std",
-    "inputRev?": "main"}}]}
+    "inputRev?": "main",
+    "inherited": false}}]}
