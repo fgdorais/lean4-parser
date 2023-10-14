@@ -11,7 +11,7 @@ package Parser
 @[default_target]
 lean_lib Parser
 
-require Std from git
+require std from git
   "https://github.com/leanprover/std4" @ "main"
 
 require UnicodeBasic from git
