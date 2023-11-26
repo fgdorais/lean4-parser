@@ -1,0 +1,44 @@
+name: Update Toolchain
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 3 * * *'
+
+jobs:
+  update-toolchain:
+    name: update toolchain
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: install jq
+        uses: dcarbone/install-jq-action@v1.0.1
+
+      - name: get release tag
+        id: get-latest-release
+        run: |
+          LEAN_TAG=$(curl -sSf "https://api.github.com/repos/leanprover/lean4/releases" | jq -r '.[0].tag_name')
+          echo "LEAN_TAG=$LEAN_TAG" >> $GITHUB_ENV
+
+      - name: update lean-toolchain
+        id: update-toolchain
+        run: |
+          if [ $(curl -sSf "https://raw.githubusercontent.com/leanprover/std4/main/lean-toolchain") = "leanprover/lean4:$LEAN_TAG" ] && [ $(curl -sSf "https://raw.githubusercontent.com/fgdorais/lean4-unicode-basic/main/lean-toolchain") = "leanprover/lean4:$LEAN_TAG" ] ;
+          then
+            echo "leanprover/lean4:$LEAN_TAG" > lean-toolchain ;
+          fi
+
+      - name: create pull request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          commit-message: "chore: update toolchain ${{ env.LEAN_TAG }}"
+          committer: GitHub <noreply@github.com>
+          author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
+          signoff: false
+          branch: update-toolchain-${{ env.LEAN_TAG }}
+          delete-branch: true
+          title: 'chore: update toolchain ${{ env.LEAN_TAG }}'
+          draft: false
