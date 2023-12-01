@@ -12,7 +12,7 @@ package Parser
 lean_lib Parser
 
 require std from git
-  "https://github.com/leanprover/std4" @ "main"
+  "https://github.com/leanprover/std4" @ "stable"
 
 require UnicodeBasic from git
-  "https://github.com/fgdorais/lean4-unicode-basic" @ "main"
+  "https://github.com/fgdorais/lean4-unicode-basic" @ "stable"
