@@ -20,7 +20,7 @@ variable {ε σ α β γ} [Parser.Stream σ α] [Parser.Error ε σ α] {m} [Mon
   | none => throwUnexpected
 
 /-- `tokenMap test` accepts token `t` with result `x` if `test t = some x`, otherise fails -/
-@[specialize test] def tokenMap (test : α → Option β) : ParserT ε σ α m β := do
+@[specialize] def tokenMap (test : α → Option β) : ParserT ε σ α m β := do
   let tok ← tokenAux Stream.next?
   match test tok with
   | some x => return x
@@ -82,7 +82,7 @@ def lookAhead (p : ParserT ε σ α m β) : ParserT ε σ α m β := do
   lookAhead anyToken
 
 /-- `optionD default p` tries to parse `p`, and returns `default` if `p` fails -/
-@[inline] def optionD (default : β) (p : ParserT ε σ α m β) : ParserT ε σ α m β :=
+@[specialize] def optionD (default : β) (p : ParserT ε σ α m β) : ParserT ε σ α m β :=
   try withBacktracking p catch _ => return default
 
 /-- `option! p` tries to parse `p`, and returns `Inhabited.default` if `p` fails -/
@@ -102,10 +102,10 @@ def lookAhead (p : ParserT ε σ α m β) : ParserT ε σ α m β := do
   Option.isSome <$> option? p
 
 /-- `foldl f q p` -/
-@[inline] partial def foldl (f : γ → β → γ) (init : γ) (p : ParserT ε σ α m β) : ParserT ε σ α m γ :=
+@[specialize] partial def foldl (f : γ → β → γ) (init : γ) (p : ParserT ε σ α m β) : ParserT ε σ α m γ :=
   let rec loop (y : γ) : ParserT ε σ α m γ := do
     match ← option? p with
-    | some x => loop (f init x)
+    | some x => loop (f y x)
     | none => return y
   loop init
 
@@ -121,19 +121,17 @@ def lookAhead (p : ParserT ε σ α m β) : ParserT ε σ α m β := do
 @[inline] def take (n : Nat) (p : ParserT ε σ α m β) : ParserT ε σ α m (Array β) :=
   let rec rest : Nat → Array β → ParserT ε σ α m (Array β)
   | 0, xs => return xs
-  | n+1, xs => do
-    let x ← p
-    rest n (Array.push xs x)
+  | n+1, xs => do rest n <| xs.push (← p)
   rest n #[]
 
 /-- `takeUpTo n p` parses up to `n` occurrences of `p`, and returns an array of the returned values of `p` -/
 @[inline] def takeUpTo (n : Nat) (p : ParserT ε σ α m β) : ParserT ε σ α m (Array β) :=
   let rec rest : Nat → Array β → ParserT ε σ α m (Array β)
   | 0, xs => return xs
-  | n+1, xs => try
-      let x ← withBacktracking p
-      rest n (Array.push xs x)
-    catch _ => return xs
+  | n+1, xs => do
+    match ← option? p with
+    | some x => rest n <| xs.push x
+    | none => return xs
   rest n #[]
 
 /-- `takeMany p` parses zero or more occurrences of `p` until it fails, and returns an array of the returned values of `p` -/
@@ -152,29 +150,25 @@ def lookAhead (p : ParserT ε σ α m β) : ParserT ε σ α m β := do
 partial def takeUntil [Inhabited γ] (stop : ParserT ε σ α m γ) (p : ParserT ε σ α m β) : ParserT ε σ α m (Array β × γ) :=
   let inst := Inhabited.mk do return ((#[] : Array β), (← stop))
   let rec loop (acc : Array β) : ParserT ε σ α m (Array β × γ) := do
-    try
-      return (acc, ← stop)
-    catch _ =>
-      let _ := inst
-      loop <| acc.push (← p)
+    match ← option? stop with
+    | some s => return (acc, s)
+    | none => let _ := inst; loop <| acc.push (← p)
   loop #[]
 
 /-- `drop n p` parses exactly `n` occurrences of `p`, ignoring all outputs from `p` -/
 @[inline] def drop (n : Nat) (p : ParserT ε σ α m β) : ParserT ε σ α m Unit :=
   match n with
   | 0 => return
-  | n+1 => do
-      let _ ← p
-      drop n p
+  | n+1 => p *> drop n p
 
 /-- `dropUpTo n p` parses up to `n` occurrences of `p`, ignoring all outputs from `p` -/
 @[inline] def dropUpTo (n : Nat) (p : ParserT ε σ α m β) : ParserT ε σ α m Unit :=
   match n with
   | 0 => return
-  | n+1 => try
-      let _ ← withBacktracking p
-      drop n p
-    catch _ => return
+  | n+1 => do
+    match ← option? p with
+    | some _ => drop n p
+    | none => return
 
 /-- `dropMany p` parses zero or more occurrences of `p` until it fails, ignoring all outputs from `p` -/
 @[inline] def dropMany (p : ParserT ε σ α m β) : ParserT ε σ α m Unit :=
@@ -191,39 +185,32 @@ partial def takeUntil [Inhabited γ] (stop : ParserT ε σ α m γ) (p : ParserT
 /-- `dropUntil stop p` runs `p` until `stop` succeeds, returns the output of `stop` ignoring all outputs from `p` -/
 partial def dropUntil (stop : ParserT ε σ α m γ) (p : ParserT ε σ α m β) : ParserT ε σ α m γ :=
   let rec loop := do
-    try
-      stop
-    catch _ =>
-      drop 1 p
-      loop
+    match ← option? stop with
+    | some s => return s
+    | none => p *> loop
   loop
 
 /-- `count p` parses occurrences of `p` until it fails, and returns the count of successes -/
-@[inline] def count (p : ParserT ε σ α m β) : ParserT ε σ α m Nat := do
+@[inline] partial def count (p : ParserT ε σ α m β) : ParserT ε σ α m Nat :=
   foldl (fun n _ => n+1) 0 p
 
 /-- `countUpTo n p` parses up to `n` occurrences of `p` until it fails, and returns the count of successes -/
 @[inline] def countUpTo (n : Nat) (p : ParserT ε σ α m β) : ParserT ε σ α m Nat :=
   let rec loop : Nat → Nat → ParserT ε σ α m Nat
-  | 0, c => return c
-  | n+1, c =>
-    try
-      let _ ← withBacktracking p
-      loop n (c+1)
-    catch _ =>
-      return c
+  | 0, ct => return ct
+  | n+1, ct => do
+    match ← option? p with
+    | some _ => loop n (ct+1)
+    | none => return ct
   loop n 0
 
 /-- `countUntil stop p` counts zero or more occurrences of `p` until `stop` succeeds, and returns an array of the returned values of `p` and the output of `stop` -/
 partial def countUntil (stop : ParserT ε σ α m γ) (p : ParserT ε σ α m β) : ParserT ε σ α m (Nat × γ) := do
-  let inst := Inhabited.mk do return (0, (← stop))
+  let inst := Inhabited.mk do return (0, ← stop)
   let rec loop (ct : Nat) := do
-    try
-      return (ct, ← stop)
-    catch _ =>
-      let _ := inst
-      drop 1 p
-      loop (ct+1)
+    match ← option? stop with
+    | some s => return (ct, s)
+    | none => let _ := inst; p *> loop (ct+1)
   loop 0
 
 /-- `endBy p sep` parses zero or more occurrences of `p`, separated and ended by `sep`, returns an array of values returned by `p` -/
@@ -234,40 +221,22 @@ partial def countUntil (stop : ParserT ε σ α m γ) (p : ParserT ε σ α m β
 @[inline] def endBy1 (sep : ParserT ε σ α m γ) (p : ParserT ε σ α m β) : ParserT ε σ α m (Array β) := do
   takeMany1 (p <* sep)
 
-@[specialize]
-private partial def sepByAux (sep : ParserT ε σ α m γ) (p : ParserT ε σ α m β) (acc : Array β) : ParserT ε σ α m (Array β) := do
-  try
-    drop 1 sep
-  catch _ =>
-    return acc
-  sepByAux sep p (acc.push (← p))
-
 /-- `sepBy1 p sep` parses one or more occurrences of `p`, separated by `sep`, returns an array of values returned by `p` -/
 @[inline] def sepBy1 (sep : ParserT ε σ α m γ) (p : ParserT ε σ α m β) : ParserT ε σ α m (Array β) := do
-  sepByAux sep p #[(← p)]
+  foldl Array.push #[(← p)] (sep *> p)
 
 /-- `sepBy p sep` parses zero or more occurrences of `p`, separated by `sep`, returns an array of values returned by `p` -/
 @[inline] def sepBy (sep : ParserT ε σ α m γ) (p : ParserT ε σ α m β) : ParserT ε σ α m (Array β) := do
   match ← option? p with
-  | some v => sepByAux sep p #[v]
+  | some x => foldl Array.push #[x] (sep *> p)
   | none => return #[]
-
-@[specialize]
-private partial def sepEndByAux (sep : ParserT ε σ α m γ) (p : ParserT ε σ α m β) (acc : Array β) : ParserT ε σ α m (Array β) := do
-  try
-    drop 1 sep
-    sepEndByAux sep p (acc.push (← p))
-  catch _ =>
-    return acc
 
 /-- `sepEndBy1 p sep` parses one or more occurrences of `p`, separated and optionally ended by `sep`, returns an array of values returned by `p` -/
-@[inline] def sepEndBy1 (sep : ParserT ε σ α m γ) (p : ParserT ε σ α m β) : ParserT ε σ α m (Array β) := do
-  sepEndByAux sep p #[(← p)]
+@[inline] def sepEndBy1 (sep : ParserT ε σ α m γ) (p : ParserT ε σ α m β) : ParserT ε σ α m (Array β) :=
+  sepBy1 sep p <* optional sep
 
 /-- `sepEndBy p sep` parses zero or more occurrences of `p`, separated and optionally ended by `sep`, returns an array of values returned by `p` -/
-@[inline] def sepEndBy (sep : ParserT ε σ α m γ) (p : ParserT ε σ α m α) : ParserT ε σ α m (Array α) := do
-  match ← option? p with
-  | some v => sepEndByAux sep p #[v]
-  | none => return #[]
+@[inline] def sepEndBy (sep : ParserT ε σ α m γ) (p : ParserT ε σ α m α) : ParserT ε σ α m (Array α) :=
+  sepBy sep p <* optional sep
 
 end Parser
