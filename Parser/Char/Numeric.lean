@@ -11,19 +11,19 @@ variable {ε σ m} [Parser.Stream σ Char] [Parser.Error ε σ Char] [Monad m] [
 
 @[inline]
 private def decNum (n : Nat := 0) : ParserT ε σ Char m (Nat × Nat) :=
-  foldl (fun (r : Nat × Nat) (d : Fin 10) => (10 * r.1 + d, r.2+1)) (pure (n,0)) ASCII.digit
+  foldl (fun (r : Nat × Nat) (d : Fin 10) => (10 * r.1 + d, r.2+1)) (n,0) ASCII.digit
 
 @[inline]
 private def binNum (n : Nat := 0) : ParserT ε σ Char m (Nat × Nat) :=
-  foldl (fun (r : Nat × Nat) (d : Fin 2) => (r.1 <<< 1 + d, r.2+1)) (pure (n,0)) ASCII.binDigit
+  foldl (fun (r : Nat × Nat) (d : Fin 2) => (r.1 <<< 1 + d, r.2+1)) (n,0) ASCII.binDigit
 
 @[inline]
 private def octNum (n : Nat := 0) : ParserT ε σ Char m (Nat × Nat) :=
-  foldl (fun (r : Nat × Nat) (d : Fin 8) => (r.1 <<< 3 + d, r.2+1)) (pure (n,0)) ASCII.octDigit
+  foldl (fun (r : Nat × Nat) (d : Fin 8) => (r.1 <<< 3 + d, r.2+1)) (n,0) ASCII.octDigit
 
 @[inline]
 private def hexNum (n : Nat := 0) : ParserT ε σ Char m (Nat × Nat) :=
-  foldl (fun (r : Nat × Nat) (d : Fin 16) => (r.1 <<< 4 + d, r.2+1)) (pure (n,0)) ASCII.hexDigit
+  foldl (fun (r : Nat × Nat) (d : Fin 16) => (r.1 <<< 4 + d, r.2+1)) (n,0) ASCII.hexDigit
 
 /-- Parse a `Nat` -/
 def parseNat (decimalOnly := true) : ParserT ε σ Char m Nat := do
