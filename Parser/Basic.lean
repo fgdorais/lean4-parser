@@ -101,18 +101,13 @@ def lookAhead (p : ParserT ε σ α m β) : ParserT ε σ α m β := do
 @[inline] def test (p : ParserT ε σ α m β) : ParserT ε σ α m Bool :=
   Option.isSome <$> option? p
 
-@[specialize f]
-private partial def foldAux (f : γ → β → γ) (y : γ) (p : ParserT ε σ α m β) : ParserT ε σ α m γ :=
-  let rec rest (y : γ) : ParserT ε σ α m γ :=
-    try
-      let x ← withBacktracking p
-      rest (f y x)
-    catch _ => return y
-  rest y
-
 /-- `foldl f q p` -/
-@[inline] def foldl (f : γ → β → γ) (q : ParserT ε σ α m γ) (p : ParserT ε σ α m β) : ParserT ε σ α m γ := do
-  foldAux f (← q) p
+@[inline] partial def foldl (f : γ → β → γ) (init : γ) (p : ParserT ε σ α m β) : ParserT ε σ α m γ :=
+  let rec loop (y : γ) : ParserT ε σ α m γ := do
+    match ← option? p with
+    | some x => loop (f init x)
+    | none => return y
+  loop init
 
 /-- `foldr f p q` -/
 @[inline] partial def foldr (f : β → γ → γ) (p : ParserT ε σ α m β) (q : ParserT ε σ α m γ) : ParserT ε σ α m γ :=
@@ -143,15 +138,15 @@ private partial def foldAux (f : γ → β → γ) (y : γ) (p : ParserT ε σ �
 
 /-- `takeMany p` parses zero or more occurrences of `p` until it fails, and returns an array of the returned values of `p` -/
 @[inline] def takeMany (p : ParserT ε σ α m β) : ParserT ε σ α m (Array β) := do
-  foldAux Array.push #[] p
+  foldl Array.push #[] p
 
 /-- `takeMany1 p` parses one or more occurrences of `p` until it fails, and returns an array of the returned values of `p` -/
 @[inline] def takeMany1 (p : ParserT ε σ α m β) : ParserT ε σ α m (Array β) := do
-  foldAux Array.push #[(← p)] p
+  foldl Array.push #[(← p)] p
 
 /-- `takeManyN n p` parses `n` or more occurrences of `p` until it fails, and returns an array of the returned values of `p` -/
 @[inline] def takeManyN (n : Nat) (p : ParserT ε σ α m β) : ParserT ε σ α m (Array β) := do
-  foldAux Array.push (← take n p) p
+  foldl Array.push (← take n p) p
 
 /-- `takeUntil stop p` parses zero or more occurrences of `p` until `stop` succeeds, and returns an array of the returned values of `p` and the output of `stop` -/
 partial def takeUntil [Inhabited γ] (stop : ParserT ε σ α m γ) (p : ParserT ε σ α m β) : ParserT ε σ α m (Array β × γ) :=
@@ -183,15 +178,15 @@ partial def takeUntil [Inhabited γ] (stop : ParserT ε σ α m γ) (p : ParserT
 
 /-- `dropMany p` parses zero or more occurrences of `p` until it fails, ignoring all outputs from `p` -/
 @[inline] def dropMany (p : ParserT ε σ α m β) : ParserT ε σ α m Unit :=
-  foldAux (Function.const β) () p
+  foldl (Function.const β) () p
 
 /-- `dropMany1 p` parses one or more occurrences of `p` until it fails, ignoring all outputs from `p` -/
 @[inline] def dropMany1 (p : ParserT ε σ α m β) : ParserT ε σ α m Unit :=
-  p *> foldAux (Function.const β) () p
+  p *> foldl (Function.const β) () p
 
 /-- `dropManyN n p` parses `n` or more occurrences of `p` until it fails, ignoring all outputs from `p` -/
 @[inline] def dropManyN (n : Nat) (p : ParserT ε σ α m β) : ParserT ε σ α m Unit :=
-  drop n p *> foldAux (Function.const β) () p
+  drop n p *> foldl (Function.const β) () p
 
 /-- `dropUntil stop p` runs `p` until `stop` succeeds, returns the output of `stop` ignoring all outputs from `p` -/
 partial def dropUntil (stop : ParserT ε σ α m γ) (p : ParserT ε σ α m β) : ParserT ε σ α m γ :=
@@ -205,7 +200,7 @@ partial def dropUntil (stop : ParserT ε σ α m γ) (p : ParserT ε σ α m β)
 
 /-- `count p` parses occurrences of `p` until it fails, and returns the count of successes -/
 @[inline] def count (p : ParserT ε σ α m β) : ParserT ε σ α m Nat := do
-  foldAux (fun n _ => n+1) 0 p
+  foldl (fun n _ => n+1) 0 p
 
 /-- `countUpTo n p` parses up to `n` occurrences of `p` until it fails, and returns the count of successes -/
 @[inline] def countUpTo (n : Nat) (p : ParserT ε σ α m β) : ParserT ε σ α m Nat :=
