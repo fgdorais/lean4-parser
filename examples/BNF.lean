@@ -154,7 +154,7 @@ def nameCharacter : BNFParser Char :=
 /-- Parser for <name-string> -/
 def nameString : BNFParser String :=
   withErrorMessage "<name-string>" do
-    foldl String.push (pure "") nameCharacter
+    foldl String.push "" nameCharacter
 
 /-- Parser for <name> -/
 def name : BNFParser String :=
@@ -171,7 +171,7 @@ def textCharacter : BNFParser Char :=
 /-- Parser for <text> -/
 partial def text : BNFParser String :=
   withErrorMessage "<text>" do
-    foldl String.push (return "") textCharacter
+    foldl String.push "" textCharacter
 
 /-- Parser for <term> -/
 def term : BNFParser Term :=
