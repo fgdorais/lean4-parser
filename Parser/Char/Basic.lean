@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 
 import Parser.Basic
+import Parser.RegEx.Basic
 
 namespace Parser.Char
 variable {ε σ m} [Parser.Stream σ Char] [Parser.Error ε σ Char] [Monad m] [MonadExceptOf ε m]
@@ -19,6 +20,10 @@ def chars (tks : String) : ParserT ε σ Char m String :=
     for tk in tks.data do
       acc := acc.push (← token tk)
     return acc
+
+/-- `reMatch re` accepts and returns a string matching the regex `re`, otherwise fails -/
+def reMatch (re : RegEx Char) : ParserT ε σ Char m String :=
+  String.mk <$> re.match
 
 /-- `string tks` accepts and returns string `tks`, otherwise fails -/
 def string [Parser.Error ε Substring Char] (tks : String) : ParserT ε Substring Char m String :=
