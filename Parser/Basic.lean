@@ -99,7 +99,7 @@ def lookAhead (p : ParserT ε σ α m β) : ParserT ε σ α m β := do
 
 /-- `test p` returns `true` if `p` succeeds and `false` otherwise, never fails -/
 @[inline] def test (p : ParserT ε σ α m β) : ParserT ε σ α m Bool :=
-  Option.isSome <$> option? p
+  optionD false (p *> return true)
 
 /-- `foldl f q p` -/
 @[specialize] partial def foldl (f : γ → β → γ) (init : γ) (p : ParserT ε σ α m β) : ParserT ε σ α m γ :=
