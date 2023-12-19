@@ -110,9 +110,10 @@ where
   grp : REParser (RegEx Char) :=
     withBacktracking do
       let _ ← char '('
+      let n ← test (char '?' *> char ':')
       let e ← re0
       let _ ← char ')'
-      return e
+      return if n then e else .group e
 
   setLoop (cs : List Char) := do
     match ← option? <| tokenFilter (!['[', ']'].elem .) with
