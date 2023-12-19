@@ -9,21 +9,30 @@ import Parser.Basic
 namespace Parser
 
 /-- Type of regular expressions -/
-inductive RegEx (α : Type _)
+inductive RegEx : Type _ → Type _
 | /-- Character set -/
   set : (α → Bool) → RegEx α
 | /-- Alternation -/
-  alt : RegEx α → RegEx α → RegEx α
+  alt : RegEx α  → RegEx α → RegEx α
 | /-- Concatenation -/
   cat : RegEx α → RegEx α → RegEx α
 | /-- Unbounded repetition -/
   repMany : RegEx α → RegEx α
 | /-- Bounded repetition -/
   repUpTo : Nat → RegEx α → RegEx α
-| /-- Grouping (unused) -/
+| /-- Grouping -/
   group : RegEx α → RegEx α
 
 namespace RegEx
+
+/-- Grouping depth -/
+def depth : RegEx α → Nat -- TODO: make computed field
+  | .set _ => 0
+  | .alt e₁ e₂ => depth e₁ + depth e₂
+  | .cat e₁ e₂ => depth e₁ + depth e₂
+  | .repMany e => depth e
+  | .repUpTo _ e => depth e
+  | .group e => depth e + 1
 
 /-- Empty character set -/
 def fail : RegEx α := set fun _ => false
@@ -55,6 +64,9 @@ def repManyN (n : Nat) (e : RegEx α) :=
   | 0 => repMany e
   | n+1 => cat e (repManyN n e)
 
+/-- Match group -/
+abbrev MatchGroup (α σ) [ Parser.Stream σ α] := Option (Parser.Stream.Position σ × Parser.Stream.Position σ)
+
 section
 variable {ε σ α β} [Parser.Stream σ α] [Parser.Error ε σ α] {m} [Monad m] [MonadExceptOf ε m]
 
@@ -68,8 +80,28 @@ protected partial def foldr (f : α → β → β) : RegEx α → ParserT ε σ 
 | .repMany e, k => RegEx.foldr f e (RegEx.foldr f (.repMany e) k) <|> k
 | .group e, k => RegEx.foldr f e k
 
-/-- Parses tokens matching regex `re` returning the list of tokens, otherwise fails -/
-protected def «match» (re : RegEx α) : ParserT ε σ α m (List α) :=
+/-- `take re` parses tokens matching regex `re` returning the list of tokens, otherwise fails -/
+protected def take (re : RegEx α) : ParserT ε σ α m (List α) :=
   re.foldr (.::.) (pure [])
+
+/-- Parses tokens matching regex `re` returning all the matching groups -/
+protected partial def «match» (re : RegEx α) : ParserT ε σ α m (Array (MatchGroup α σ)) := do
+  let ms : Array (MatchGroup α σ) := mkArray re.depth none
+  loop re 0 ms
+where
+  loop : RegEx α → Nat → Array (MatchGroup α σ) → ParserT ε σ α m (Array (MatchGroup α σ))
+  | .set s, _, ms => tokenFilter s *> return ms
+  | .alt e₁ e₂, lvl, ms => loop e₁ lvl ms <|> loop e₂ (lvl + e₁.depth) ms
+  | .cat e₁ e₂, lvl, ms => loop e₁ lvl ms >>= loop e₂ (lvl + e₁.depth)
+  | .repUpTo 0 _, _, ms => return ms
+  | .repUpTo (n+1) e, lvl, ms => loop e lvl ms >>= loop (.repUpTo n e) lvl <|> return ms
+  | .repMany e, lvl, ms => loop e lvl ms >>= loop (.repMany e) lvl <|> return ms
+  | .group e, lvl, ms => do
+      let mut ms := ms
+      for i in [lvl:ms.size] do ms := ms.set! i none
+      let start ← Parser.getPosition
+      ms ← loop e (lvl+1) ms
+      let stop ← Parser.getPosition
+      return ms.set! lvl (some (start, stop))
 
 end

@@ -21,9 +21,13 @@ def chars (tks : String) : ParserT ε σ Char m String :=
       acc := acc.push (← token tk)
     return acc
 
-/-- `reMatch re` accepts and returns a string matching the regex `re`, otherwise fails -/
-def reMatch (re : RegEx Char) : ParserT ε σ Char m String :=
-  String.mk <$> re.match
+/-- `matchRegEx re` accepts and returns substring matches for regex `re` groups, otherwise fails -/
+def matchRegEx [Parser.Error ε Substring Char] (re : RegEx Char) : ParserT ε Substring Char m (Array (Option Substring)) := do
+  let ⟨str,_,_⟩ ← State.stream <$> StateT.get
+  let ms ← re.match
+  return ms.map fun
+    | some (start, stop) => some ⟨str,start,stop⟩
+    | none => none
 
 /-- `string tks` accepts and returns string `tks`, otherwise fails -/
 def string [Parser.Error ε Substring Char] (tks : String) : ParserT ε Substring Char m String :=
