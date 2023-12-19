@@ -48,7 +48,6 @@ end Roman
 
 /-- Read roman numeral from string -/
 def String.toNatRoman? (s : String) : Option Nat :=
-  match Parser.run (Roman.parse <* Parser.endOfInput) s.toSubstring with
+  match Parser.run (Roman.parse <* Parser.endOfInput) s with
   | .ok _ (n+1) => some (n+1)
   | _ => none
-

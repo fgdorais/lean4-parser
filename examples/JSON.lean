@@ -106,7 +106,7 @@ end
 
 /-- JSON validator -/
 def validate (str : String) : Bool :=
-  match Parser.run (JSON.value <* endOfInput) str.toSubstring with
+  match Parser.run (JSON.value <* endOfInput) str with
   | .ok _ _ => true
   | .error _ => false
 
