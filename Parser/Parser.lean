@@ -14,10 +14,12 @@ protected structure Parser.State (σ α : Type _) [Parser.Stream σ α] where
   /-- Whether the parser has consumed any input -/
   dirty : Bool := false
 
-/-- Parser result -/
+/-- Parser result type -/
 inductive Parser.Result (ε σ α : Type _)
-| ok : σ → α → Result ε σ α
-| error : ε → Result ε σ α
+  /-- Result: success -/
+  | ok : σ → α → Result ε σ α
+  /-- Result: error -/
+  | error : ε → Result ε σ α
 deriving Repr
 
 /-- `ParserT ε σ α` monad transformer to parse tokens of type `α` from the stream `σ` with error type `ε` -/
@@ -113,12 +115,13 @@ instance : OrElse (ParserT ε σ α m β) where
     catch _ => q ()
 
 /-- `first ps` tries parsers from the list `ps` until one succeeds -/
-def first (ps : List (ParserT ε σ α m β)) (combine : ε → ε → ε := fun _ => id) : ParserT ε σ α m β :=
-  let rec go : List (ParserT ε σ α m β) → ε → ParserT ε σ α m β
-  | [], e => throw e
-  | p :: ps, e =>
-    try withBacktracking p
-    catch f => go ps (combine e f)
-  do go ps (Error.unexpected (← getPosition) none)
+def first (ps : List (ParserT ε σ α m β)) (combine : ε → ε → ε := fun _ => id) : ParserT ε σ α m β := do
+  go ps (Error.unexpected (← getPosition) none)
+where
+  go : List (ParserT ε σ α m β) → ε → ParserT ε σ α m β
+    | [], e => throw e
+    | p :: ps, e =>
+      try withBacktracking p
+      catch f => go ps (combine e f)
 
 end Parser

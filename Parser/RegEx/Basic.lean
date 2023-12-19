@@ -10,18 +10,18 @@ namespace Parser
 
 /-- Type of regular expressions -/
 inductive RegEx : Type _ → Type _
-| /-- Character set -/
-  set : (α → Bool) → RegEx α
-| /-- Alternation -/
-  alt : RegEx α  → RegEx α → RegEx α
-| /-- Concatenation -/
-  cat : RegEx α → RegEx α → RegEx α
-| /-- Unbounded repetition -/
-  repMany : RegEx α → RegEx α
-| /-- Bounded repetition -/
-  repUpTo : Nat → RegEx α → RegEx α
-| /-- Grouping -/
-  group : RegEx α → RegEx α
+  /-- Character set -/
+  | set : (α → Bool) → RegEx α
+  /-- Alternation -/
+  | alt : RegEx α  → RegEx α → RegEx α
+  /-- Concatenation -/
+  | cat : RegEx α → RegEx α → RegEx α
+  /-- Unbounded repetition -/
+  | repMany : RegEx α → RegEx α
+  /-- Bounded repetition -/
+  | repUpTo : Nat → RegEx α → RegEx α
+  /-- Grouping -/
+  | group : RegEx α → RegEx α
 
 namespace RegEx
 
@@ -65,20 +65,28 @@ def repManyN (n : Nat) (e : RegEx α) :=
   | n+1 => cat e (repManyN n e)
 
 /-- Match group -/
-abbrev MatchGroup (α σ) [ Parser.Stream σ α] := Option (Parser.Stream.Position σ × Parser.Stream.Position σ)
+abbrev MatchGroup (α σ) [Parser.Stream σ α] := Option (Parser.Stream.Position σ × Parser.Stream.Position σ)
+
+abbrev MatchGroup.start [Parser.Stream σ α] : MatchGroup α σ → Option (Stream.Position σ)
+  | some (s, _) => some s
+  | none => none
+
+abbrev MatchGroup.stop [Parser.Stream σ α] : MatchGroup α σ → Option (Stream.Position σ)
+  | some (_, s) => some s
+  | none => none
 
 section
 variable {ε σ α β} [Parser.Stream σ α] [Parser.Error ε σ α] {m} [Monad m] [MonadExceptOf ε m]
 
 /-- Fold over a regex match from the right -/
 protected partial def foldr (f : α → β → β) : RegEx α → ParserT ε σ α m β → ParserT ε σ α m β
-| .set s, k => tokenFilter s >>= fun x => f x <$> k
-| .alt e₁ e₂, k => RegEx.foldr f e₁ k <|> RegEx.foldr f e₂ k
-| .cat e₁ e₂, k => RegEx.foldr f e₁ (RegEx.foldr f e₂ k)
-| .repUpTo 0 _, k => k
-| .repUpTo (n+1) e, k => RegEx.foldr f e (RegEx.foldr f (.repUpTo n e) k) <|> k
-| .repMany e, k => RegEx.foldr f e (RegEx.foldr f (.repMany e) k) <|> k
-| .group e, k => RegEx.foldr f e k
+  | .set s, k => tokenFilter s >>= fun x => f x <$> k
+  | .alt e₁ e₂, k => RegEx.foldr f e₁ k <|> RegEx.foldr f e₂ k
+  | .cat e₁ e₂, k => RegEx.foldr f e₁ (RegEx.foldr f e₂ k)
+  | .repUpTo 0 _, k => k
+  | .repUpTo (n+1) e, k => RegEx.foldr f e (RegEx.foldr f (.repUpTo n e) k) <|> k
+  | .repMany e, k => RegEx.foldr f e (RegEx.foldr f (.repMany e) k) <|> k
+  | .group e, k => RegEx.foldr f e k
 
 /-- `take re` parses tokens matching regex `re` returning the list of tokens, otherwise fails -/
 protected def take (re : RegEx α) : ParserT ε σ α m (List α) :=
@@ -86,17 +94,16 @@ protected def take (re : RegEx α) : ParserT ε σ α m (List α) :=
 
 /-- Parses tokens matching regex `re` returning all the matching groups -/
 protected partial def «match» (re : RegEx α) : ParserT ε σ α m (Array (MatchGroup α σ)) := do
-  let ms : Array (MatchGroup α σ) := mkArray re.depth none
-  loop re 0 ms
+  loop re 0 <| mkArray re.depth none
 where
   loop : RegEx α → Nat → Array (MatchGroup α σ) → ParserT ε σ α m (Array (MatchGroup α σ))
-  | .set s, _, ms => tokenFilter s *> return ms
-  | .alt e₁ e₂, lvl, ms => loop e₁ lvl ms <|> loop e₂ (lvl + e₁.depth) ms
-  | .cat e₁ e₂, lvl, ms => loop e₁ lvl ms >>= loop e₂ (lvl + e₁.depth)
-  | .repUpTo 0 _, _, ms => return ms
-  | .repUpTo (n+1) e, lvl, ms => loop e lvl ms >>= loop (.repUpTo n e) lvl <|> return ms
-  | .repMany e, lvl, ms => loop e lvl ms >>= loop (.repMany e) lvl <|> return ms
-  | .group e, lvl, ms => do
+    | .set s, _, ms => tokenFilter s *> return ms
+    | .alt e₁ e₂, lvl, ms => loop e₁ lvl ms <|> loop e₂ (lvl + e₁.depth) ms
+    | .cat e₁ e₂, lvl, ms => loop e₁ lvl ms >>= loop e₂ (lvl + e₁.depth)
+    | .repUpTo 0 _, _, ms => return ms
+    | .repUpTo (n+1) e, lvl, ms => loop e lvl ms >>= loop (.repUpTo n e) lvl <|> return ms
+    | .repMany e, lvl, ms => loop e lvl ms >>= loop (.repMany e) lvl <|> return ms
+    | .group e, lvl, ms => do
       let mut ms := ms
       for i in [lvl:ms.size] do ms := ms.set! i none
       let start ← Parser.getPosition

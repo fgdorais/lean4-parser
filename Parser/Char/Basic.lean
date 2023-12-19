@@ -10,7 +10,8 @@ namespace Parser.Char
 variable {ε σ m} [Parser.Stream σ Char] [Parser.Error ε σ Char] [Monad m] [MonadExceptOf ε m]
 
 /-- `char tk` accepts and returns character `tk`, otherwise fails -/
-@[inline] def char (tk : Char) : ParserT ε σ Char m Char :=
+@[inline]
+def char (tk : Char) : ParserT ε σ Char m Char :=
   withErrorMessage s!"expected {repr tk}" <| token tk
 
 /-- `chars tks` accepts and returns string `tks`, otherwise fails -/
@@ -40,23 +41,28 @@ def string [Parser.Error ε Substring Char] (tks : String) : ParserT ε Substrin
       throwUnexpected
 
 /-- Parse space (U+0020) -/
-@[inline] def space : ParserT ε σ Char m Char :=
+@[inline]
+def space : ParserT ε σ Char m Char :=
   withErrorMessage "expected space (U+0020)" <| token ' '
 
 /-- Parse horizontal tab (U+0009) -/
-@[inline] def tab : ParserT ε σ Char m Char :=
+@[inline]
+def tab : ParserT ε σ Char m Char :=
   withErrorMessage "expected horizontal tab (U+0009)" <| token '\t'
 
 /-- Parse line feed (U+000A) -/
-@[inline] def ASCII.lf : ParserT ε σ Char m Char :=
+@[inline]
+def ASCII.lf : ParserT ε σ Char m Char :=
   withErrorMessage "expected line feed (U+000A)" <| token '\n'
 
 /-- Parse carriage return (U+000D) -/
-@[inline] def ASCII.cr : ParserT ε σ Char m Char :=
+@[inline]
+def ASCII.cr : ParserT ε σ Char m Char :=
   withErrorMessage "expected carriage return (U+000D)" <| token '\r'
 
 /-- Parse end of line -/
-@[inline] def eol : ParserT ε σ Char m Char :=
+@[inline]
+def eol : ParserT ε σ Char m Char :=
   withErrorMessage "expected newline" do
     (ASCII.cr *> ASCII.lf) <|> ASCII.lf
 
