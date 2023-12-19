@@ -64,6 +64,9 @@ def repManyN (n : Nat) (e : RegEx α) :=
   | 0 => repMany e
   | n+1 => cat e (repManyN n e)
 
+/-- Match group -/
+abbrev MatchGroup (α σ) [ Parser.Stream σ α] := Option (Parser.Stream.Position σ × Parser.Stream.Position σ)
+
 section
 variable {ε σ α β} [Parser.Stream σ α] [Parser.Error ε σ α] {m} [Monad m] [MonadExceptOf ε m]
 
