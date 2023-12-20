@@ -38,6 +38,12 @@ protected def ParserT.run.{u} {ε σ : Type u} {α β m} [Parser.Stream σ α] [
   catch e =>
     return .error e
 
+/-- `BasicParserT σ α` monad transformer to parse tokens of type `α` from the stream `σ` with basic error handling -/
+abbrev BasicParserT (σ α) [Parser.Stream σ α] (m) := ParserT (Parser.Error.Simple σ α) σ α m
+
+/-- `SimpleParserT σ α` monad transformer to parse tokens of type `α` from the stream `σ` with simple error handling -/
+abbrev SimpleParserT (σ α) [Parser.Stream σ α] (m) := ParserT (Parser.Error.Simple σ α) σ α m
+
 /-- `Parser ε σ α` monad to parse tokens of type `α` from the stream `σ` with error type `ε` -/
 abbrev Parser (ε σ α) [Parser.Stream σ α] [Parser.Error ε σ α] := ParserT ε σ α (Except ε)
 
@@ -48,8 +54,8 @@ protected def Parser.run {ε σ α β} [Parser.Stream σ α] [Parser.Error ε σ
   | .ok v => v
   | .error e => .error e
 
-/-- `SimpleParserT σ α` monad transformer to parse tokens of type `α` from the stream `σ` with simple error handling -/
-abbrev SimpleParserT (σ α) [Parser.Stream σ α] (m) := ParserT (Parser.Error.Simple σ α) σ α m
+/-- `BasicParser σ α` monad to parse tokens of type `α` from the stream `σ` with basic error handling -/
+abbrev BasicParser (σ α) [Parser.Stream σ α] := Parser (Parser.Error.Simple σ α) σ α
 
 /-- `SimpleParser σ α` monad to parse tokens of type `α` from the stream `σ` with simple error handling -/
 abbrev SimpleParser (σ α) [Parser.Stream σ α] := Parser (Parser.Error.Simple σ α) σ α

@@ -14,7 +14,7 @@ namespace Roman
 open Parser Char
 
 /-- Roman parser monad -/
-protected abbrev Parser := SimpleParser Substring Char
+protected abbrev Parser := Parser Unit Substring Char
 
 /-- Parse a roman numeral -/
 protected def parse : Roman.Parser Nat := stepM >>= stepC >>= stepX >>= stepI
