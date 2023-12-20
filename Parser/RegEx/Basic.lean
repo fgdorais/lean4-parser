@@ -92,9 +92,17 @@ protected partial def foldr (f : α → β → β) : RegEx α → ParserT ε σ 
 protected def take (re : RegEx α) : ParserT ε σ α m (List α) :=
   re.foldr (.::.) (pure [])
 
-/-- Parses tokens matching regex `re` returning all the matching groups -/
+/-- `drop re` parses tokens matching regex `re`, otherwise fails -/
+protected def drop (re : RegEx α) : ParserT ε σ α m Unit :=
+  re.foldr (fun _ => id) (pure ())
+
+/-- `count re` parses tokens matching regex `re` returning the number of tokens, otherwise fails -/
+protected def count (re : RegEx α) : ParserT ε σ α m Nat :=
+  re.foldr (fun _ => Nat.succ) (pure 0)
+
+/-- Parses tokens matching regex `re` returning all the matching groups, otherwise fails -/
 protected partial def «match» (re : RegEx α) : ParserT ε σ α m (Array (MatchGroup α σ)) := do
-  loop re 0 <| mkArray re.depth none
+  loop re 0 (mkArray re.depth none)
 where
   loop : RegEx α → Nat → Array (MatchGroup α σ) → ParserT ε σ α m (Array (MatchGroup α σ))
     | .set s, _, ms => tokenFilter s *> return ms
