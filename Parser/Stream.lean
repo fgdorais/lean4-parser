@@ -17,6 +17,15 @@ attribute [reducible] Parser.Stream.Position
 
 namespace Parser.Stream
 
+/-- Stream segment -/
+def Segment (σ) [Parser.Stream σ α] := Stream.Position σ × Stream.Position σ
+
+/-- Start position of stream segment -/
+abbrev Segment.start [Parser.Stream σ α] (s : Segment σ) := s.1
+
+/-- Stop position of stream segment -/
+abbrev Segment.stop [Parser.Stream σ α] (s : Segment σ) := s.2
+
 /-- Wrapper to make a `Parser.Stream` from a core `Stream` -/
 @[nolint unusedArguments]
 def mkDefault (σ α) [Stream σ α] := σ
