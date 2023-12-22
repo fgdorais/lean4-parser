@@ -14,7 +14,7 @@ namespace Roman
 open Parser Char
 
 /-- Roman parser monad -/
-protected abbrev Parser := SimpleParser Substring Char
+protected abbrev Parser := Parser Unit Substring Char
 
 /-- Parse a roman numeral -/
 protected def parse : Roman.Parser Nat := stepM >>= stepC >>= stepX >>= stepI
@@ -48,7 +48,6 @@ end Roman
 
 /-- Read roman numeral from string -/
 def String.toNatRoman? (s : String) : Option Nat :=
-  match Parser.run (Roman.parse <* Parser.endOfInput) s.toSubstring with
+  match Parser.run (Roman.parse <* Parser.endOfInput) s with
   | .ok _ (n+1) => some (n+1)
   | _ => none
-

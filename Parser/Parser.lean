@@ -14,10 +14,12 @@ protected structure Parser.State (σ α : Type _) [Parser.Stream σ α] where
   /-- Whether the parser has consumed any input -/
   dirty : Bool := false
 
-/-- Parser result -/
+/-- Parser result type -/
 inductive Parser.Result (ε σ α : Type _)
-| ok : σ → α → Result ε σ α
-| error : ε → Result ε σ α
+  /-- Result: success -/
+  | ok : σ → α → Result ε σ α
+  /-- Result: error -/
+  | error : ε → Result ε σ α
 deriving Repr
 
 /-- `ParserT ε σ α` monad transformer to parse tokens of type `α` from the stream `σ` with error type `ε` -/
@@ -36,6 +38,12 @@ protected def ParserT.run.{u} {ε σ : Type u} {α β m} [Parser.Stream σ α] [
   catch e =>
     return .error e
 
+/-- `BasicParserT σ α` monad transformer to parse tokens of type `α` from the stream `σ` with basic error handling -/
+abbrev BasicParserT (σ α) [Parser.Stream σ α] (m) := ParserT (Parser.Error.Simple σ α) σ α m
+
+/-- `SimpleParserT σ α` monad transformer to parse tokens of type `α` from the stream `σ` with simple error handling -/
+abbrev SimpleParserT (σ α) [Parser.Stream σ α] (m) := ParserT (Parser.Error.Simple σ α) σ α m
+
 /-- `Parser ε σ α` monad to parse tokens of type `α` from the stream `σ` with error type `ε` -/
 abbrev Parser (ε σ α) [Parser.Stream σ α] [Parser.Error ε σ α] := ParserT ε σ α (Except ε)
 
@@ -46,8 +54,8 @@ protected def Parser.run {ε σ α β} [Parser.Stream σ α] [Parser.Error ε σ
   | .ok v => v
   | .error e => .error e
 
-/-- `SimpleParserT σ α` monad transformer to parse tokens of type `α` from the stream `σ` with simple error handling -/
-abbrev SimpleParserT (σ α) [Parser.Stream σ α] (m) := ParserT (Parser.Error.Simple σ α) σ α m
+/-- `BasicParser σ α` monad to parse tokens of type `α` from the stream `σ` with basic error handling -/
+abbrev BasicParser (σ α) [Parser.Stream σ α] := Parser (Parser.Error.Simple σ α) σ α
 
 /-- `SimpleParser σ α` monad to parse tokens of type `α` from the stream `σ` with simple error handling -/
 abbrev SimpleParser (σ α) [Parser.Stream σ α] := Parser (Parser.Error.Simple σ α) σ α
@@ -113,12 +121,13 @@ instance : OrElse (ParserT ε σ α m β) where
     catch _ => q ()
 
 /-- `first ps` tries parsers from the list `ps` until one succeeds -/
-def first (ps : List (ParserT ε σ α m β)) (combine : ε → ε → ε := fun _ => id) : ParserT ε σ α m β :=
-  let rec go : List (ParserT ε σ α m β) → ε → ParserT ε σ α m β
-  | [], e => throw e
-  | p :: ps, e =>
-    try withBacktracking p
-    catch f => go ps (combine e f)
-  do go ps (Error.unexpected (← getPosition) none)
+def first (ps : List (ParserT ε σ α m β)) (combine : ε → ε → ε := fun _ => id) : ParserT ε σ α m β := do
+  go ps (Error.unexpected (← getPosition) none)
+where
+  go : List (ParserT ε σ α m β) → ε → ParserT ε σ α m β
+    | [], e => throw e
+    | p :: ps, e =>
+      try withBacktracking p
+      catch f => go ps (combine e f)
 
 end Parser

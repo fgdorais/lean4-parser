@@ -65,16 +65,17 @@ structure OfList (α : Type _) where
 
 /-- Set position -/
 def OfList.setPosition {α} (s : OfList α) (p : Nat) : OfList α :=
-  let rec fwd : Nat → OfList α → OfList α
-  | k+1, ⟨x :: rest, past⟩ => fwd k ⟨rest, x :: past⟩
-  | _, s => s
-  let rec rev : Nat → OfList α → OfList α
-  | k+1, ⟨rest, x :: past⟩ => rev k ⟨x :: rest, past⟩
-  | _, s => s
   if s.past.length < p then
     fwd (p - s.past.length) s
   else
     rev (s.past.length - p) s
+where
+  fwd : Nat → OfList α → OfList α
+    | k+1, ⟨x :: rest, past⟩ => fwd k ⟨rest, x :: past⟩
+    | _, s => s
+  rev : Nat → OfList α → OfList α
+    | k+1, ⟨rest, x :: past⟩ => rev k ⟨x :: rest, past⟩
+    | _, s => s
 
 /-- Make a `Parser.Stream` from a `List` -/
 def mkOfList {α} (data : List α) (pos : Nat := 0) : OfList α :=

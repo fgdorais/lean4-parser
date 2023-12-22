@@ -19,39 +19,38 @@ def ByteArray.toByteSubarray (bs : ByteArray) : ByteSubarray where
   size := bs.size
 
 namespace ByteSubarray
-variable (bs : ByteSubarray)
 
 @[inline]
-def extract : ByteArray := bs.toByteArray.extract bs.start bs.stop
+def extract (bs : ByteSubarray) : ByteArray := bs.toByteArray.extract bs.start bs.stop
 
 @[inline]
-def get (i : Fin bs.size) : UInt8 :=
+def get (bs : ByteSubarray) (i : Fin bs.size) : UInt8 :=
   have : bs.start + i.val < bs.toByteArray.size := calc
     _ < bs.start + bs.size := Nat.add_lt_add_left i.isLt bs.start
     _ ≤ bs.toByteArray.size := bs.valid
-  bs.toByteArray[bs.start + i.val]'this
+  bs.toByteArray[bs.start + i.val]
 
 instance : GetElem ByteSubarray Nat UInt8 fun bs i => i < bs.size where
   getElem xs i h := xs.get ⟨i, h⟩
 
 @[inline]
-def get? (i : Nat) : Option UInt8 :=
+def get? (bs : ByteSubarray) (i : Nat) : Option UInt8 :=
   if h : i < bs.size then some (bs.get ⟨i, h⟩) else none
 
 @[inline]
-def getD (i : Nat) (default : UInt8) : UInt8 :=
+def getD (bs : ByteSubarray) (i : Nat) (default : UInt8) : UInt8 :=
   if h : i < bs.size then bs.get ⟨i, h⟩ else default
 
-abbrev get! (i : Nat) : UInt8 := getD bs i default
+abbrev get! (bs : ByteSubarray) (i : Nat) : UInt8 := getD bs i default
 
-def popFront : ByteSubarray :=
+def popFront (bs : ByteSubarray) : ByteSubarray :=
   if h : bs.size ≥ 1 then
     have : (bs.start+1) + (bs.size-1) = bs.start + bs.size := by
       rw [Nat.add_assoc, Nat.add_sub_cancel' h]
     {bs with start := bs.start+1, size := bs.size-1, valid := by rw [this]; exact bs.valid}
   else bs
 
-def slice (start stop : Nat) (h : start ≤ stop ∧ stop ≤ bs.size := by simp_arith [*]) : ByteSubarray where
+def slice (bs : ByteSubarray) (start stop : Nat) (h : start ≤ stop ∧ stop ≤ bs.size := by simp_arith [*]) : ByteSubarray where
   toByteArray := bs.toByteArray
   start := bs.start + start
   size := stop - start
@@ -61,23 +60,28 @@ def slice (start stop : Nat) (h : start ≤ stop ∧ stop ≤ bs.size := by simp
     apply Nat.le_trans _ bs.valid
     apply Nat.add_le_add_left h.2
 
-@[simp] theorem size_slice (start stop : Nat) (h : start ≤ stop ∧ stop ≤ bs.size := by simp_arith [*]) : (bs.slice start stop h).size = stop - start := rfl
+@[simp]
+theorem size_slice (bs : ByteSubarray) (start stop : Nat) (h : start ≤ stop ∧ stop ≤ bs.size := by simp_arith [*]) : (bs.slice start stop h).size = stop - start := rfl
 
-@[inline] unsafe def forInUnsafe {α m} [Monad m] (bs : ByteSubarray) (a : α) (f : UInt8 → α → m (ForInStep α)) : m α :=
-  let sz := USize.ofNat bs.stop
-  let rec @[specialize] loop (i : USize) (a : α) : m α := do
-    if i < sz then
+@[inline]
+unsafe def forInUnsafe {α m} [Monad m] (bs : ByteSubarray) (a : α) (f : UInt8 → α → m (ForInStep α)) : m α :=
+  loop (USize.ofNat bs.start) a
+where
+  @[specialize]
+  loop (i : USize) (a : α) : m α := do
+    if i < USize.ofNat bs.stop then
       let b := bs.uget i lcProof
       match (← f b a) with
       | ForInStep.done  a => pure a
       | ForInStep.yield a => loop (i+1) a
     else
       pure a
-  loop (USize.ofNat bs.start) a
 
 @[implemented_by ByteSubarray.forInUnsafe]
 protected def forIn {α m} [Monad m] (bs : ByteSubarray) (a : α) (f : UInt8 → α → m (ForInStep α)) : m α :=
-  let rec @[specialize] loop (i : Nat) (a : α) : m α := do
+  loop bs.start a
+where
+  loop (i : Nat) (a : α) : m α := do
     if h : i < bs.size then
       let b := bs.get ⟨i, h⟩
       match (← f b a) with
@@ -85,7 +89,6 @@ protected def forIn {α m} [Monad m] (bs : ByteSubarray) (a : α) (f : UInt8 →
       | ForInStep.yield a => loop (i+1) a
     else
       pure a
-  loop bs.start a
 termination_by loop => bs.size - i
 
 instance : ForIn m ByteSubarray UInt8 where
