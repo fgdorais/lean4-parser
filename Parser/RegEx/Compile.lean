@@ -133,10 +133,27 @@ where
       else
         return .set (s.elem .)
 
+  tokEscape : REParser Char := do
+    match ← anyToken with
+    | 't' => return '\t'
+    | 'n' => return '\n'
+    | 'r' => return '\r'
+    | 'u' =>
+      let n ← (·.val) <$> Parser.Char.ASCII.hexDigit
+      let n ← ((n <<< 4) + ·.val) <$> Parser.Char.ASCII.hexDigit
+      let n ← ((n <<< 4) + ·.val) <$> Parser.Char.ASCII.hexDigit
+      let n ← ((n <<< 4) + ·.val) <$> Parser.Char.ASCII.hexDigit
+      return Char.ofNat n
+    | 'x' =>
+      let n ← (·.val) <$> Parser.Char.ASCII.hexDigit
+      let n ← ((n <<< 4) + ·.val) <$> Parser.Char.ASCII.hexDigit
+      return Char.ofNat n
+    | c => return c
+
   tok : REParser (RegEx Char) := do
     let special := ['.', '?', '*', '+', '|', '(', ')', '{', '}', '[', ']']
     let c ← tokenFilter (!special.elem .)
-    let c ← if c == '\\' then tokenFilter (('\\' :: special).elem .) else pure c
+    let c ← if c == '\\' then tokEscape else pure c
     return .set (. == c)
 
 end
