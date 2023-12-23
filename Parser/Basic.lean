@@ -54,13 +54,6 @@ def tokenList [BEq α] (tks : List α) : ParserT ε σ α m (List α) :=
       acc := acc.push (← token tk)
     return acc.toList
 
-/-- `capture p` parses `p` and returns the output of `p` with the corresponding stream segment -/
-def capture (p : ParserT ε σ α m β) : ParserT ε σ α m (β × Stream.Segment σ) := do
-  let start ← getPosition
-  let x ← p
-  let stop ← getPosition
-  return (x, start, stop)
-
 /-- `lookAhead p` parses `p` without consuming any input -/
 def lookAhead (p : ParserT ε σ α m β) : ParserT ε σ α m β := do
   let savePos ← getPosition

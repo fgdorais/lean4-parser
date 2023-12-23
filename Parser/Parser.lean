@@ -24,7 +24,7 @@ deriving Repr
 
 /-- `ParserT ε σ α` monad transformer to parse tokens of type `α` from the stream `σ` with error type `ε` -/
 @[nolint unusedArguments]
-def ParserT.{u} (ε σ : Type u) (α : Type _) (m : Type _ → Type _) [Parser.Stream σ α] [Parser.Error ε σ α] :=
+def ParserT (ε σ α) (m : Type _ → Type _) [Parser.Stream σ α] [Parser.Error ε σ α] :=
   StateT (Parser.State σ α) m
 instance (ε σ α m) [Parser.Stream σ α] [Parser.Error ε σ α] [Monad m] : Monad (ParserT ε σ α m) := inferInstanceAs (Monad (StateT (Parser.State σ α) m))
 instance (ε σ α m) [Parser.Stream σ α] [Parser.Error ε σ α] [Monad m] [MonadExceptOf ε m] : MonadExceptOf ε (ParserT ε σ α m) := inferInstanceAs (MonadExceptOf ε (StateT (Parser.State σ α) m))
@@ -112,6 +112,13 @@ def withBacktracking (p : ParserT ε σ α m β) : ParserT ε σ α m β := do
   catch e =>
     setPosition savePos false
     throw e
+
+/-- `withCapture p` parses `p` and returns the output of `p` with the corresponding stream segment -/
+def withCapture (p : ParserT ε σ α m β) : ParserT ε σ α m (β × Stream.Segment σ) := do
+  let startPos ← getPosition
+  let x ← p
+  let stopPos ← getPosition
+  return (x, startPos, stopPos)
 
 /- Override default `OrElse` so that the first consumes no input when it fails -/
 @[inline]
