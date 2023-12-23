@@ -32,10 +32,11 @@ import Parser.RegEx.Basic
   * A single character matches itself with the exception of the special characters: `.`, `?`, `*`,
     `+`, `|`, `\`, `(`, `)`, `{`, `}`, `[`, `]`. These special characters can be matched by
     preceding them with an escape character `\`.
-  * `[s]` matches one character from the string `s`, the characters `\`, `[`, `]` must be preceded
-    by an escape character `\` within `s`.
-  * `[^s]` matches one character not in the string `s`, the characters `\`, `[`, `]` must be
-    preceded by an escape character `\` within `s`.
+  * `[c]` matches one character from the class `c`.
+  * `[^c]` matches one character not in the class `c`.
+
+  Character classes support single characters and character ranges. The special characters `\`,
+  `[`, `]` must be preceded by an escape character `\` within a class.
 -/
 
 
