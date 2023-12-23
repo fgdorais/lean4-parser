@@ -118,7 +118,7 @@ where
   setLoop (cs : List Char) := do
     match ← option? <| tokenFilter (!['[', ']'].elem .) with
     | some c =>
-      let c ← if c == '\\' then tokenFilter (['\\', '[', ']'].elem .) else pure c
+      let c ← if c == '\\' then esc else pure c
       setLoop (c :: cs)
     | none => return cs
 
@@ -136,8 +136,25 @@ where
   tok : REParser (RegEx Char) := do
     let special := ['.', '?', '*', '+', '|', '(', ')', '{', '}', '[', ']']
     let c ← tokenFilter (!special.elem .)
-    let c ← if c == '\\' then tokenFilter (('\\' :: special).elem .) else pure c
+    let c ← if c == '\\' then esc else pure c
     return .set (. == c)
+
+  esc : REParser Char := do
+    match ← anyToken with
+    | 't' => return '\t'
+    | 'n' => return '\n'
+    | 'r' => return '\r'
+    | 'u' =>
+      let n ← (·.val) <$> Parser.Char.ASCII.hexDigit
+      let n ← ((n <<< 4) + ·.val) <$> Parser.Char.ASCII.hexDigit
+      let n ← ((n <<< 4) + ·.val) <$> Parser.Char.ASCII.hexDigit
+      let n ← ((n <<< 4) + ·.val) <$> Parser.Char.ASCII.hexDigit
+      return Char.ofNat n
+    | 'x' =>
+      let n ← (·.val) <$> Parser.Char.ASCII.hexDigit
+      let n ← ((n <<< 4) + ·.val) <$> Parser.Char.ASCII.hexDigit
+      return Char.ofNat n
+    | c => return c
 
 end
 
