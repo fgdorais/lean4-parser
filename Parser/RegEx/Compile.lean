@@ -115,23 +115,37 @@ where
       let _ ← char ')'
       return if n then e else .group e
 
-  setLoop (cs : List Char) := do
+  -- setLoop (cs : List Char) := do
+  --   match ← option? <| tokenFilter (!['[', ']'].elem .) with
+  --   | some c =>
+  --     let c ← if c == '\\' then esc else pure c
+  --     setLoop (c :: cs)
+  --   | none => return cs
+
+  setLoop (filter : Char → Bool) : REParser (Char → Bool) := do
     match ← option? <| tokenFilter (!['[', ']'].elem .) with
     | some c =>
       let c ← if c == '\\' then esc else pure c
-      setLoop (c :: cs)
-    | none => return cs
+      let f ← try withBacktracking do
+          let _ ← char '-'
+          let c' ← tokenFilter (!['[', ']'].elem .)
+          let c' ← if c' == '\\' then esc else pure c'
+          pure <| fun x => c ≤ x && x ≤ c'
+        catch _ =>
+          pure <| fun x => x == c
+      setLoop fun x => filter x || f x
+    | none => return filter
 
   set : REParser (RegEx Char) :=
     withBacktracking do
       let _ ← char '['
       let n ← test (char '^')
-      let s ← setLoop []
+      let f ← setLoop fun _ => false
       let _ ← char ']'
       if n then
-        return .set (!s.elem .)
+        return .set (! f .)
       else
-        return .set (s.elem .)
+        return .set (f .)
 
   tok : REParser (RegEx Char) := do
     let special := ['.', '?', '*', '+', '|', '(', ')', '{', '}', '[', ']']
