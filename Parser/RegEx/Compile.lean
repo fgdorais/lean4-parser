@@ -35,8 +35,8 @@ import Parser.RegEx.Basic
   * `[c]` matches one character from the class `c`.
   * `[^c]` matches one character not in the class `c`.
 
-  Character classes support single characters and character ranges. The special characters `\`,
-  `[`, `]` must be preceded by an escape character `\` within a class.
+  Character classes support single characters and character ranges. The special characters `-`,
+  `[`, `\`, `]` must be preceded by an escape character `\` within a class.
 -/
 
 
@@ -116,20 +116,13 @@ where
       let _ ← char ')'
       return if n then e else .group e
 
-  -- setLoop (cs : List Char) := do
-  --   match ← option? <| tokenFilter (!['[', ']'].elem .) with
-  --   | some c =>
-  --     let c ← if c == '\\' then esc else pure c
-  --     setLoop (c :: cs)
-  --   | none => return cs
-
   setLoop (filter : Char → Bool) : REParser (Char → Bool) := do
-    match ← option? <| tokenFilter (!['[', ']'].elem .) with
+    match ← option? <| tokenFilter (!['-', '[', ']'].elem .) with
     | some c =>
       let c ← if c == '\\' then esc else pure c
       let f ← try withBacktracking do
           let _ ← char '-'
-          let c' ← tokenFilter (!['[', ']'].elem .)
+          let c' ← tokenFilter (!['-', '[', ']'].elem .)
           let c' ← if c' == '\\' then esc else pure c'
           pure <| fun x => c ≤ x && x ≤ c'
         catch _ =>
