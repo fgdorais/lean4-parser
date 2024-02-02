@@ -32,10 +32,11 @@ import Parser.RegEx.Basic
   * A single character matches itself with the exception of the special characters: `.`, `?`, `*`,
     `+`, `|`, `\`, `(`, `)`, `{`, `}`, `[`, `]`. These special characters can be matched by
     preceding them with an escape character `\`.
-  * `[s]` matches one character from the string `s`, the characters `\`, `[`, `]` must be preceded
-    by an escape character `\` within `s`.
-  * `[^s]` matches one character not in the string `s`, the characters `\`, `[`, `]` must be
-    preceded by an escape character `\` within `s`.
+  * `[c]` matches one character from the class `c`.
+  * `[^c]` matches one character not in the class `c`.
+
+  Character classes support single characters and character ranges. The special characters `-`,
+  `[`, `\`, `]` must be preceded by an escape character `\` within a class.
 -/
 
 
@@ -115,29 +116,53 @@ where
       let _ ← char ')'
       return if n then e else .group e
 
-  setLoop (cs : List Char) := do
-    match ← option? <| tokenFilter (!['[', ']'].elem .) with
+  setLoop (filter : Char → Bool) : REParser (Char → Bool) := do
+    match ← option? <| tokenFilter (!['-', '[', ']'].elem .) with
     | some c =>
-      let c ← if c == '\\' then tokenFilter (['\\', '[', ']'].elem .) else pure c
-      setLoop (c :: cs)
-    | none => return cs
+      let c ← if c == '\\' then esc else pure c
+      let f ← try withBacktracking do
+          let _ ← char '-'
+          let c' ← tokenFilter (!['-', '[', ']'].elem .)
+          let c' ← if c' == '\\' then esc else pure c'
+          pure <| fun x => c ≤ x && x ≤ c'
+        catch _ =>
+          pure <| fun x => x == c
+      setLoop fun x => filter x || f x
+    | none => return filter
 
   set : REParser (RegEx Char) :=
     withBacktracking do
       let _ ← char '['
       let n ← test (char '^')
-      let s ← setLoop []
+      let f ← setLoop fun _ => false
       let _ ← char ']'
       if n then
-        return .set (!s.elem .)
+        return .set (! f .)
       else
-        return .set (s.elem .)
+        return .set (f .)
 
   tok : REParser (RegEx Char) := do
     let special := ['.', '?', '*', '+', '|', '(', ')', '{', '}', '[', ']']
     let c ← tokenFilter (!special.elem .)
-    let c ← if c == '\\' then tokenFilter (('\\' :: special).elem .) else pure c
+    let c ← if c == '\\' then esc else pure c
     return .set (. == c)
+
+  esc : REParser Char := do
+    match ← anyToken with
+    | 't' => return '\t'
+    | 'n' => return '\n'
+    | 'r' => return '\r'
+    | 'u' =>
+      let n ← (·.val) <$> Parser.Char.ASCII.hexDigit
+      let n ← ((n <<< 4) + ·.val) <$> Parser.Char.ASCII.hexDigit
+      let n ← ((n <<< 4) + ·.val) <$> Parser.Char.ASCII.hexDigit
+      let n ← ((n <<< 4) + ·.val) <$> Parser.Char.ASCII.hexDigit
+      return Char.ofNat n
+    | 'x' =>
+      let n ← (·.val) <$> Parser.Char.ASCII.hexDigit
+      let n ← ((n <<< 4) + ·.val) <$> Parser.Char.ASCII.hexDigit
+      return Char.ofNat n
+    | c => return c
 
 end
 

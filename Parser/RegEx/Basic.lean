@@ -64,17 +64,6 @@ def repManyN (n : Nat) (e : RegEx α) :=
   | 0 => repMany e
   | n+1 => cat e (repManyN n e)
 
-/-- Match group -/
-abbrev MatchGroup (α σ) [Parser.Stream σ α] := Option (Parser.Stream.Position σ × Parser.Stream.Position σ)
-
-abbrev MatchGroup.start [Parser.Stream σ α] : MatchGroup α σ → Option (Stream.Position σ)
-  | some (s, _) => some s
-  | none => none
-
-abbrev MatchGroup.stop [Parser.Stream σ α] : MatchGroup α σ → Option (Stream.Position σ)
-  | some (_, s) => some s
-  | none => none
-
 section
 variable {ε σ α β} [Parser.Stream σ α] [Parser.Error ε σ α] {m} [Monad m] [MonadExceptOf ε m]
 
@@ -100,11 +89,11 @@ protected def drop (re : RegEx α) : ParserT ε σ α m Unit :=
 protected def count (re : RegEx α) : ParserT ε σ α m Nat :=
   re.foldr (fun _ => Nat.succ) (pure 0)
 
-/-- Parses tokens matching regex `re` returning all the matching groups, otherwise fails -/
-protected partial def «match» (re : RegEx α) : ParserT ε σ α m (Array (MatchGroup α σ)) := do
+/-- Parses tokens matching regex `re` returning all the matching group segments, otherwise fails -/
+protected partial def «match» (re : RegEx α) : ParserT ε σ α m (Array (Option (Stream.Segment σ))) := do
   loop re 0 (mkArray re.depth none)
 where
-  loop : RegEx α → Nat → Array (MatchGroup α σ) → ParserT ε σ α m (Array (MatchGroup α σ))
+  loop : RegEx α → Nat → Array (Option (Stream.Segment σ)) → ParserT ε σ α m (Array (Option (Stream.Segment σ)))
     | .set s, _, ms => tokenFilter s *> return ms
     | .alt e₁ e₂, lvl, ms => loop e₁ lvl ms <|> loop e₂ (lvl + e₁.depth) ms
     | .cat e₁ e₂, lvl, ms => loop e₁ lvl ms >>= loop e₂ (lvl + e₁.depth)
