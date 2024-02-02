@@ -89,7 +89,7 @@ where
       | ForInStep.yield a => loop (i+1) a
     else
       pure a
-termination_by loop => bs.size - i
+termination_by bs.size - i
 
 instance : ForIn m ByteSubarray UInt8 where
   forIn := ByteSubarray.forIn
