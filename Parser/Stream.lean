@@ -52,8 +52,8 @@ instance (α) : Parser.Stream (Subarray α) α where
   getPosition s := s.start
   setPosition s p :=
     if h : p ≤ s.stop
-    then {s with start := p, h₁ := h}
-    else {s with start := s.stop, h₁ := Nat.le_refl s.stop}
+    then {s with start := p, start_le_stop := h}
+    else {s with start := s.stop, start_le_stop := Nat.le_refl s.stop}
 
 @[reducible]
 instance : Parser.Stream ByteSubarray UInt8 where
