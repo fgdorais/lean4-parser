@@ -1,0 +1,15 @@
+name = "Parser"
+defaultTargets = ["Parser"]
+
+[[require]]
+name = "std"
+git = "https://github.com/leanprover/std4"
+rev = "main"
+
+[[require]]
+name = "UnicodeBasic"
+git = "https://github.com/fgdorais/lean4-unicode-basic"
+rev = "main"
+
+[[lean_lib]]
+name = "Parser"
