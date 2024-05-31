@@ -282,4 +282,14 @@ def sepEndBy1 (sep : ParserT ε σ α m γ) (p : ParserT ε σ α m β) : Parser
 def sepEndBy (sep : ParserT ε σ α m γ) (p : ParserT ε σ α m α) : ParserT ε σ α m (Array α) :=
   sepBy sep p <* optional sep
 
+/-- `sepNoEndBy1 p sep` parses one or more occurrences of `p`, separated `sep` but no trailing `sep`, returns an array of values returned by `p` -/
+@[inline]
+def sepNoEndBy1 (sep : ParserT ε σ α m γ) (p : ParserT ε σ α m β) : ParserT ε σ α m (Array β) :=
+  sepBy1 sep p <* withErrorMessage "unexpected trailing separator" (notFollowedBy sep)
+
+/-- `sepNoEndBy p sep` parses zero or more occurrences of `p`, separated `sep` but no trailing `sep`, returns an array of values returned by `p` -/
+@[inline]
+def sepNoEndBy (sep : ParserT ε σ α m γ) (p : ParserT ε σ α m β) : ParserT ε σ α m (Array β) :=
+  sepBy sep p <* withErrorMessage "unexpected trailing separator" (notFollowedBy sep)
+
 end Parser
