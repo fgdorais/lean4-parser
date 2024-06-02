@@ -70,7 +70,7 @@ def getPosition : ParserT ε σ α m (Stream.Position σ) :=
 
 /-- Set stream position of parser -/
 @[inline]
-def setPosition (pos : Stream.Position σ) : ParserT ε σ α m Unit := do
+def setPosition (pos : Stream.Position σ) : ParserT ε σ α m PUnit := do
   StateT.set <| Stream.setPosition (← StateT.get) pos
 
 /-- Throw error on unexpected input -/

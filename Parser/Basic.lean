@@ -67,7 +67,7 @@ def lookAhead (p : ParserT ε σ α m β) : ParserT ε σ α m β := do
 
 /-- `notFollowedBy p` succeeds only if `p` fails -/
 @[inline]
-def notFollowedBy (p : ParserT ε σ α m β) : ParserT ε σ α m Unit := do
+def notFollowedBy (p : ParserT ε σ α m β) : ParserT ε σ α m PUnit := do
   try
     let _ ← lookAhead p
   catch _ =>
@@ -81,7 +81,7 @@ def anyToken : ParserT ε σ α m α :=
 
 /-- `endOfInput` succeeds only when there is no input left -/
 @[inline]
-def endOfInput : ParserT ε σ α m Unit :=
+def endOfInput : ParserT ε σ α m PUnit :=
   notFollowedBy anyToken
 
 /-- `peek` returns the next token, without consuming any input -/
@@ -109,7 +109,7 @@ def option? (p : ParserT ε σ α m β) : ParserT ε σ α m (Option β) :=
 
 /-- `optional p` tries to parse `p`, ignoring the output, never fails -/
 @[inline]
-def optional (p : ParserT ε σ α m β) : ParserT ε σ α m Unit :=
+def optional (p : ParserT ε σ α m β) : ParserT ε σ α m PUnit :=
   option! (p *> return)
 
 /-- `test p` returns `true` if `p` succeeds and `false` otherwise, never fails -/
@@ -184,14 +184,14 @@ where
 
 /-- `drop n p` parses exactly `n` occurrences of `p`, ignoring all outputs from `p` -/
 @[inline]
-def drop (n : Nat) (p : ParserT ε σ α m β) : ParserT ε σ α m Unit :=
+def drop (n : Nat) (p : ParserT ε σ α m β) : ParserT ε σ α m PUnit :=
   match n with
   | 0 => return
   | n+1 => p *> drop n p
 
 /-- `dropUpTo n p` parses up to `n` occurrences of `p`, ignoring all outputs from `p` -/
 @[inline]
-def dropUpTo (n : Nat) (p : ParserT ε σ α m β) : ParserT ε σ α m Unit :=
+def dropUpTo (n : Nat) (p : ParserT ε σ α m β) : ParserT ε σ α m PUnit :=
   match n with
   | 0 => return
   | n+1 => do
@@ -201,17 +201,17 @@ def dropUpTo (n : Nat) (p : ParserT ε σ α m β) : ParserT ε σ α m Unit :=
 
 /-- `dropMany p` parses zero or more occurrences of `p` until it fails, ignoring all outputs from `p` -/
 @[inline]
-def dropMany (p : ParserT ε σ α m β) : ParserT ε σ α m Unit :=
+def dropMany (p : ParserT ε σ α m β) : ParserT ε σ α m PUnit :=
   foldl (Function.const β) () p
 
 /-- `dropMany1 p` parses one or more occurrences of `p` until it fails, ignoring all outputs from `p` -/
 @[inline]
-def dropMany1 (p : ParserT ε σ α m β) : ParserT ε σ α m Unit :=
+def dropMany1 (p : ParserT ε σ α m β) : ParserT ε σ α m PUnit :=
   p *> foldl (Function.const β) () p
 
 /-- `dropManyN n p` parses `n` or more occurrences of `p` until it fails, ignoring all outputs from `p` -/
 @[inline]
-def dropManyN (n : Nat) (p : ParserT ε σ α m β) : ParserT ε σ α m Unit :=
+def dropManyN (n : Nat) (p : ParserT ε σ α m β) : ParserT ε σ α m PUnit :=
   drop n p *> foldl (Function.const β) () p
 
 /-- `dropUntil stop p` runs `p` until `stop` succeeds, returns the output of `stop` ignoring all outputs from `p` -/
