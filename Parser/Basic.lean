@@ -9,14 +9,14 @@ import Parser.Parser
 import Parser.Stream
 
 namespace Parser
-variable {ε σ τ α β} [Parser.Stream σ τ] [Parser.Error ε σ τ] {m} [Monad m] [MonadExceptOf ε m]
+variable {ε σ τ α β} [Parser.Stream σ τ] [Parser.Error ε σ τ] {m} [Monad m]
 
 /-- `tokenAux next?` reads a token from the stream using `next?` -/
 @[inline]
 def tokenAux (next? : σ → Option (τ × σ)) : ParserT ε σ τ m τ := do
-  match next? (← StateT.get) with
+  match next? (← getStream) with
   | some (tok, stream) =>
-    StateT.set stream
+    let _ ← setStream stream
     return tok
   | none => throwUnexpected
 

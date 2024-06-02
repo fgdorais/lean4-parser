@@ -65,7 +65,7 @@ def repManyN (n : Nat) (e : RegEx α) :=
   | n+1 => cat e (repManyN n e)
 
 section
-variable {ε σ α β} [Parser.Stream σ α] [Parser.Error ε σ α] {m} [Monad m] [MonadExceptOf ε m]
+variable {ε σ α β} [Parser.Stream σ α] [Parser.Error ε σ α] {m} [Monad m]
 
 /-- Fold over a regex match from the right -/
 protected partial def foldr (f : α → β → β) : RegEx α → ParserT ε σ α m β → ParserT ε σ α m β
