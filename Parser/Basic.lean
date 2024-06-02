@@ -279,7 +279,7 @@ def sepEndBy1 (sep : ParserT ε σ τ m β) (p : ParserT ε σ τ m α) : Parser
 
 /-- `sepEndBy p sep` parses zero or more occurrences of `p`, separated and optionally ended by `sep`, returns an array of values returned by `p` -/
 @[inline]
-def sepEndBy (sep : ParserT ε σ τ m β) (p : ParserT ε σ τ m τ) : ParserT ε σ τ m (Array τ) :=
+def sepEndBy (sep : ParserT ε σ τ m β) (p : ParserT ε σ τ m α) : ParserT ε σ τ m (Array α) :=
   sepBy sep p <* optional sep
 
 /-- `sepNoEndBy1 p sep` parses one or more occurrences of `p`, separated `sep` but no trailing `sep`, returns an array of values returned by `p` -/
