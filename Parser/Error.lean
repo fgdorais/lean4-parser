@@ -7,9 +7,9 @@ import Parser.Prelude
 import Parser.Stream
 
 /-- Parser error class -/
-protected class Parser.Error (ε σ : Type _) (α : outParam (Type _)) [Parser.Stream σ α] where
+protected class Parser.Error (ε σ : Type _) (τ : outParam (Type _)) [Parser.Stream σ τ] where
   /-- Unexpected input -/
-  unexpected : Stream.Position σ → Option α → ε
+  unexpected : Stream.Position σ → Option τ → ε
   /-- Add error message -/
   addMessage : ε → Stream.Position σ → String → ε
 
@@ -18,31 +18,31 @@ namespace Parser.Error
 /-- Trivial error type -/
 abbrev Trivial := Unit
 
-instance (σ α) [Parser.Stream σ α] : Parser.Error Trivial σ α where
+instance (σ τ) [Parser.Stream σ τ] : Parser.Error Trivial σ τ where
   unexpected _ _ := ()
   addMessage e _ _ := e
 
 /-- Basic error type -/
-abbrev Basic (σ α) [Parser.Stream σ α] := Parser.Stream.Position σ × Option α
+abbrev Basic (σ τ) [Parser.Stream σ τ] := Parser.Stream.Position σ × Option τ
 
-instance (σ α) [Parser.Stream σ α] : Parser.Error (Basic σ α) σ α where
+instance (σ τ) [Parser.Stream σ τ] : Parser.Error (Basic σ τ) σ τ where
   unexpected p t := (p, t)
   addMessage e _ _ := e
 
-instance (σ α) [Repr α] [Parser.Stream σ α] [Repr (Parser.Stream.Position σ)] : ToString (Basic σ α) where
+instance (σ τ) [Repr τ] [Parser.Stream σ τ] [Repr (Parser.Stream.Position σ)] : ToString (Basic σ τ) where
   toString
     | (pos, some tok) => s!"unexpected input {repr tok} at {repr pos}"
     | (pos, none) => s!"unexpected input at {repr pos}"
 
 /-- Simple error type -/
-inductive Simple (σ α) [Parser.Stream σ α]
+inductive Simple (σ τ) [Parser.Stream σ τ]
   /-- Unexpected token at position -/
-  | unexpected : Stream.Position σ → Option α → Simple σ α
+  | unexpected : Stream.Position σ → Option τ → Simple σ τ
   /-- Add error message at position -/
-  | addMessage : Simple σ α → Stream.Position σ → String → Simple σ α
+  | addMessage : Simple σ τ → Stream.Position σ → String → Simple σ τ
 
 -- The derive handler for `Repr` fails, this is a workaround.
-private def Simple.reprPrec {σ α} [Parser.Stream σ α] [Repr α] [Repr (Stream.Position σ)] : Simple σ α → Nat → Std.Format
+private def Simple.reprPrec {σ τ} [Parser.Stream σ τ] [Repr τ] [Repr (Stream.Position σ)] : Simple σ τ → Nat → Std.Format
   | unexpected pos a, prec =>
     Repr.addAppParen
       (Std.Format.group
@@ -66,18 +66,18 @@ private def Simple.reprPrec {σ α} [Parser.Stream σ α] [Repr α] [Repr (Strea
           reprArg msg)))
       prec
 
-instance (σ α) [Parser.Stream σ α] [Repr α] [Repr (Stream.Position σ)] : Repr (Simple σ α) where
+instance (σ τ) [Parser.Stream σ τ] [Repr τ] [Repr (Stream.Position σ)] : Repr (Simple σ τ) where
   reprPrec := Simple.reprPrec
 
-private def Simple.toString {σ α} [Repr α] [Parser.Stream σ α] [Repr (Parser.Stream.Position σ)] : Simple σ α → String
+private def Simple.toString {σ τ} [Repr τ] [Parser.Stream σ τ] [Repr (Parser.Stream.Position σ)] : Simple σ τ → String
   | unexpected pos (some tok) => s!"unexpected token {repr tok} at {repr pos}"
   | unexpected pos none => s!"unexpected token at {repr pos}"
   | addMessage e pos msg => Simple.toString e ++ s!"; {msg} at {repr pos}"
 
-instance (σ α) [Repr α] [Parser.Stream σ α] [Repr (Parser.Stream.Position σ)] : ToString (Simple σ α) where
+instance (σ τ) [Repr τ] [Parser.Stream σ τ] [Repr (Parser.Stream.Position σ)] : ToString (Simple σ τ) where
   toString := Simple.toString
 
-instance (σ α) [Parser.Stream σ α] : Parser.Error (Simple σ α) σ α where
+instance (σ τ) [Parser.Stream σ τ] : Parser.Error (Simple σ τ) σ τ where
   unexpected := Simple.unexpected
   addMessage := Simple.addMessage
 

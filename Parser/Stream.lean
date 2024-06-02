@@ -6,7 +6,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 import Parser.Prelude
 
 /-- `Parser.Stream` class extends `Stream` with position features -/
-protected class Parser.Stream (σ : Type _) (α : outParam (Type _)) extends Stream σ α where
+protected class Parser.Stream (σ : Type _) (τ : outParam (Type _)) extends Stream σ τ where
   /-- Position type -/
   Position : Type _
   /-- Get current stream position -/
@@ -18,20 +18,20 @@ attribute [reducible] Parser.Stream.Position
 namespace Parser.Stream
 
 /-- Stream segment -/
-def Segment (σ) [Parser.Stream σ α] := Stream.Position σ × Stream.Position σ
+def Segment (σ) [Parser.Stream σ τ] := Stream.Position σ × Stream.Position σ
 
 /-- Start position of stream segment -/
-abbrev Segment.start [Parser.Stream σ α] (s : Segment σ) := s.1
+abbrev Segment.start [Parser.Stream σ τ] (s : Segment σ) := s.1
 
 /-- Stop position of stream segment -/
-abbrev Segment.stop [Parser.Stream σ α] (s : Segment σ) := s.2
+abbrev Segment.stop [Parser.Stream σ τ] (s : Segment σ) := s.2
 
 /-- Wrapper to make a `Parser.Stream` from a core `Stream` -/
 @[nolint unusedArguments]
-def mkDefault (σ α) [Stream σ α] := σ
+def mkDefault (σ τ) [Stream σ τ] := σ
 
 @[reducible]
-instance (σ α) [self : Stream σ α] : Parser.Stream (mkDefault σ α) α where
+instance (σ τ) [self : Stream σ τ] : Parser.Stream (mkDefault σ τ) τ where
   toStream := self
   Position := σ
   getPosition s := s
@@ -47,7 +47,7 @@ instance : Parser.Stream Substring Char where
     else {s with startPos := s.stopPos}
 
 @[reducible]
-instance (α) : Parser.Stream (Subarray α) α where
+instance (τ) : Parser.Stream (Subarray τ) τ where
   Position := Nat
   getPosition s := s.start
   setPosition s p :=
@@ -66,32 +66,32 @@ instance : Parser.Stream ByteSubarray UInt8 where
       {s with start := s.stop, size := 0, valid := by rw [ByteSubarray.stop]; exact s.valid}
 
 /-- `OfList` is a view of a list along with a position along that list -/
-structure OfList (α : Type _) where
+structure OfList (τ : Type _) where
   /-- Remaining tokens -/
-  next : List α
+  next : List τ
   /-- Consumed tokens -/
-  past : List α := []
+  past : List τ := []
 
 /-- Set position -/
-def OfList.setPosition {α} (s : OfList α) (p : Nat) : OfList α :=
+def OfList.setPosition {τ} (s : OfList τ) (p : Nat) : OfList τ :=
   if s.past.length < p then
     fwd (p - s.past.length) s
   else
     rev (s.past.length - p) s
 where
-  fwd : Nat → OfList α → OfList α
+  fwd : Nat → OfList τ → OfList τ
     | k+1, ⟨x :: rest, past⟩ => fwd k ⟨rest, x :: past⟩
     | _, s => s
-  rev : Nat → OfList α → OfList α
+  rev : Nat → OfList τ → OfList τ
     | k+1, ⟨rest, x :: past⟩ => rev k ⟨x :: rest, past⟩
     | _, s => s
 
 /-- Make a `Parser.Stream` from a `List` -/
-def mkOfList {α} (data : List α) (pos : Nat := 0) : OfList α :=
+def mkOfList {τ} (data : List τ) (pos : Nat := 0) : OfList τ :=
   OfList.setPosition {next := data} pos
 
 @[reducible]
-instance (α) : Parser.Stream (OfList α) α where
+instance (τ) : Parser.Stream (OfList τ) τ where
   Position := Nat
   getPosition s := s.past.length
   setPosition := OfList.setPosition

@@ -64,11 +64,11 @@ def slice (bs : ByteSubarray) (start stop : Nat) (h : start ≤ stop ∧ stop �
 theorem size_slice (bs : ByteSubarray) (start stop : Nat) (h : start ≤ stop ∧ stop ≤ bs.size := by simp_arith [*]) : (bs.slice start stop h).size = stop - start := rfl
 
 @[inline]
-unsafe def forInUnsafe {α m} [Monad m] (bs : ByteSubarray) (a : α) (f : UInt8 → α → m (ForInStep α)) : m α :=
+unsafe def forInUnsafe {τ m} [Monad m] (bs : ByteSubarray) (a : τ) (f : UInt8 → τ → m (ForInStep τ)) : m τ :=
   loop (USize.ofNat bs.start) a
 where
   @[specialize]
-  loop (i : USize) (a : α) : m α := do
+  loop (i : USize) (a : τ) : m τ := do
     if i < USize.ofNat bs.stop then
       let b := bs.uget i lcProof
       match (← f b a) with
@@ -78,10 +78,10 @@ where
       pure a
 
 @[implemented_by ByteSubarray.forInUnsafe]
-protected def forIn {α m} [Monad m] (bs : ByteSubarray) (a : α) (f : UInt8 → α → m (ForInStep α)) : m α :=
+protected def forIn {τ m} [Monad m] (bs : ByteSubarray) (a : τ) (f : UInt8 → τ → m (ForInStep τ)) : m τ :=
   loop bs.start a
 where
-  loop (i : Nat) (a : α) : m α := do
+  loop (i : Nat) (a : τ) : m τ := do
     if h : i < bs.size then
       let b := bs.get ⟨i, h⟩
       match (← f b a) with
