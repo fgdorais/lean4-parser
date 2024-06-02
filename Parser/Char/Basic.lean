@@ -25,7 +25,7 @@ def chars (tks : String) : ParserT ε σ Char m String :=
 /-- `string tks` accepts and returns string `tks`, otherwise fails -/
 def string [Parser.Error ε Substring Char] (tks : String) : ParserT ε Substring Char m String :=
   withErrorMessage s!"expected {repr tks}" do
-    let ⟨str, start, stop⟩ ← State.stream <$> StateT.get
+    let ⟨str, start, stop⟩ ← StateT.get
     if start + tks.endPos < stop ∧ String.substrEq tks 0 str start tks.endPos.byteIdx then
       setPosition (start + tks.endPos)
       return tks
@@ -34,13 +34,13 @@ def string [Parser.Error ε Substring Char] (tks : String) : ParserT ε Substrin
 
 /-- `captureStr p` parses `p` and returns the output of `p` with the corresponding substring -/
 def captureStr [Parser.Error ε Substring Char] (p : ParserT ε Substring Char m α) : ParserT ε Substring Char m (α × Substring) := do
-  let ⟨str,_,_⟩ ← State.stream <$> StateT.get
+  let ⟨str,_,_⟩ ← StateT.get
   let (x, start, stop) ← withCapture p
   return (x, ⟨str, start, stop⟩)
 
 /-- `matchStr re` accepts and returns substring matches for regex `re` groups, otherwise fails -/
 def matchStr [Parser.Error ε Substring Char] (re : RegEx Char) : ParserT ε Substring Char m (Array (Option Substring)) := do
-  let ⟨str,_,_⟩ ← State.stream <$> StateT.get
+  let ⟨str,_,_⟩ ← StateT.get
   let ms ← re.match
   return ms.map fun
     | some (start, stop) => some ⟨str, start, stop⟩

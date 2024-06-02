@@ -14,9 +14,9 @@ variable {ε σ α β γ} [Parser.Stream σ α] [Parser.Error ε σ α] {m} [Mon
 /-- `tokenAux next?` reads a token from the stream using `next?` -/
 @[inline]
 def tokenAux (next? : σ → Option (α × σ)) : ParserT ε σ α m α := do
-  match next? (← StateT.get).stream with
+  match next? (← StateT.get) with
   | some (tok, stream) =>
-    StateT.set {stream := stream, dirty := true}
+    StateT.set stream
     return tok
   | none => throwUnexpected
 
@@ -59,10 +59,10 @@ def lookAhead (p : ParserT ε σ α m β) : ParserT ε σ α m β := do
   let savePos ← getPosition
   try
     let x ← p
-    setPosition savePos false
+    setPosition savePos
     return x
   catch e =>
-    setPosition savePos false
+    setPosition savePos
     throw e
 
 /-- `notFollowedBy p` succeeds only if `p` fails -/

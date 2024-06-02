@@ -25,16 +25,16 @@ deriving Repr
 /-- `ParserT ε σ α` monad transformer to parse tokens of type `α` from the stream `σ` with error type `ε` -/
 @[nolint unusedArguments]
 def ParserT (ε σ α) (m : Type _ → Type _) [Parser.Stream σ α] [Parser.Error ε σ α] :=
-  StateT (Parser.State σ α) m
-instance (ε σ α m) [Parser.Stream σ α] [Parser.Error ε σ α] [Monad m] : Monad (ParserT ε σ α m) := inferInstanceAs (Monad (StateT (Parser.State σ α) m))
-instance (ε σ α m) [Parser.Stream σ α] [Parser.Error ε σ α] [Monad m] [MonadExceptOf ε m] : MonadExceptOf ε (ParserT ε σ α m) := inferInstanceAs (MonadExceptOf ε (StateT (Parser.State σ α) m))
+  StateT σ m
+instance (ε σ α m) [Parser.Stream σ α] [Parser.Error ε σ α] [Monad m] : Monad (ParserT ε σ α m) := inferInstanceAs (Monad (StateT σ m))
+instance (ε σ α m) [Parser.Stream σ α] [Parser.Error ε σ α] [Monad m] [MonadExceptOf ε m] : MonadExceptOf ε (ParserT ε σ α m) := inferInstanceAs (MonadExceptOf ε (StateT σ m))
 
 /-- Run parser transformer -/
 @[inline]
 protected def ParserT.run.{u} {ε σ : Type u} {α β m} [Parser.Stream σ α] [Parser.Error ε σ α] [Monad m] [MonadExceptOf ε m] (p : ParserT ε σ α m β) (s : σ) : m (Parser.Result ε σ β) :=
   try
-    let (val, s) ← StateT.run p {stream := s}
-    return .ok s.stream val
+    let (val, s) ← StateT.run p s
+    return .ok s val
   catch e =>
     return .error e
 
@@ -63,26 +63,15 @@ abbrev SimpleParser (σ α) [Parser.Stream σ α] := Parser (Parser.Error.Simple
 namespace Parser
 variable {ε σ α m β γ} [Parser.Stream σ α] [Parser.Error ε σ α] [Monad m] [MonadExceptOf ε m]
 
-/-- Check whether parser has consumed any input -/
-@[inline]
-def hasConsumed : ParserT ε σ α m Bool := do
-  let s ← StateT.get
-  return s.dirty
-
 /-- Get stream position from parser -/
 @[inline]
-def getPosition : ParserT ε σ α m (Stream.Position σ) := do
-  let s ← StateT.get
-  return Stream.getPosition s.stream
+def getPosition : ParserT ε σ α m (Stream.Position σ) :=
+  Stream.getPosition <$> StateT.get
 
 /-- Set stream position of parser -/
 @[inline]
-def setPosition (pos : Stream.Position σ) (dirty? : Option Bool := none) : ParserT ε σ α m Unit := do
-  let s ← StateT.get
-  StateT.set {
-    stream := Stream.setPosition s.stream pos
-    dirty := dirty?.getD s.dirty
-  }
+def setPosition (pos : Stream.Position σ) : ParserT ε σ α m Unit := do
+  StateT.set <| Stream.setPosition (← StateT.get) pos
 
 /-- Throw error on unexpected input -/
 @[inline]
@@ -110,7 +99,7 @@ def withBacktracking (p : ParserT ε σ α m β) : ParserT ε σ α m β := do
   let savePos ← getPosition
   try p
   catch e =>
-    setPosition savePos false
+    setPosition savePos
     throw e
 
 /-- `withCapture p` parses `p` and returns the output of `p` with the corresponding stream segment -/
