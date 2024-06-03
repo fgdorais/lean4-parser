@@ -89,43 +89,10 @@ def endOfInput : ParserT ε σ τ m PUnit :=
 def peek : ParserT ε σ τ m τ :=
   lookAhead anyToken
 
-/-- `optionD default p` tries to parse `p`, and returns `default` if `p` fails -/
-@[specialize]
-def optionD (default : α) (p : ParserT ε σ τ m α) : ParserT ε σ τ m α :=
-  try
-    withBacktracking p
-  catch _ =>
-    return default
-
-/-- `option! p` tries to parse `p`, and returns `Inhabited.default` if `p` fails -/
-@[inline]
-def option! [Inhabited α] (p : ParserT ε σ τ m α) : ParserT ε σ τ m α :=
-  optionD default p
-
-/-- `option? p` parses `p` returns `some x` if `p` returns `x`, and returns `none` if `p` fails -/
-@[inline]
-def option? (p : ParserT ε σ τ m α) : ParserT ε σ τ m (Option α) :=
-  optionD none (some <$> p)
-
-/-- `optional p` tries to parse `p`, ignoring the output, never fails -/
-@[inline]
-def optional (p : ParserT ε σ τ m α) : ParserT ε σ τ m PUnit :=
-  option! (p *> return)
-
 /-- `test p` returns `true` if `p` succeeds and `false` otherwise, never fails -/
 @[inline]
 def test (p : ParserT ε σ τ m α) : ParserT ε σ τ m Bool :=
-  optionD false (p *> return true)
-
-/-- `foldl f q p` -/
-@[specialize]
-partial def foldl (f : β → α → β) (init : β) (p : ParserT ε σ τ m α) : ParserT ε σ τ m β :=
-  loop init
-where
-  loop (y : β) := do
-    match ← option? p with
-    | some x => loop (f y x)
-    | none => return y
+  optionD (p *> return true) false
 
 /-- `foldr f p q` -/
 @[inline]
