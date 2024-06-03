@@ -61,7 +61,9 @@ instance : Parser.Stream ByteSubarray UInt8 where
   getPosition s := s.start
   setPosition s p :=
     if h : p ≤ s.start + s.size then
-      {s with start := p, size := s.start + s.size - p, valid := by rw [Nat.add_sub_cancel' h]; exact s.valid}
+      {s with
+        start := p, size := s.start + s.size - p,
+        valid := by rw [Nat.add_sub_cancel' h]; exact s.valid}
     else
       {s with start := s.stop, size := 0, valid := by rw [ByteSubarray.stop]; exact s.valid}
 

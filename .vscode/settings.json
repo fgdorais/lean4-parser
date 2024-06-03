@@ -1,6 +1,7 @@
 {
     "editor.acceptSuggestionOnEnter": "off",
     "editor.tabSize": 2,
+    "editor.rulers": [100],
     "files.insertFinalNewline": true,
     "files.trimTrailingWhitespace": true,
 }

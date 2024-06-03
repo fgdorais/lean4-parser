@@ -15,13 +15,15 @@ protected inductive Parser.Result (ε σ : Type _) : Type _ → Type _
   | error : σ → ε → Parser.Result ε σ α
 deriving Repr
 
-/-- `ParserT ε σ τ` is a monad transformer to parse tokens of type `τ` from the stream type `σ` with error type `ε` -/
+/-- `ParserT ε σ τ` is a monad transformer to parse tokens of type `τ` from the stream type `σ`
+with error type `ε` -/
 def ParserT (ε σ τ : Type _) [Parser.Stream σ τ] [Parser.Error ε σ τ] (m : Type _ → Type _)
   (α : Type _) : Type _ := σ → m (Parser.Result ε σ α)
 
 /-- Run the monadic parser `p` on input stream `s` -/
 @[inline]
-def ParserT.run [Parser.Stream σ τ] [Parser.Error ε σ τ] (p : ParserT ε σ τ m α) (s : σ) : m (Parser.Result ε σ α) := p s
+def ParserT.run [Parser.Stream σ τ] [Parser.Error ε σ τ] (p : ParserT ε σ τ m α) (s : σ) :
+  m (Parser.Result ε σ α) := p s
 
 instance (σ ε τ m) [Parser.Stream σ τ] [Parser.Error ε σ τ] [Monad m] :
   Monad (ParserT ε σ τ m) where
@@ -71,22 +73,28 @@ abbrev Parser (ε σ τ) [Parser.Stream σ τ] [Parser.Error ε σ τ] := Parser
 protected def Parser.run {ε σ τ α} [Parser.Stream σ τ] [Parser.Error ε σ τ] (p : Parser ε σ τ α)
   (s : σ) : Parser.Result ε σ α := p s
 
-/-- `TrivialParserT σ τ` monad transformer to parse tokens of type `τ` from the stream `σ` with trivial error handling -/
+/-- `TrivialParserT σ τ` monad transformer to parse tokens of type `τ` from the stream `σ` with
+trivial error handling -/
 abbrev TrivialParserT (σ τ) [Parser.Stream σ τ] (m) := ParserT Parser.Error.Trivial σ τ m
 
-/-- `TrivialParser σ τ` monad to parse tokens of type `τ` from the stream `σ` with trivial error handling -/
+/-- `TrivialParser σ τ` monad to parse tokens of type `τ` from the stream `σ` with trivial error
+handling -/
 abbrev TrivialParser (σ τ) [Parser.Stream σ τ] := Parser Parser.Error.Trivial σ τ
 
-/-- `BasicParserT σ τ` monad transformer to parse tokens of type `τ` from the stream `σ` with basic error handling -/
+/-- `BasicParserT σ τ` monad transformer to parse tokens of type `τ` from the stream `σ` with basic
+error handling -/
 abbrev BasicParserT (σ τ) [Parser.Stream σ τ] (m) := ParserT (Parser.Error.Basic σ τ) σ τ m
 
-/-- `BasicParser σ τ` monad to parse tokens of type `τ` from the stream `σ` with basic error handling -/
+/-- `BasicParser σ τ` monad to parse tokens of type `τ` from the stream `σ` with basic error
+handling -/
 abbrev BasicParser (σ τ) [Parser.Stream σ τ] := Parser (Parser.Error.Basic σ τ) σ τ
 
-/-- `SimpleParserT σ τ` monad transformer to parse tokens of type `τ` from the stream `σ` with simple error handling -/
+/-- `SimpleParserT σ τ` monad transformer to parse tokens of type `τ` from the stream `σ` with
+simple error handling -/
 abbrev SimpleParserT (σ τ) [Parser.Stream σ τ] (m) := ParserT (Parser.Error.Simple σ τ) σ τ m
 
-/-- `SimpleParser σ τ` monad to parse tokens of type `τ` from the stream `σ` with simple error handling -/
+/-- `SimpleParser σ τ` monad to parse tokens of type `τ` from the stream `σ` with simple error
+handling -/
 abbrev SimpleParser (σ τ) [Parser.Stream σ τ] := Parser (Parser.Error.Simple σ τ) σ τ
 
 namespace Parser
@@ -140,15 +148,18 @@ def withBacktracking (p : ParserT ε σ τ m α) : ParserT ε σ τ m α := do
     setPosition savePos
     throw e
 
-/-- `withCapture p` parses `p` and returns the output of `p` with the corresponding stream segment -/
-def withCapture {ε σ α : Type _} [Parser.Stream σ τ] [Parser.Error ε σ τ] (p : ParserT ε σ τ m α) : ParserT ε σ τ m (α × Stream.Segment σ) := do
+/-- `withCapture p` parses `p` and returns the output of `p` with the corresponding stream
+segment -/
+def withCapture {ε σ α : Type _} [Parser.Stream σ τ] [Parser.Error ε σ τ] (p : ParserT ε σ τ m α) :
+  ParserT ε σ τ m (α × Stream.Segment σ) := do
   let startPos ← getPosition
   let x ← p
   let stopPos ← getPosition
   return (x, startPos, stopPos)
 
 /-- `first ps` tries parsers from the list `ps` until one succeeds -/
-def first (ps : List (ParserT ε σ τ m α)) (combine : ε → ε → ε := fun _ => id) : ParserT ε σ τ m α := do
+def first (ps : List (ParserT ε σ τ m α)) (combine : ε → ε → ε := fun _ => id) :
+  ParserT ε σ τ m α := do
   go ps (Error.unexpected (← getPosition) none)
 where
   go : List (ParserT ε σ τ m α) → ε → ParserT ε σ τ m α

@@ -129,14 +129,16 @@ where
 
 /-- `foldr f p q` -/
 @[inline]
-partial def foldr (f : α → β → β) (p : ParserT ε σ τ m α) (q : ParserT ε σ τ m β) : ParserT ε σ τ m β :=
+partial def foldr (f : α → β → β) (p : ParserT ε σ τ m α) (q : ParserT ε σ τ m β) :
+  ParserT ε σ τ m β :=
   try
     let x ← withBacktracking p
     let y ← foldr f p q
     return f x y
   catch _ => q
 
-/-- `take n p` parses exactly `n` occurrences of `p`, and returns an array of the returned values of `p` -/
+/-- `take n p` parses exactly `n` occurrences of `p`, and returns an array of the returned values
+of `p` -/
 @[inline]
 def take (n : Nat) (p : ParserT ε σ τ m α) : ParserT ε σ τ m (Array α) :=
   rest n #[]
@@ -145,7 +147,8 @@ where
     | 0, xs => return xs
     | n+1, xs => do rest n <| xs.push (← p)
 
-/-- `takeUpTo n p` parses up to `n` occurrences of `p`, and returns an array of the returned values of `p` -/
+/-- `takeUpTo n p` parses up to `n` occurrences of `p`, and returns an array of the returned values
+of `p` -/
 @[inline]
 def takeUpTo (n : Nat) (p : ParserT ε σ τ m α) : ParserT ε σ τ m (Array α) :=
   rest n #[]
@@ -157,23 +160,28 @@ where
       | some x => rest n <| xs.push x
       | none => return xs
 
-/-- `takeMany p` parses zero or more occurrences of `p` until it fails, and returns an array of the returned values of `p` -/
+/-- `takeMany p` parses zero or more occurrences of `p` until it fails, and returns the array of
+returned values of `p` -/
 @[inline]
 def takeMany (p : ParserT ε σ τ m α) : ParserT ε σ τ m (Array α) := do
   foldl Array.push #[] p
 
-/-- `takeMany1 p` parses one or more occurrences of `p` until it fails, and returns an array of the returned values of `p` -/
+/-- `takeMany1 p` parses one or more occurrences of `p` until it fails, and returns the array of
+returned values of `p` -/
 @[inline]
 def takeMany1 (p : ParserT ε σ τ m α) : ParserT ε σ τ m (Array α) := do
   foldl Array.push #[(← p)] p
 
-/-- `takeManyN n p` parses `n` or more occurrences of `p` until it fails, and returns an array of the returned values of `p` -/
+/-- `takeManyN n p` parses `n` or more occurrences of `p` until it fails, and returns the array of
+returned values of `p` -/
 @[inline]
 def takeManyN (n : Nat) (p : ParserT ε σ τ m α) : ParserT ε σ τ m (Array α) := do
   foldl Array.push (← take n p) p
 
-/-- `takeUntil stop p` parses zero or more occurrences of `p` until `stop` succeeds, and returns an array of the returned values of `p` and the output of `stop` -/
-partial def takeUntil (stop : ParserT ε σ τ m β) (p : ParserT ε σ τ m α) : ParserT ε σ τ m (Array α × β) :=
+/-- `takeUntil stop p` parses zero or more occurrences of `p` until `stop` succeeds, and returns
+the array of returned values of `p` and the output of `stop` -/
+partial def takeUntil (stop : ParserT ε σ τ m β) (p : ParserT ε σ τ m α) :
+  ParserT ε σ τ m (Array α × β) :=
   let _ := Inhabited.mk do return ((#[] : Array α), (← stop))
   rest #[]
 where
@@ -199,22 +207,26 @@ def dropUpTo (n : Nat) (p : ParserT ε σ τ m α) : ParserT ε σ τ m PUnit :=
     | some _ => drop n p
     | none => return
 
-/-- `dropMany p` parses zero or more occurrences of `p` until it fails, ignoring all outputs from `p` -/
+/-- `dropMany p` parses zero or more occurrences of `p` until it fails, ignoring all outputs
+from `p` -/
 @[inline]
 def dropMany (p : ParserT ε σ τ m α) : ParserT ε σ τ m PUnit :=
   foldl (Function.const α) () p
 
-/-- `dropMany1 p` parses one or more occurrences of `p` until it fails, ignoring all outputs from `p` -/
+/-- `dropMany1 p` parses one or more occurrences of `p` until it fails, ignoring all outputs
+from `p` -/
 @[inline]
 def dropMany1 (p : ParserT ε σ τ m α) : ParserT ε σ τ m PUnit :=
   p *> foldl (Function.const α) () p
 
-/-- `dropManyN n p` parses `n` or more occurrences of `p` until it fails, ignoring all outputs from `p` -/
+/-- `dropManyN n p` parses `n` or more occurrences of `p` until it fails, ignoring all outputs
+from `p` -/
 @[inline]
 def dropManyN (n : Nat) (p : ParserT ε σ τ m α) : ParserT ε σ τ m PUnit :=
   drop n p *> foldl (Function.const α) () p
 
-/-- `dropUntil stop p` runs `p` until `stop` succeeds, returns the output of `stop` ignoring all outputs from `p` -/
+/-- `dropUntil stop p` runs `p` until `stop` succeeds, returns the output of `stop` ignoring all
+outputs from `p` -/
 partial def dropUntil (stop : ParserT ε σ τ m β) (p : ParserT ε σ τ m α) : ParserT ε σ τ m β :=
   loop
 where
@@ -228,7 +240,8 @@ where
 partial def count (p : ParserT ε σ τ m α) : ParserT ε σ τ m Nat :=
   foldl (fun n _ => n+1) 0 p
 
-/-- `countUpTo n p` parses up to `n` occurrences of `p` until it fails, and returns the count of successes -/
+/-- `countUpTo n p` parses up to `n` occurrences of `p` until it fails, and returns the count of
+successes -/
 @[inline]
 def countUpTo (n : Nat) (p : ParserT ε σ τ m α) : ParserT ε σ τ m Nat :=
   loop n 0
@@ -240,8 +253,10 @@ where
       | some _ => loop n (ct+1)
       | none => return ct
 
-/-- `countUntil stop p` counts zero or more occurrences of `p` until `stop` succeeds, and returns an array of the returned values of `p` and the output of `stop` -/
-partial def countUntil (stop : ParserT ε σ τ m β) (p : ParserT ε σ τ m α) : ParserT ε σ τ m (Nat × β) := do
+/-- `countUntil stop p` counts zero or more occurrences of `p` until `stop` succeeds, and returns
+the count of successes and the output of `stop` -/
+partial def countUntil (stop : ParserT ε σ τ m β) (p : ParserT ε σ τ m α) :
+  ParserT ε σ τ m (Nat × β) := do
   let _ := Inhabited.mk do return (0, ← stop)
   loop 0
 where
@@ -250,44 +265,52 @@ where
     | some s => return (ct, s)
     | none => p *> loop (ct+1)
 
-/-- `endBy p sep` parses zero or more occurrences of `p`, separated and ended by `sep`, returns an array of values returned by `p` -/
+/-- `endBy p sep` parses zero or more occurrences of `p`, separated and ended by `sep`, returns
+the array of values returned by `p` -/
 @[inline]
 def endBy (sep : ParserT ε σ τ m β) (p : ParserT ε σ τ m α) : ParserT ε σ τ m (Array α) :=
   takeMany (p <* sep)
 
-/-- `endBy1 p sep` parses one or more occurrences of `p`, separated and ended by `sep`, returns an array of values returned by `p` -/
+/-- `endBy1 p sep` parses one or more occurrences of `p`, separated and ended by `sep`, returns
+the array of values returned by `p` -/
 @[inline]
 def endBy1 (sep : ParserT ε σ τ m β) (p : ParserT ε σ τ m α) : ParserT ε σ τ m (Array α) := do
   takeMany1 (p <* sep)
 
-/-- `sepBy1 p sep` parses one or more occurrences of `p`, separated by `sep`, returns an array of values returned by `p` -/
+/-- `sepBy1 p sep` parses one or more occurrences of `p`, separated by `sep`, returns the array of
+values returned by `p` -/
 @[inline]
 def sepBy1 (sep : ParserT ε σ τ m β) (p : ParserT ε σ τ m α) : ParserT ε σ τ m (Array α) := do
   foldl Array.push #[(← p)] (sep *> p)
 
-/-- `sepBy p sep` parses zero or more occurrences of `p`, separated by `sep`, returns an array of values returned by `p` -/
+/-- `sepBy p sep` parses zero or more occurrences of `p`, separated by `sep`, returns the array of
+values returned by `p` -/
 @[inline]
 def sepBy (sep : ParserT ε σ τ m β) (p : ParserT ε σ τ m α) : ParserT ε σ τ m (Array α) := do
   match ← option? p with
   | some x => foldl Array.push #[x] (sep *> p)
   | none => return #[]
 
-/-- `sepEndBy1 p sep` parses one or more occurrences of `p`, separated and optionally ended by `sep`, returns an array of values returned by `p` -/
+/-- `sepEndBy1 p sep` parses one or more occurrences of `p`, separated and optionally ended by
+`sep`, returns the array of values returned by `p` -/
 @[inline]
 def sepEndBy1 (sep : ParserT ε σ τ m β) (p : ParserT ε σ τ m α) : ParserT ε σ τ m (Array α) :=
   sepBy1 sep p <* optional sep
 
-/-- `sepEndBy p sep` parses zero or more occurrences of `p`, separated and optionally ended by `sep`, returns an array of values returned by `p` -/
+/-- `sepEndBy p sep` parses zero or more occurrences of `p`, separated and optionally ended by
+`sep`, returns the array of values returned by `p` -/
 @[inline]
 def sepEndBy (sep : ParserT ε σ τ m β) (p : ParserT ε σ τ m α) : ParserT ε σ τ m (Array α) :=
   sepBy sep p <* optional sep
 
-/-- `sepNoEndBy1 p sep` parses one or more occurrences of `p`, separated `sep` but no trailing `sep`, returns an array of values returned by `p` -/
+/-- `sepNoEndBy1 p sep` parses one or more occurrences of `p`, separated `sep` but no trailing
+`sep`, returns the array of values returned by `p` -/
 @[inline]
 def sepNoEndBy1 (sep : ParserT ε σ τ m β) (p : ParserT ε σ τ m α) : ParserT ε σ τ m (Array α) :=
   sepBy1 sep p <* withErrorMessage "unexpected trailing separator" (notFollowedBy sep)
 
-/-- `sepNoEndBy p sep` parses zero or more occurrences of `p`, separated `sep` but no trailing `sep`, returns an array of values returned by `p` -/
+/-- `sepNoEndBy p sep` parses zero or more occurrences of `p`, separated `sep` but no trailing
+`sep`, returns the array of values returned by `p` -/
 @[inline]
 def sepNoEndBy (sep : ParserT ε σ τ m β) (p : ParserT ε σ τ m α) : ParserT ε σ τ m (Array α) :=
   sepBy sep p <* withErrorMessage "unexpected trailing separator" (notFollowedBy sep)

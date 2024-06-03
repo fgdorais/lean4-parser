@@ -50,7 +50,8 @@ def popFront (bs : ByteSubarray) : ByteSubarray :=
     {bs with start := bs.start+1, size := bs.size-1, valid := by rw [this]; exact bs.valid}
   else bs
 
-def slice (bs : ByteSubarray) (start stop : Nat) (h : start ≤ stop ∧ stop ≤ bs.size := by simp_arith [*]) : ByteSubarray where
+def slice (bs : ByteSubarray) (start stop : Nat)
+  (h : start ≤ stop ∧ stop ≤ bs.size := by simp_arith [*]) : ByteSubarray where
   toByteArray := bs.toByteArray
   start := bs.start + start
   size := stop - start
@@ -61,10 +62,13 @@ def slice (bs : ByteSubarray) (start stop : Nat) (h : start ≤ stop ∧ stop �
     apply Nat.add_le_add_left h.2
 
 @[simp]
-theorem size_slice (bs : ByteSubarray) (start stop : Nat) (h : start ≤ stop ∧ stop ≤ bs.size := by simp_arith [*]) : (bs.slice start stop h).size = stop - start := rfl
+theorem size_slice (bs : ByteSubarray) (start stop : Nat)
+  (h : start ≤ stop ∧ stop ≤ bs.size := by simp_arith [*]) :
+  (bs.slice start stop h).size = stop - start := rfl
 
 @[inline]
-unsafe def forInUnsafe {τ m} [Monad m] (bs : ByteSubarray) (a : τ) (f : UInt8 → τ → m (ForInStep τ)) : m τ :=
+unsafe def forInUnsafe {τ m} [Monad m] (bs : ByteSubarray) (a : τ)
+  (f : UInt8 → τ → m (ForInStep τ)) : m τ :=
   loop (USize.ofNat bs.start) a
 where
   @[specialize]
@@ -78,7 +82,8 @@ where
       pure a
 
 @[implemented_by ByteSubarray.forInUnsafe]
-protected def forIn {τ m} [Monad m] (bs : ByteSubarray) (a : τ) (f : UInt8 → τ → m (ForInStep τ)) : m τ :=
+protected def forIn {τ m} [Monad m] (bs : ByteSubarray) (a : τ) (f : UInt8 → τ → m (ForInStep τ)) :
+  m τ :=
   loop bs.start a
 where
   loop (i : Nat) (a : τ) : m τ := do

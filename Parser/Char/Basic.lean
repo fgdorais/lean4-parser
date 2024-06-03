@@ -33,13 +33,15 @@ def string [Parser.Error ε Substring Char] (tks : String) : ParserT ε Substrin
       throwUnexpected
 
 /-- `captureStr p` parses `p` and returns the output of `p` with the corresponding substring -/
-def captureStr [Parser.Error ε Substring Char] (p : ParserT ε Substring Char m α) : ParserT ε Substring Char m (α × Substring) := do
+def captureStr [Parser.Error ε Substring Char] (p : ParserT ε Substring Char m α) :
+  ParserT ε Substring Char m (α × Substring) := do
   let ⟨str,_,_⟩ ← getStream
   let (x, start, stop) ← withCapture p
   return (x, ⟨str, start, stop⟩)
 
 /-- `matchStr re` accepts and returns substring matches for regex `re` groups, otherwise fails -/
-def matchStr [Parser.Error ε Substring Char] (re : RegEx Char) : ParserT ε Substring Char m (Array (Option Substring)) := do
+def matchStr [Parser.Error ε Substring Char] (re : RegEx Char) :
+  ParserT ε Substring Char m (Array (Option Substring)) := do
   let ⟨str,_,_⟩ ← getStream
   let ms ← re.match
   return ms.map fun
@@ -102,7 +104,10 @@ def numeric : ParserT ε σ Char m Char :=
 /-- Parse alphabetic letter or digit (`A`..`Z`, `a`..`z` and `0`..`9`) -/
 def alphanum : ParserT ε σ Char m Char :=
   withErrorMessage "expected letter or digit character" do
-    tokenFilter fun c => if c >= 'a' then c <= 'z' else if c >= 'A' then c <= 'Z' else c >= '0' && c <= '9'
+    tokenFilter fun c =>
+      if c >= 'a' then c <= 'z'
+      else if c >= 'A' then c <= 'Z'
+      else c >= '0' && c <= '9'
 
 /-- Parse control character -/
 def control : ParserT ε σ Char m Char :=

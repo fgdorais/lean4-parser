@@ -8,8 +8,7 @@ import Parser
 /-!
   JSON Validator
 
-  The function `JSON.validate` determines whether an input string represents
-  a valid JSON value.
+  The function `JSON.validate` determines whether an input string represents a valid JSON value.
 
   The JSON data interchange syntax is defined in [ECMA Standard 404](https://www.ecma-international.org/publications-and-standards/standards/ecma-404/).
   A convenient visual representation of the syntax can be found at [json.org](https://www.json.org/json-en.html).
@@ -23,7 +22,8 @@ open Parser Char
 protected abbrev Parser := SimpleParser Substring Char
 
 /-- Parse JSON white spaces -/
-def ws : JSON.Parser Unit := dropMany <| tokenFilter fun c => c == ' ' || c == '\n' || c == '\r' || c == '\t'
+def ws : JSON.Parser Unit :=
+  dropMany <| tokenFilter fun c => c == ' ' || c == '\n' || c == '\r' || c == '\t'
 
 /-- Parse a JSON number -/
 protected partial def number : JSON.Parser Unit :=
