@@ -108,6 +108,6 @@ end
 def validate (str : String) : Bool :=
   match Parser.run (JSON.value <* endOfInput) str with
   | .ok _ _ => true
-  | .error _ => false
+  | .error _ _ => false
 
 end JSON

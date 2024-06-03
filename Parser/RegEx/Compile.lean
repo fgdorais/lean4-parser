@@ -43,7 +43,7 @@ import Parser.RegEx.Basic
 namespace Parser.RegEx
 open Char
 
-private abbrev REParser := Parser Unit Substring Char
+private abbrev REParser := TrivialParser Substring Char
 
 mutual
 
@@ -170,7 +170,7 @@ end
 protected def compile? (s : String) : Option (RegEx Char) :=
   match Parser.run (re0 <* endOfInput) s with
   | .ok _ r => some r
-  | .error _ => none
+  | .error _ _ => none
 
 /-- Compiles a regex from a string, panics on faiure -/
 protected def compile! (s : String) : RegEx Char :=
