@@ -57,9 +57,11 @@ instance (σ ε τ m) [Parser.Stream σ τ] [Parser.Error ε σ τ] [Monad m] :
 
 instance (σ ε τ m) [Parser.Stream σ τ] [Parser.Error ε σ τ] [Monad m] :
   OrElse (ParserT ε σ τ m α) where
-  orElse p q s := p s >>= fun
+  orElse p q s :=
+    let savePos := Parser.Stream.getPosition s
+    p s >>= fun
     | .ok s v => return .ok s v
-    | .error _ _ => q () s
+    | .error s _ => q () (Parser.Stream.setPosition s savePos)
 
 /-- `Parser ε σ τ` monad to parse tokens of type `τ` from the stream type `σ` with error type `ε` -/
 abbrev Parser (ε σ τ) [Parser.Stream σ τ] [Parser.Error ε σ τ] := ParserT ε σ τ Id
@@ -152,6 +154,7 @@ where
   go : List (ParserT ε σ τ m α) → ε → ParserT ε σ τ m α
     | [], e, s => return .error s e
     | p :: ps, e, s =>
+      let savePos := Parser.Stream.getPosition s
       p s >>= fun
       | .ok s v => return .ok s v
-      | .error _ f => go ps (combine e f) s
+      | .error s f => go ps (combine e f) (Parser.Stream.setPosition s savePos)
