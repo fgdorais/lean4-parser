@@ -8,7 +8,7 @@ import Parser.Error
 import Parser.Stream
 
 /-- Parser result type -/
-protected inductive Parser.Result (ε σ : Type _) : Type _ → Type _
+protected inductive Parser.Result.{u} (ε σ α : Type u) : Type u
   /-- Result: success -/
   | ok : σ → α → Parser.Result ε σ α
   /-- Result: error -/
