@@ -4,12 +4,12 @@ defaultTargets = ["Parser"]
 [[require]]
 name = "batteries"
 git = "https://github.com/leanprover-community/batteries"
-rev = "v4.9.0"
+rev = "main"
 
 [[require]]
 name = "UnicodeBasic"
 git = "https://github.com/fgdorais/lean4-unicode-basic"
-rev = "stable"
+rev = "main"
 
 [[lean_lib]]
 name = "Parser"
