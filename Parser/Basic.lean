@@ -27,6 +27,15 @@ def tokenCore (next? : σ → Option (τ × σ)) : ParserT ε σ τ m (ULift τ)
   | none => throwUnexpected
 
 /--
+`endOfInput` succeeds only on end of stream. Consumes no input.
+-/
+@[inline]
+def endOfInput : ParserT ε σ τ m PUnit := do
+  match Stream.next? (← getStream) with
+  | some ⟨tok, _⟩  => throwUnexpected tok
+  | none => return
+
+/--
 `tokenMap test` accepts token `t` with result `x` if `test t = some x`, otherise fails reporting
 the unexpected token.
 -/
@@ -43,20 +52,6 @@ def tokenMap (test : τ → Option α) : ParserT ε σ τ m α := do
 @[inline]
 def anyToken : ParserT ε σ τ m τ :=
   tokenMap some
-
-/--
-`endOfInput` succeeds only on end of stream. Consumes no input.
--/
-@[inline]
-def endOfInput : ParserT ε σ τ m PUnit := do
-  let savePos ← getPosition
-  try
-    let tk ← anyToken
-    let _ ← setPosition savePos
-    throwUnexpected tk
-  catch _ =>
-    let _ ← setPosition savePos
-    return
 
 /--
 `tokenFilter test` accepts and returns token `t` if `test t = true`, otherwise fails reporting
