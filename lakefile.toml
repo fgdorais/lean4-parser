@@ -1,5 +1,6 @@
 name = "Parser"
 defaultTargets = ["Parser"]
+testDriver = "test"
 
 [[require]]
 name = "batteries"
@@ -13,3 +14,6 @@ rev = "main"
 
 [[lean_lib]]
 name = "Parser"
+
+[[lean_exe]]
+name = "test"
