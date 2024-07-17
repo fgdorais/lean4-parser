@@ -27,15 +27,6 @@ def tokenCore (next? : σ → Option (τ × σ)) : ParserT ε σ τ m (ULift τ)
   | none => throwUnexpected
 
 /--
-`endOfInput` succeeds only on end of stream. Consumes no input.
--/
-@[inline]
-def endOfInput : ParserT ε σ τ m PUnit := do
-  match Stream.next? (← getStream) with
-  | some ⟨tok, _⟩  => throwUnexpected tok
-  | none => return
-
-/--
 `tokenMap test` accepts token `t` with result `x` if `test t = some x`, otherise fails reporting
 the unexpected token.
 -/
@@ -60,20 +51,6 @@ unexpected token.
 @[inline]
 def tokenFilter (test : τ → Bool) : ParserT ε σ τ m τ :=
   tokenMap fun c => if test c then some c else none
-
-/--
-`peek` returns the next token, without consuming any input. Only fails on end of stream.
--/
-@[inline]
-def peek : ParserT ε σ τ m τ := do
-  let savePos ← getPosition
-  try
-    let tk ← anyToken
-    let _ ← setPosition savePos
-    return tk
-  catch e =>
-    let _ ← setPosition savePos
-    throw e
 
 /--
 `token tk` accepts and returns `tk`, otherwise fails otherwise fails reporting unexpected token.
@@ -121,6 +98,11 @@ def lookAhead (p : ParserT ε σ τ m α) : ParserT ε σ τ m α := do
     throw e
 
 /--
+`peek` returns the next token, without consuming any input. Only fails on end of stream.
+-/
+abbrev peek : ParserT ε σ τ m τ := lookAhead anyToken
+
+/--
 `notFollowedBy p` succeeds only if `p` fails. Consumes no input regardless of outcome.
 -/
 @[inline]
@@ -131,6 +113,10 @@ def notFollowedBy (p : ParserT ε σ τ m α) : ParserT ε σ τ m PUnit := do
     return
   throwUnexpected
 
+/--
+`endOfInput` succeeds only on end of stream. Consumes no input.
+-/
+abbrev endOfInput : ParserT ε σ τ m PUnit := notFollowedBy anyToken
 
 /--
 `test p` returns `true` if `p` succeeds and `false` otherwise. This parser ever fails.
