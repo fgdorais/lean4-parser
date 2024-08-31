@@ -56,16 +56,18 @@ instance (τ) : Parser.Stream (Subarray τ) τ where
     else {s with start := s.stop, start_le_stop := Nat.le_refl s.stop}
 
 @[reducible]
-instance : Parser.Stream ByteSubarray UInt8 where
+instance : Parser.Stream Batteries.ByteSubarray UInt8 where
   Position := Nat
   getPosition s := s.start
   setPosition s p :=
-    if h : p ≤ s.start + s.size then
+    if h : p ≤ s.stop then
       {s with
-        start := p, size := s.start + s.size - p,
-        valid := by rw [Nat.add_sub_cancel' h]; exact s.valid}
+        start := p
+        start_le_stop := h}
     else
-      {s with start := s.stop, size := 0, valid := by rw [ByteSubarray.stop]; exact s.valid}
+      {s with
+        start := s.stop
+        start_le_stop := Nat.le_refl _}
 
 /-- `OfList` is a view of a list along with a position along that list -/
 structure OfList (τ : Type _) where
