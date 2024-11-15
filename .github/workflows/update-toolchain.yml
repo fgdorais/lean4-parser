@@ -15,7 +15,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: install jq
-        uses: dcarbone/install-jq-action@v2.1.0
+        uses: dcarbone/install-jq-action@v3
 
       - name: get release tag
         id: get-latest-release
