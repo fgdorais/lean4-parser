@@ -1,0 +1,35 @@
+name: Publish Docs
+
+on:
+  workflow_dispatch:
+
+jobs:
+  publish-docs:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Lean
+        uses: leanprover/lean-action@v1
+        with:
+          test: false
+          lint: false
+          use-github-cache: true
+
+      - name: Build Docs
+        working-directory: docs
+        run: |
+          lake build Parser:docs
+
+      - name: Publish Docs
+        run: |
+          git config user.name 'Parser Bot'
+          git config user.email 'parser-bot@users.noreply.github.com'
+          git checkout -b docs
+          git add docs/doc docs/doc-data
+          git commit -m 'chore: generate docs'
+          git push origin docs --force
