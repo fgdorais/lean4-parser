@@ -1,0 +1,1 @@
+{"name":"Lean.Elab.Tactic.Change","instances":[],"imports":["Lean.Meta.Tactic.Replace","Lean.Elab.Tactic.Location"],"declarations":[]}
