@@ -119,7 +119,7 @@ def notFollowedBy (p : ParserT ε σ τ m α) : ParserT ε σ τ m PUnit := do
 abbrev endOfInput : ParserT ε σ τ m PUnit := notFollowedBy anyToken
 
 /--
-`test p` returns `true` if `p` succeeds and `false` otherwise. This parser ever fails.
+`test p` returns `true` if `p` succeeds and `false` otherwise. This parser never fails.
 -/
 @[inline]
 def test (p : ParserT ε σ τ m α) : ParserT ε σ τ m Bool :=
