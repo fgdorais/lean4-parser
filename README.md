@@ -14,8 +14,7 @@ name = "Parser"
 git = "https://github.com/fgdorais/lean4-parser"
 rev = "main"
 ```
-Then add `import Parser` at the top of any Lean file where you plan to use this library.
-
+Then add `import Parser` at the top of any Lean file where you plan to use this library. 
 For example:
 ```lean
 import Parser
