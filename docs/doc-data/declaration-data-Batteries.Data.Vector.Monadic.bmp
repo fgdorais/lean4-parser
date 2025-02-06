@@ -1,0 +1,1 @@
+{"name":"Batteries.Data.Vector.Monadic","instances":[],"imports":["Init","Batteries.Util.ProofWanted","Batteries.Classes.SatisfiesM","Batteries.Data.Array.Monadic"],"declarations":[]}
