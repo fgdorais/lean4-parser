@@ -1,6 +1,5 @@
 name = "Parser"
 defaultTargets = ["Parser"]
-testDriver = "test"
 
 [[require]]
 name = "batteries"
