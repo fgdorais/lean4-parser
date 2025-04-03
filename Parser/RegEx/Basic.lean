@@ -91,7 +91,7 @@ protected def count (re : RegEx α) : ParserT ε σ α m Nat :=
 
 /-- Parses tokens matching regex `re` returning all the matching group segments, otherwise fails -/
 protected partial def «match» (re : RegEx α) : ParserT ε σ α m (Array (Option (Stream.Segment σ))) := do
-  loop re 0 (mkArray re.depth none)
+  loop re 0 (Array.replicate re.depth none)
 where
   loop : RegEx α → Nat → Array (Option (Stream.Segment σ)) → ParserT ε σ α m (Array (Option (Stream.Segment σ)))
     | .set s, _, ms => tokenFilter s *> return ms
