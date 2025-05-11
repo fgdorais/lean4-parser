@@ -1,0 +1,1 @@
+{"name":"Parser","instances":[],"imports":["Init","Parser.Basic","Parser.Char","Parser.Error","Parser.Parser","Parser.Prelude","Parser.RegEx","Parser.Stream"],"declarations":[]}

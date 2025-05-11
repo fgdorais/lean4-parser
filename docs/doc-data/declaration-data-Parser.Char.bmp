@@ -1,0 +1,1 @@
+{"name":"Parser.Char","instances":[],"imports":["Init","Parser.Char.Basic","Parser.Char.Numeric","Parser.Char.Unicode"],"declarations":[]}

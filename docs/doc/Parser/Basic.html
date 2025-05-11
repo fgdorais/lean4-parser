@@ -1,0 +1,920 @@
+<html lang="en"><head><meta charset="UTF-8"></meta><meta name="viewport" content="width=device-width, initial-scale=1"></meta><link rel="stylesheet" href=".././style.css"></link><link rel="icon" href=".././favicon.svg"></link><link rel="mask-icon" href=".././favicon.svg" color="#000000"></link><link rel="prefetch" href=".././/declarations/declaration-data.bmp" as="image"></link><title>Parser.Basic</title><script defer="true" src=".././mathjax-config.js"></script><script defer="true" src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script><script defer="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script>const SITE_ROOT=".././";</script><script>const MODULE_NAME="Parser.Basic";</script><script type="module" src=".././jump-src.js"></script><script type="module" src=".././search.js"></script><script type="module" src=".././expand-nav.js"></script><script type="module" src=".././how-about.js"></script><script type="module" src=".././instances.js"></script><script type="module" src=".././importedBy.js"></script></head><body><input id="nav_toggle" type="checkbox"></input><header><h1><label for="nav_toggle"></label><span>Documentation</span></h1><h2 class="header_filename break_within"><span class="name">Parser</span>.<span class="name">Basic</span></h2><form id="search_form"><input type="text" name="q" autocomplete="off"></input>&#32;<button id="search_button" onclick="javascript: form.action='.././search.html';">Search</button></form></header><nav class="internal_nav"><p><a href="#top">return to top</a></p><p class="gh_nav_link"><a href="https://github.com/fgdorais/lean4-parser/blob/9cfe6f912bbb5ce5ad1e06d1b58a30bddae82e63/Parser/Basic.lean">source</a></p><div class="imports"><details><summary>Imports</summary><ul><li><a href=".././Init.html">Init</a></li><li><a href=".././Parser/Error.html">Parser.Error</a></li><li><a href=".././Parser/Parser.html">Parser.Parser</a></li><li><a href=".././Parser/Prelude.html">Parser.Prelude</a></li><li><a href=".././Parser/Stream.html">Parser.Stream</a></li></ul></details><details><summary>Imported by</summary><ul id="imported-by-Parser.Basic" class="imported-by-list"></ul></details></div><div class="nav_link"><a class="break_within" href="#Parser.tokenCore"><span class="name">Parser</span>.<span class="name">tokenCore</span></a></div><div class="nav_link"><a class="break_within" href="#Parser.tokenMap"><span class="name">Parser</span>.<span class="name">tokenMap</span></a></div><div class="nav_link"><a class="break_within" href="#Parser.anyToken"><span class="name">Parser</span>.<span class="name">anyToken</span></a></div><div class="nav_link"><a class="break_within" href="#Parser.tokenFilter"><span class="name">Parser</span>.<span class="name">tokenFilter</span></a></div><div class="nav_link"><a class="break_within" href="#Parser.token"><span class="name">Parser</span>.<span class="name">token</span></a></div><div class="nav_link"><a class="break_within" href="#Parser.tokenArray"><span class="name">Parser</span>.<span class="name">tokenArray</span></a></div><div class="nav_link"><a class="break_within" href="#Parser.tokenList"><span class="name">Parser</span>.<span class="name">tokenList</span></a></div><div class="nav_link"><a class="break_within" href="#Parser.lookAhead"><span class="name">Parser</span>.<span class="name">lookAhead</span></a></div><div class="nav_link"><a class="break_within" href="#Parser.peek"><span class="name">Parser</span>.<span class="name">peek</span></a></div><div class="nav_link"><a class="break_within" href="#Parser.notFollowedBy"><span class="name">Parser</span>.<span class="name">notFollowedBy</span></a></div><div class="nav_link"><a class="break_within" href="#Parser.endOfInput"><span class="name">Parser</span>.<span class="name">endOfInput</span></a></div><div class="nav_link"><a class="break_within" href="#Parser.test"><span class="name">Parser</span>.<span class="name">test</span></a></div><div class="nav_link"><a class="break_within" href="#Parser.foldr"><span class="name">Parser</span>.<span class="name">foldr</span></a></div><div class="nav_link"><a class="break_within" href="#Parser.take"><span class="name">Parser</span>.<span class="name">take</span></a></div><div class="nav_link"><a class="break_within" href="#Parser.take.rest"><span class="name">Parser</span>.<span class="name">take</span>.<span class="name">rest</span></a></div><div class="nav_link"><a class="break_within" href="#Parser.takeUpTo"><span class="name">Parser</span>.<span class="name">takeUpTo</span></a></div><div class="nav_link"><a class="break_within" href="#Parser.takeUpTo.rest"><span class="name">Parser</span>.<span class="name">takeUpTo</span>.<span class="name">rest</span></a></div><div class="nav_link"><a class="break_within" href="#Parser.takeMany"><span class="name">Parser</span>.<span class="name">takeMany</span></a></div><div class="nav_link"><a class="break_within" href="#Parser.takeMany1"><span class="name">Parser</span>.<span class="name">takeMany1</span></a></div><div class="nav_link"><a class="break_within" href="#Parser.takeManyN"><span class="name">Parser</span>.<span class="name">takeManyN</span></a></div><div class="nav_link"><a class="break_within" href="#Parser.takeUntil"><span class="name">Parser</span>.<span class="name">takeUntil</span></a></div><div class="nav_link"><a class="break_within" href="#Parser.takeUntil.rest"><span class="name">Parser</span>.<span class="name">takeUntil</span>.<span class="name">rest</span></a></div><div class="nav_link"><a class="break_within" href="#Parser.drop"><span class="name">Parser</span>.<span class="name">drop</span></a></div><div class="nav_link"><a class="break_within" href="#Parser.dropUpTo"><span class="name">Parser</span>.<span class="name">dropUpTo</span></a></div><div class="nav_link"><a class="break_within" href="#Parser.dropMany"><span class="name">Parser</span>.<span class="name">dropMany</span></a></div><div class="nav_link"><a class="break_within" href="#Parser.dropMany1"><span class="name">Parser</span>.<span class="name">dropMany1</span></a></div><div class="nav_link"><a class="break_within" href="#Parser.dropManyN"><span class="name">Parser</span>.<span class="name">dropManyN</span></a></div><div class="nav_link"><a class="break_within" href="#Parser.dropUntil"><span class="name">Parser</span>.<span class="name">dropUntil</span></a></div><div class="nav_link"><a class="break_within" href="#Parser.dropUntil.loop"><span class="name">Parser</span>.<span class="name">dropUntil</span>.<span class="name">loop</span></a></div><div class="nav_link"><a class="break_within" href="#Parser.count"><span class="name">Parser</span>.<span class="name">count</span></a></div><div class="nav_link"><a class="break_within" href="#Parser.countUpTo"><span class="name">Parser</span>.<span class="name">countUpTo</span></a></div><div class="nav_link"><a class="break_within" href="#Parser.countUpTo.loop"><span class="name">Parser</span>.<span class="name">countUpTo</span>.<span class="name">loop</span></a></div><div class="nav_link"><a class="break_within" href="#Parser.countUntil"><span class="name">Parser</span>.<span class="name">countUntil</span></a></div><div class="nav_link"><a class="break_within" href="#Parser.countUntil.loop"><span class="name">Parser</span>.<span class="name">countUntil</span>.<span class="name">loop</span></a></div><div class="nav_link"><a class="break_within" href="#Parser.endBy"><span class="name">Parser</span>.<span class="name">endBy</span></a></div><div class="nav_link"><a class="break_within" href="#Parser.endBy1"><span class="name">Parser</span>.<span class="name">endBy1</span></a></div><div class="nav_link"><a class="break_within" href="#Parser.sepBy"><span class="name">Parser</span>.<span class="name">sepBy</span></a></div><div class="nav_link"><a class="break_within" href="#Parser.sepBy1"><span class="name">Parser</span>.<span class="name">sepBy1</span></a></div><div class="nav_link"><a class="break_within" href="#Parser.sepNoEndBy"><span class="name">Parser</span>.<span class="name">sepNoEndBy</span></a></div><div class="nav_link"><a class="break_within" href="#Parser.sepNoEndBy1"><span class="name">Parser</span>.<span class="name">sepNoEndBy1</span></a></div><div class="nav_link"><a class="break_within" href="#Parser.sepEndBy"><span class="name">Parser</span>.<span class="name">sepEndBy</span></a></div><div class="nav_link"><a class="break_within" href="#Parser.sepEndBy1"><span class="name">Parser</span>.<span class="name">sepEndBy1</span></a></div></nav><main>
+<div class="mod_doc"><h1 class="markdown-heading" id="Token-Functions">Token Functions <a class="hover-link" href="#Token-Functions">#</a></h1></div><div class="decl" id="Parser.tokenCore"><div class="def"><div class="gh_link"><a href="https://github.com/fgdorais/lean4-parser/blob/9cfe6f912bbb5ce5ad1e06d1b58a30bddae82e63/Parser/Basic.lean#L16-L27">source</a></div><div class="attributes">@[inline]</div>
+<div class="decl_header"><span class="decl_kind">def</span>
+<span class="decl_name"><a class="break_within" href=".././Parser/Basic.html#Parser.tokenCore"><span class="name">Parser</span>.<span class="name">tokenCore</span></a></span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">σ</span> : <a href=".././foundational_types.html">Type</a> (max u_1 u_2)}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">τ</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">ε</span> : <a href=".././foundational_types.html">Type</a> (max u_1 u_2)}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">m</span> : <span class="fn"><a href=".././foundational_types.html">Type</a> (max u_1 u_2) → <a href=".././foundational_types.html">Type</a> u_3</span>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Stream.html#Parser.Stream">Parser.Stream</a> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Error.html#Parser.Error">Parser.Error</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Monad">Monad</a> <span class="fn">m</span></span>]</span></span>
+</span><span class="decl_args">
+<span class="fn">(<span class="fn">next?</span> : <span class="fn"><span class="fn">σ</span> → <span class="fn"><a href=".././Init/Prelude.html#Option">Option</a> (<span class="fn">τ</span> <a href=".././Init/Prelude.html#Prod">×</a> <span class="fn">σ</span>)</span></span>)</span></span>
+<span class="decl_args"> :</span><div class="decl_type"><span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">(<a href=".././Init/Prelude.html#ULift">ULift</a> <span class="fn">τ</span>)</span></span></div></div><p><code><a href=".././Parser/Basic.html#Parser.tokenCore">tokenCore</a> next?</code> reads a token from the stream using <code>next?</code>.</p><p>This is a low-level parser to customize how the parser stream is used.</p><details><summary>Equations</summary><ul class="equations"><li class="equation">One or more equations did not get rendered due to their size.</li></ul></details><details id="instances-for-list-Parser.tokenCore" class="instances-for-list"><summary>Instances For</summary><ul class="instances-for-enum"></ul></details></div></div><div class="decl" id="Parser.tokenMap"><div class="def"><div class="gh_link"><a href="https://github.com/fgdorais/lean4-parser/blob/9cfe6f912bbb5ce5ad1e06d1b58a30bddae82e63/Parser/Basic.lean#L29-L38">source</a></div><div class="attributes">@[specialize #[]]</div>
+<div class="decl_header"><span class="decl_kind">def</span>
+<span class="decl_name"><a class="break_within" href=".././Parser/Basic.html#Parser.tokenMap"><span class="name">Parser</span>.<span class="name">tokenMap</span></a></span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">σ</span> : <a href=".././foundational_types.html">Type</a> (max u_1 u_2)}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">τ</span> : <a href=".././foundational_types.html">Type</a> u_2}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">ε</span> : <a href=".././foundational_types.html">Type</a> (max u_1 u_2)}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">m</span> : <span class="fn"><a href=".././foundational_types.html">Type</a> (max u_1 u_2) → <a href=".././foundational_types.html">Type</a> u_3</span>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Stream.html#Parser.Stream">Parser.Stream</a> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Error.html#Parser.Error">Parser.Error</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Monad">Monad</a> <span class="fn">m</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">α</span> : <a href=".././foundational_types.html">Type</a> (max u_1 u_2)}</span></span>
+</span><span class="decl_args">
+<span class="fn">(<span class="fn">test</span> : <span class="fn"><span class="fn">τ</span> → <span class="fn"><a href=".././Init/Prelude.html#Option">Option</a> <span class="fn">α</span></span></span>)</span></span>
+<span class="decl_args"> :</span><div class="decl_type"><span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">α</span></span></div></div><p><code><a href=".././Parser/Basic.html#Parser.tokenMap">tokenMap</a> <a href=".././Parser/Basic.html#Parser.test">test</a></code> accepts token <code>t</code> with result <code>x</code> if <code><a href=".././Parser/Basic.html#Parser.test">test</a> t = some x</code>, otherise fails reporting
+the unexpected token.</p><details><summary>Equations</summary><ul class="equations"><li class="equation">One or more equations did not get rendered due to their size.</li></ul></details><details id="instances-for-list-Parser.tokenMap" class="instances-for-list"><summary>Instances For</summary><ul class="instances-for-enum"></ul></details></div></div><div class="decl" id="Parser.anyToken"><div class="def"><div class="gh_link"><a href="https://github.com/fgdorais/lean4-parser/blob/9cfe6f912bbb5ce5ad1e06d1b58a30bddae82e63/Parser/Basic.lean#L40-L45">source</a></div><div class="attributes">@[inline]</div>
+<div class="decl_header"><span class="decl_kind">def</span>
+<span class="decl_name"><a class="break_within" href=".././Parser/Basic.html#Parser.anyToken"><span class="name">Parser</span>.<span class="name">anyToken</span></a></span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">σ </span><span class="fn">τ </span><span class="fn">ε</span> : <a href=".././foundational_types.html">Type</a> (max u_1 u_2)}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">m</span> : <span class="fn"><a href=".././foundational_types.html">Type</a> (max u_1 u_2) → <a href=".././foundational_types.html">Type</a> u_3</span>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Stream.html#Parser.Stream">Parser.Stream</a> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Error.html#Parser.Error">Parser.Error</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Monad">Monad</a> <span class="fn">m</span></span>]</span></span>
+</span><span class="decl_args"> :</span><div class="decl_type"><span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">τ</span></span></div></div><p><code><a href=".././Parser/Basic.html#Parser.anyToken">anyToken</a></code> consumes and returns one token from the stream. Only fails on end of stream.</p><details><summary>Equations</summary><ul class="equations"><li class="equation"><a href=".././Parser/Basic.html#Parser.anyToken">Parser.anyToken</a> <a href=".././Init/Prelude.html#Eq">=</a> <span class="fn"><a href=".././Parser/Basic.html#Parser.tokenMap">Parser.tokenMap</a> <a href=".././Init/Prelude.html#Option.some">some</a></span></li></ul></details><details id="instances-for-list-Parser.anyToken" class="instances-for-list"><summary>Instances For</summary><ul class="instances-for-enum"></ul></details></div></div><div class="decl" id="Parser.tokenFilter"><div class="def"><div class="gh_link"><a href="https://github.com/fgdorais/lean4-parser/blob/9cfe6f912bbb5ce5ad1e06d1b58a30bddae82e63/Parser/Basic.lean#L47-L53">source</a></div><div class="attributes">@[inline]</div>
+<div class="decl_header"><span class="decl_kind">def</span>
+<span class="decl_name"><a class="break_within" href=".././Parser/Basic.html#Parser.tokenFilter"><span class="name">Parser</span>.<span class="name">tokenFilter</span></a></span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">σ </span><span class="fn">τ </span><span class="fn">ε</span> : <a href=".././foundational_types.html">Type</a> (max u_1 u_2)}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">m</span> : <span class="fn"><a href=".././foundational_types.html">Type</a> (max u_1 u_2) → <a href=".././foundational_types.html">Type</a> u_3</span>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Stream.html#Parser.Stream">Parser.Stream</a> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Error.html#Parser.Error">Parser.Error</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Monad">Monad</a> <span class="fn">m</span></span>]</span></span>
+</span><span class="decl_args">
+<span class="fn">(<span class="fn">test</span> : <span class="fn"><span class="fn">τ</span> → <a href=".././Init/Prelude.html#Bool">Bool</a></span>)</span></span>
+<span class="decl_args"> :</span><div class="decl_type"><span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">τ</span></span></div></div><p><code><a href=".././Parser/Basic.html#Parser.tokenFilter">tokenFilter</a> <a href=".././Parser/Basic.html#Parser.test">test</a></code> accepts and returns token <code>t</code> if <code><a href=".././Parser/Basic.html#Parser.test">test</a> t = true</code>, otherwise fails reporting
+unexpected token.</p><details><summary>Equations</summary><ul class="equations"><li class="equation"><span class="fn"><a href=".././Parser/Basic.html#Parser.tokenFilter">Parser.tokenFilter</a> <span class="fn">test</span></span> <a href=".././Init/Prelude.html#Eq">=</a> <span class="fn"><a href=".././Parser/Basic.html#Parser.tokenMap">Parser.tokenMap</a> <span class="fn">fun (<span class="fn">c</span> : <span class="fn">τ</span>) =&gt; <a href=".././Init/Prelude.html#ite">if</a> <span class="fn"><span class="fn">test</span> <span class="fn">c</span></span> <a href=".././Init/Prelude.html#Eq">=</a> <a href=".././Init/Prelude.html#Bool.true">true</a> <a href=".././Init/Prelude.html#ite">then</a> <span class="fn"><a href=".././Init/Prelude.html#Option.some">some</a> <span class="fn">c</span></span> <a href=".././Init/Prelude.html#ite">else</a> <a href=".././Init/Prelude.html#Option.none">none</a></span></span></li></ul></details><details id="instances-for-list-Parser.tokenFilter" class="instances-for-list"><summary>Instances For</summary><ul class="instances-for-enum"></ul></details></div></div><div class="decl" id="Parser.token"><div class="def"><div class="gh_link"><a href="https://github.com/fgdorais/lean4-parser/blob/9cfe6f912bbb5ce5ad1e06d1b58a30bddae82e63/Parser/Basic.lean#L55-L60">source</a></div><div class="attributes">@[inline]</div>
+<div class="decl_header"><span class="decl_kind">def</span>
+<span class="decl_name"><a class="break_within" href=".././Parser/Basic.html#Parser.token"><span class="name">Parser</span>.<span class="name">token</span></a></span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">σ </span><span class="fn">τ </span><span class="fn">ε</span> : <a href=".././foundational_types.html">Type</a> (max u_1 u_2)}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">m</span> : <span class="fn"><a href=".././foundational_types.html">Type</a> (max u_1 u_2) → <a href=".././foundational_types.html">Type</a> u_3</span>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Stream.html#Parser.Stream">Parser.Stream</a> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Error.html#Parser.Error">Parser.Error</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Monad">Monad</a> <span class="fn">m</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#BEq">BEq</a> <span class="fn">τ</span></span>]</span></span>
+</span><span class="decl_args">
+<span class="fn">(<span class="fn">tk</span> : <span class="fn">τ</span>)</span></span>
+<span class="decl_args"> :</span><div class="decl_type"><span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">τ</span></span></div></div><p><code><a href=".././Parser/Basic.html#Parser.token">token</a> tk</code> accepts and returns <code>tk</code>, otherwise fails otherwise fails reporting unexpected token.</p><details><summary>Equations</summary><ul class="equations"><li class="equation"><span class="fn"><a href=".././Parser/Basic.html#Parser.token">Parser.token</a> <span class="fn">tk</span></span> <a href=".././Init/Prelude.html#Eq">=</a> <span class="fn"><a href=".././Parser/Basic.html#Parser.tokenFilter">Parser.tokenFilter</a> <span class="fn">fun (<span class="fn">x</span> : <span class="fn">τ</span>) =&gt; <span class="fn">x</span> <a href=".././Init/Prelude.html#BEq.beq">==</a> <span class="fn">tk</span></span></span></li></ul></details><details id="instances-for-list-Parser.token" class="instances-for-list"><summary>Instances For</summary><ul class="instances-for-enum"></ul></details></div></div><div class="decl" id="Parser.tokenArray"><div class="def"><div class="gh_link"><a href="https://github.com/fgdorais/lean4-parser/blob/9cfe6f912bbb5ce5ad1e06d1b58a30bddae82e63/Parser/Basic.lean#L62-L71">source</a></div><div class="decl_header"><span class="decl_kind">def</span>
+<span class="decl_name"><a class="break_within" href=".././Parser/Basic.html#Parser.tokenArray"><span class="name">Parser</span>.<span class="name">tokenArray</span></a></span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">σ </span><span class="fn">τ </span><span class="fn">ε</span> : <a href=".././foundational_types.html">Type</a> (max u_1 u_2)}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">m</span> : <span class="fn"><a href=".././foundational_types.html">Type</a> (max u_1 u_2) → <a href=".././foundational_types.html">Type</a> u_3</span>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Stream.html#Parser.Stream">Parser.Stream</a> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Error.html#Parser.Error">Parser.Error</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Monad">Monad</a> <span class="fn">m</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#BEq">BEq</a> <span class="fn">τ</span></span>]</span></span>
+</span><span class="decl_args">
+<span class="fn">(<span class="fn">tks</span> : <span class="fn"><a href=".././Init/Prelude.html#Array">Array</a> <span class="fn">τ</span></span>)</span></span>
+<span class="decl_args"> :</span><div class="decl_type"><span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">(<a href=".././Init/Prelude.html#Array">Array</a> <span class="fn">τ</span>)</span></span></div></div><p><code><a href=".././Parser/Basic.html#Parser.tokenArray">tokenArray</a> tks</code> accepts and returns tokens from <code>tks</code> in order, otherwise fails reporting the
+first unexpected token.</p><details><summary>Equations</summary><ul class="equations"><li class="equation">One or more equations did not get rendered due to their size.</li></ul></details><details id="instances-for-list-Parser.tokenArray" class="instances-for-list"><summary>Instances For</summary><ul class="instances-for-enum"></ul></details></div></div><div class="decl" id="Parser.tokenList"><div class="def"><div class="gh_link"><a href="https://github.com/fgdorais/lean4-parser/blob/9cfe6f912bbb5ce5ad1e06d1b58a30bddae82e63/Parser/Basic.lean#L73-L82">source</a></div><div class="decl_header"><span class="decl_kind">def</span>
+<span class="decl_name"><a class="break_within" href=".././Parser/Basic.html#Parser.tokenList"><span class="name">Parser</span>.<span class="name">tokenList</span></a></span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">σ </span><span class="fn">τ </span><span class="fn">ε</span> : <a href=".././foundational_types.html">Type</a> (max u_1 u_2)}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">m</span> : <span class="fn"><a href=".././foundational_types.html">Type</a> (max u_1 u_2) → <a href=".././foundational_types.html">Type</a> u_3</span>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Stream.html#Parser.Stream">Parser.Stream</a> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Error.html#Parser.Error">Parser.Error</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Monad">Monad</a> <span class="fn">m</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#BEq">BEq</a> <span class="fn">τ</span></span>]</span></span>
+</span><span class="decl_args">
+<span class="fn">(<span class="fn">tks</span> : <span class="fn"><a href=".././Init/Prelude.html#List">List</a> <span class="fn">τ</span></span>)</span></span>
+<span class="decl_args"> :</span><div class="decl_type"><span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">(<a href=".././Init/Prelude.html#List">List</a> <span class="fn">τ</span>)</span></span></div></div><p><code><a href=".././Parser/Basic.html#Parser.tokenArray">tokenArray</a> tks</code> accepts and returns tokens from <code>tks</code> in order, otherwise fails reporting the
+first unexpected token.</p><details><summary>Equations</summary><ul class="equations"><li class="equation">One or more equations did not get rendered due to their size.</li></ul></details><details id="instances-for-list-Parser.tokenList" class="instances-for-list"><summary>Instances For</summary><ul class="instances-for-enum"></ul></details></div></div><div class="mod_doc"><h1 class="markdown-heading" id="Basic-Combinators">Basic Combinators <a class="hover-link" href="#Basic-Combinators">#</a></h1></div><div class="decl" id="Parser.lookAhead"><div class="def"><div class="gh_link"><a href="https://github.com/fgdorais/lean4-parser/blob/9cfe6f912bbb5ce5ad1e06d1b58a30bddae82e63/Parser/Basic.lean#L86-L98">source</a></div><div class="decl_header"><span class="decl_kind">def</span>
+<span class="decl_name"><a class="break_within" href=".././Parser/Basic.html#Parser.lookAhead"><span class="name">Parser</span>.<span class="name">lookAhead</span></a></span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">σ</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">τ</span> : <a href=".././foundational_types.html">Type</a> u_2}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">ε</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">m</span> : <span class="fn"><a href=".././foundational_types.html">Type</a> u_1 → <a href=".././foundational_types.html">Type</a> u_3</span>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Stream.html#Parser.Stream">Parser.Stream</a> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Error.html#Parser.Error">Parser.Error</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Monad">Monad</a> <span class="fn">m</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">α</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="decl_args">
+<span class="fn">(<span class="fn">p</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">α</span></span>)</span></span>
+<span class="decl_args"> :</span><div class="decl_type"><span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">α</span></span></div></div><p><code><a href=".././Parser/Basic.html#Parser.lookAhead">lookAhead</a> p</code> tries to parses <code>p</code> without consuming any input. If <code>p</code> fails then the stream is
+backtracked with the same error.</p><details><summary>Equations</summary><ul class="equations"><li class="equation">One or more equations did not get rendered due to their size.</li></ul></details><details id="instances-for-list-Parser.lookAhead" class="instances-for-list"><summary>Instances For</summary><ul class="instances-for-enum"></ul></details></div></div><div class="decl" id="Parser.peek"><div class="def"><div class="gh_link"><a href="https://github.com/fgdorais/lean4-parser/blob/9cfe6f912bbb5ce5ad1e06d1b58a30bddae82e63/Parser/Basic.lean#L100-L103">source</a></div><div class="attributes">@[reducible, inline]</div>
+<div class="decl_header"><span class="decl_kind">abbrev</span>
+<span class="decl_name"><a class="break_within" href=".././Parser/Basic.html#Parser.peek"><span class="name">Parser</span>.<span class="name">peek</span></a></span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">σ </span><span class="fn">τ </span><span class="fn">ε</span> : <a href=".././foundational_types.html">Type</a> (max u_1 u_2)}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">m</span> : <span class="fn"><a href=".././foundational_types.html">Type</a> (max u_1 u_2) → <a href=".././foundational_types.html">Type</a> u_3</span>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Stream.html#Parser.Stream">Parser.Stream</a> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Error.html#Parser.Error">Parser.Error</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Monad">Monad</a> <span class="fn">m</span></span>]</span></span>
+</span><span class="decl_args"> :</span><div class="decl_type"><span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">τ</span></span></div></div><p><code><a href=".././Parser/Basic.html#Parser.peek">peek</a></code> returns the next token, without consuming any input. Only fails on end of stream.</p><details><summary>Equations</summary><ul class="equations"><li class="equation"><a href=".././Parser/Basic.html#Parser.peek">Parser.peek</a> <a href=".././Init/Prelude.html#Eq">=</a> <span class="fn"><a href=".././Parser/Basic.html#Parser.lookAhead">Parser.lookAhead</a> <a href=".././Parser/Basic.html#Parser.anyToken">Parser.anyToken</a></span></li></ul></details><details id="instances-for-list-Parser.peek" class="instances-for-list"><summary>Instances For</summary><ul class="instances-for-enum"></ul></details></div></div><div class="decl" id="Parser.notFollowedBy"><div class="def"><div class="gh_link"><a href="https://github.com/fgdorais/lean4-parser/blob/9cfe6f912bbb5ce5ad1e06d1b58a30bddae82e63/Parser/Basic.lean#L105-L114">source</a></div><div class="attributes">@[inline]</div>
+<div class="decl_header"><span class="decl_kind">def</span>
+<span class="decl_name"><a class="break_within" href=".././Parser/Basic.html#Parser.notFollowedBy"><span class="name">Parser</span>.<span class="name">notFollowedBy</span></a></span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">σ</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">τ</span> : <a href=".././foundational_types.html">Type</a> u_2}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">ε</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">m</span> : <span class="fn"><a href=".././foundational_types.html">Type</a> u_1 → <a href=".././foundational_types.html">Type</a> u_3</span>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Stream.html#Parser.Stream">Parser.Stream</a> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Error.html#Parser.Error">Parser.Error</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Monad">Monad</a> <span class="fn">m</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">α</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="decl_args">
+<span class="fn">(<span class="fn">p</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">α</span></span>)</span></span>
+<span class="decl_args"> :</span><div class="decl_type"><span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <a href=".././Init/Prelude.html#PUnit">PUnit</a></span></div></div><p><code><a href=".././Parser/Basic.html#Parser.notFollowedBy">notFollowedBy</a> p</code> succeeds only if <code>p</code> fails. Consumes no input regardless of outcome.</p><details><summary>Equations</summary><ul class="equations"><li class="equation">One or more equations did not get rendered due to their size.</li></ul></details><details id="instances-for-list-Parser.notFollowedBy" class="instances-for-list"><summary>Instances For</summary><ul class="instances-for-enum"></ul></details></div></div><div class="decl" id="Parser.endOfInput"><div class="def"><div class="gh_link"><a href="https://github.com/fgdorais/lean4-parser/blob/9cfe6f912bbb5ce5ad1e06d1b58a30bddae82e63/Parser/Basic.lean#L116-L119">source</a></div><div class="attributes">@[reducible, inline]</div>
+<div class="decl_header"><span class="decl_kind">abbrev</span>
+<span class="decl_name"><a class="break_within" href=".././Parser/Basic.html#Parser.endOfInput"><span class="name">Parser</span>.<span class="name">endOfInput</span></a></span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">σ </span><span class="fn">τ </span><span class="fn">ε</span> : <a href=".././foundational_types.html">Type</a> (max u_1 u_2)}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">m</span> : <span class="fn"><a href=".././foundational_types.html">Type</a> (max u_1 u_2) → <a href=".././foundational_types.html">Type</a> u_3</span>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Stream.html#Parser.Stream">Parser.Stream</a> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Error.html#Parser.Error">Parser.Error</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Monad">Monad</a> <span class="fn">m</span></span>]</span></span>
+</span><span class="decl_args"> :</span><div class="decl_type"><span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <a href=".././Init/Prelude.html#PUnit">PUnit</a></span></div></div><p><code><a href=".././Parser/Basic.html#Parser.endOfInput">endOfInput</a></code> succeeds only on end of stream. Consumes no input.</p><details><summary>Equations</summary><ul class="equations"><li class="equation"><a href=".././Parser/Basic.html#Parser.endOfInput">Parser.endOfInput</a> <a href=".././Init/Prelude.html#Eq">=</a> <span class="fn"><a href=".././Parser/Basic.html#Parser.notFollowedBy">Parser.notFollowedBy</a> <a href=".././Parser/Basic.html#Parser.anyToken">Parser.anyToken</a></span></li></ul></details><details id="instances-for-list-Parser.endOfInput" class="instances-for-list"><summary>Instances For</summary><ul class="instances-for-enum"></ul></details></div></div><div class="decl" id="Parser.test"><div class="def"><div class="gh_link"><a href="https://github.com/fgdorais/lean4-parser/blob/9cfe6f912bbb5ce5ad1e06d1b58a30bddae82e63/Parser/Basic.lean#L121-L126">source</a></div><div class="attributes">@[inline]</div>
+<div class="decl_header"><span class="decl_kind">def</span>
+<span class="decl_name"><a class="break_within" href=".././Parser/Basic.html#Parser.test"><span class="name">Parser</span>.<span class="name">test</span></a></span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">σ</span> : <a href=".././foundational_types.html">Type</a>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">τ</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">ε</span> : <a href=".././foundational_types.html">Type</a>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">m</span> : <span class="fn"><a href=".././foundational_types.html">Type</a> → <a href=".././foundational_types.html">Type</a> u_2</span>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Stream.html#Parser.Stream">Parser.Stream</a> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Error.html#Parser.Error">Parser.Error</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Monad">Monad</a> <span class="fn">m</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">α</span> : <a href=".././foundational_types.html">Type</a>}</span></span>
+</span><span class="decl_args">
+<span class="fn">(<span class="fn">p</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">α</span></span>)</span></span>
+<span class="decl_args"> :</span><div class="decl_type"><span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <a href=".././Init/Prelude.html#Bool">Bool</a></span></div></div><p><code><a href=".././Parser/Basic.html#Parser.test">test</a> p</code> returns <code>true</code> if <code>p</code> succeeds and <code>false</code> otherwise. This parser never fails.</p><details><summary>Equations</summary><ul class="equations"><li class="equation"><span class="fn"><a href=".././Parser/Basic.html#Parser.test">Parser.test</a> <span class="fn">p</span></span> <a href=".././Init/Prelude.html#Eq">=</a> <span class="fn"><a href=".././Parser/Parser.html#Parser.optionD">Parser.optionD</a> <span class="fn">(<span class="fn">p</span> *&gt; <span class="fn"><a href=".././Init/Prelude.html#Pure.pure">pure</a> <a href=".././Init/Prelude.html#Bool.true">true</a></span>)</span> <a href=".././Init/Prelude.html#Bool.false">false</a></span></li></ul></details><details id="instances-for-list-Parser.test" class="instances-for-list"><summary>Instances For</summary><ul class="instances-for-enum"></ul></details></div></div><div class="mod_doc"><h3 class="markdown-heading" id="foldr"><code><a href=".././Parser/Basic.html#Parser.foldr">foldr</a></code> <a class="hover-link" href="#foldr">#</a></h3></div><div class="decl" id="Parser.foldr"><div class="opaque"><div class="gh_link"><a href="https://github.com/fgdorais/lean4-parser/blob/9cfe6f912bbb5ce5ad1e06d1b58a30bddae82e63/Parser/Basic.lean#L130-L138">source</a></div><div class="attributes">@[inline]</div>
+<div class="decl_header"><span class="decl_kind">partial def</span>
+<span class="decl_name"><a class="break_within" href=".././Parser/Basic.html#Parser.foldr"><span class="name">Parser</span>.<span class="name">foldr</span></a></span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">σ</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">τ</span> : <a href=".././foundational_types.html">Type</a> u_2}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">ε</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">m</span> : <span class="fn"><a href=".././foundational_types.html">Type</a> u_1 → <a href=".././foundational_types.html">Type</a> u_3</span>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Stream.html#Parser.Stream">Parser.Stream</a> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Error.html#Parser.Error">Parser.Error</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Monad">Monad</a> <span class="fn">m</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">α </span><span class="fn">β</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="decl_args">
+<span class="fn">(<span class="fn">f</span> : <span class="fn"><span class="fn">α</span> → <span class="fn"><span class="fn">β</span> → <span class="fn">β</span></span></span>)</span></span>
+<span class="decl_args">
+<span class="fn">(<span class="fn">p</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">α</span></span>)</span></span>
+<span class="decl_args">
+<span class="fn">(<span class="fn">q</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">β</span></span>)</span></span>
+<span class="decl_args"> :</span><div class="decl_type"><span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">β</span></span></div></div><p><code><a href=".././Parser/Basic.html#Parser.foldr">foldr</a> f p q</code></p></div></div><div class="mod_doc"><h3 class="markdown-heading" id="take-family"><code><a href=".././Parser/Basic.html#Parser.take">take</a></code> family <a class="hover-link" href="#take-family">#</a></h3></div><div class="decl" id="Parser.take"><div class="def"><div class="gh_link"><a href="https://github.com/fgdorais/lean4-parser/blob/9cfe6f912bbb5ce5ad1e06d1b58a30bddae82e63/Parser/Basic.lean#L142-L152">source</a></div><div class="attributes">@[inline]</div>
+<div class="decl_header"><span class="decl_kind">def</span>
+<span class="decl_name"><a class="break_within" href=".././Parser/Basic.html#Parser.take"><span class="name">Parser</span>.<span class="name">take</span></a></span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">σ</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">τ</span> : <a href=".././foundational_types.html">Type</a> u_2}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">ε</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">m</span> : <span class="fn"><a href=".././foundational_types.html">Type</a> u_1 → <a href=".././foundational_types.html">Type</a> u_3</span>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Stream.html#Parser.Stream">Parser.Stream</a> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Error.html#Parser.Error">Parser.Error</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Monad">Monad</a> <span class="fn">m</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">α</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="decl_args">
+<span class="fn">(<span class="fn">n</span> : <a href=".././Init/Prelude.html#Nat">Nat</a>)</span></span>
+<span class="decl_args">
+<span class="fn">(<span class="fn">p</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">α</span></span>)</span></span>
+<span class="decl_args"> :</span><div class="decl_type"><span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">(<a href=".././Init/Prelude.html#Array">Array</a> <span class="fn">α</span>)</span></span></div></div><p><code><a href=".././Parser/Basic.html#Parser.take">take</a> n p</code> parses exactly <code>n</code> occurrences of <code>p</code>, and returns an array of the returned values
+of <code>p</code>.</p><details><summary>Equations</summary><ul class="equations"><li class="equation"><span class="fn"><a href=".././Parser/Basic.html#Parser.take">Parser.take</a> <span class="fn">n</span> <span class="fn">p</span></span> <a href=".././Init/Prelude.html#Eq">=</a> <span class="fn"><a href=".././Parser/Parser.html#Parser.withBacktracking">Parser.withBacktracking</a> <span class="fn">(<a href=".././Parser/Basic.html#Parser.take.rest">Parser.take.rest</a> <span class="fn">p</span> <span class="fn">n</span> <a href=".././Init/Prelude.html#List.toArray">#[</a><a href=".././Init/Prelude.html#List.toArray">]</a>)</span></span></li></ul></details><details id="instances-for-list-Parser.take" class="instances-for-list"><summary>Instances For</summary><ul class="instances-for-enum"></ul></details></div></div><div class="decl" id="Parser.take.rest"><div class="def"><div class="gh_link"><a href="https://github.com/fgdorais/lean4-parser/blob/9cfe6f912bbb5ce5ad1e06d1b58a30bddae82e63/Parser/Basic.lean#L150-L152">source</a></div><div class="decl_header"><span class="decl_kind">def</span>
+<span class="decl_name"><a class="break_within" href=".././Parser/Basic.html#Parser.take.rest"><span class="name">Parser</span>.<span class="name">take</span>.<span class="name">rest</span></a></span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">σ</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">τ</span> : <a href=".././foundational_types.html">Type</a> u_2}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">ε</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">m</span> : <span class="fn"><a href=".././foundational_types.html">Type</a> u_1 → <a href=".././foundational_types.html">Type</a> u_3</span>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Stream.html#Parser.Stream">Parser.Stream</a> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Error.html#Parser.Error">Parser.Error</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Monad">Monad</a> <span class="fn">m</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">α</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="decl_args">
+<span class="fn">(<span class="fn">p</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">α</span></span>)</span></span>
+<span class="decl_args"> :</span><div class="decl_type"><span class="fn"><a href=".././Init/Prelude.html#Nat">Nat</a> → <span class="fn"><span class="fn"><a href=".././Init/Prelude.html#Array">Array</a> <span class="fn">α</span></span> → <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">(<a href=".././Init/Prelude.html#Array">Array</a> <span class="fn">α</span>)</span></span></span></span></div></div><details><summary>Equations</summary><ul class="equations"><li class="equation"><span class="fn"><a href=".././Parser/Basic.html#Parser.take.rest">Parser.take.rest</a> <span class="fn">p</span> <span class="fn">0</span> <span class="fn">x✝</span></span> <a href=".././Init/Prelude.html#Eq">=</a> <span class="fn"><a href=".././Init/Prelude.html#Pure.pure">pure</a> <span class="fn">x✝</span></span></li><li class="equation"><span class="fn"><a href=".././Parser/Basic.html#Parser.take.rest">Parser.take.rest</a> <span class="fn">p</span> <span class="fn"><span class="fn">n</span>.<a href=".././Init/Prelude.html#Nat.succ">succ</a></span> <span class="fn">x✝</span></span> <a href=".././Init/Prelude.html#Eq">=</a> <span class="fn">do
+  let <span class="fn">__do_lift</span> ← <span class="fn">p</span>
+  <span class="fn"><a href=".././Parser/Basic.html#Parser.take.rest">Parser.take.rest</a> <span class="fn">p</span> <span class="fn">n</span> <span class="fn">(<span class="fn"><span class="fn">x✝</span>.<a href=".././Init/Prelude.html#Array.push">push</a></span> <span class="fn">__do_lift</span>)</span></span></span></li></ul></details><details id="instances-for-list-Parser.take.rest" class="instances-for-list"><summary>Instances For</summary><ul class="instances-for-enum"></ul></details></div></div><div class="decl" id="Parser.takeUpTo"><div class="def"><div class="gh_link"><a href="https://github.com/fgdorais/lean4-parser/blob/9cfe6f912bbb5ce5ad1e06d1b58a30bddae82e63/Parser/Basic.lean#L154-L167">source</a></div><div class="attributes">@[inline]</div>
+<div class="decl_header"><span class="decl_kind">def</span>
+<span class="decl_name"><a class="break_within" href=".././Parser/Basic.html#Parser.takeUpTo"><span class="name">Parser</span>.<span class="name">takeUpTo</span></a></span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">σ</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">τ</span> : <a href=".././foundational_types.html">Type</a> u_2}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">ε</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">m</span> : <span class="fn"><a href=".././foundational_types.html">Type</a> u_1 → <a href=".././foundational_types.html">Type</a> u_3</span>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Stream.html#Parser.Stream">Parser.Stream</a> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Error.html#Parser.Error">Parser.Error</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Monad">Monad</a> <span class="fn">m</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">α</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="decl_args">
+<span class="fn">(<span class="fn">n</span> : <a href=".././Init/Prelude.html#Nat">Nat</a>)</span></span>
+<span class="decl_args">
+<span class="fn">(<span class="fn">p</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">α</span></span>)</span></span>
+<span class="decl_args"> :</span><div class="decl_type"><span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">(<a href=".././Init/Prelude.html#Array">Array</a> <span class="fn">α</span>)</span></span></div></div><p><code><a href=".././Parser/Basic.html#Parser.takeUpTo">takeUpTo</a> n p</code> parses up to <code>n</code> occurrences of <code>p</code>, and returns an array of the returned values
+of <code>p</code>. This parser never fails.</p><details><summary>Equations</summary><ul class="equations"><li class="equation"><span class="fn"><a href=".././Parser/Basic.html#Parser.takeUpTo">Parser.takeUpTo</a> <span class="fn">n</span> <span class="fn">p</span></span> <a href=".././Init/Prelude.html#Eq">=</a> <span class="fn"><a href=".././Parser/Basic.html#Parser.takeUpTo.rest">Parser.takeUpTo.rest</a> <span class="fn">p</span> <span class="fn">n</span> <a href=".././Init/Prelude.html#List.toArray">#[</a><a href=".././Init/Prelude.html#List.toArray">]</a></span></li></ul></details><details id="instances-for-list-Parser.takeUpTo" class="instances-for-list"><summary>Instances For</summary><ul class="instances-for-enum"></ul></details></div></div><div class="decl" id="Parser.takeUpTo.rest"><div class="def"><div class="gh_link"><a href="https://github.com/fgdorais/lean4-parser/blob/9cfe6f912bbb5ce5ad1e06d1b58a30bddae82e63/Parser/Basic.lean#L162-L167">source</a></div><div class="decl_header"><span class="decl_kind">def</span>
+<span class="decl_name"><a class="break_within" href=".././Parser/Basic.html#Parser.takeUpTo.rest"><span class="name">Parser</span>.<span class="name">takeUpTo</span>.<span class="name">rest</span></a></span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">σ</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">τ</span> : <a href=".././foundational_types.html">Type</a> u_2}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">ε</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">m</span> : <span class="fn"><a href=".././foundational_types.html">Type</a> u_1 → <a href=".././foundational_types.html">Type</a> u_3</span>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Stream.html#Parser.Stream">Parser.Stream</a> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Error.html#Parser.Error">Parser.Error</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Monad">Monad</a> <span class="fn">m</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">α</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="decl_args">
+<span class="fn">(<span class="fn">p</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">α</span></span>)</span></span>
+<span class="decl_args"> :</span><div class="decl_type"><span class="fn"><a href=".././Init/Prelude.html#Nat">Nat</a> → <span class="fn"><span class="fn"><a href=".././Init/Prelude.html#Array">Array</a> <span class="fn">α</span></span> → <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">(<a href=".././Init/Prelude.html#Array">Array</a> <span class="fn">α</span>)</span></span></span></span></div></div><details><summary>Equations</summary><ul class="equations"><li class="equation"><span class="fn"><a href=".././Parser/Basic.html#Parser.takeUpTo.rest">Parser.takeUpTo.rest</a> <span class="fn">p</span> <span class="fn">0</span> <span class="fn">x✝</span></span> <a href=".././Init/Prelude.html#Eq">=</a> <span class="fn"><a href=".././Init/Prelude.html#Pure.pure">pure</a> <span class="fn">x✝</span></span></li><li class="equation"><span class="fn"><a href=".././Parser/Basic.html#Parser.takeUpTo.rest">Parser.takeUpTo.rest</a> <span class="fn">p</span> <span class="fn"><span class="fn">n</span>.<a href=".././Init/Prelude.html#Nat.succ">succ</a></span> <span class="fn">x✝</span></span> <a href=".././Init/Prelude.html#Eq">=</a> <span class="fn">do
+  let <span class="fn">__do_lift</span> ← <span class="fn"><a href=".././Parser/Parser.html#Parser.option?">Parser.option?</a> <span class="fn">p</span></span>
+  <span class="fn">match <span class="fn">__do_lift</span> with
+    | <span class="fn"><a href=".././Init/Prelude.html#Option.some">some</a> <span class="fn">x</span></span> =&gt; <span class="fn"><a href=".././Parser/Basic.html#Parser.takeUpTo.rest">Parser.takeUpTo.rest</a> <span class="fn">p</span> <span class="fn">n</span> <span class="fn">(<span class="fn"><span class="fn">x✝</span>.<a href=".././Init/Prelude.html#Array.push">push</a></span> <span class="fn">x</span>)</span></span>
+    | <a href=".././Init/Prelude.html#Option.none">none</a> =&gt; <span class="fn"><a href=".././Init/Prelude.html#Pure.pure">pure</a> <span class="fn">x✝</span></span></span></span></li></ul></details><details id="instances-for-list-Parser.takeUpTo.rest" class="instances-for-list"><summary>Instances For</summary><ul class="instances-for-enum"></ul></details></div></div><div class="decl" id="Parser.takeMany"><div class="def"><div class="gh_link"><a href="https://github.com/fgdorais/lean4-parser/blob/9cfe6f912bbb5ce5ad1e06d1b58a30bddae82e63/Parser/Basic.lean#L169-L175">source</a></div><div class="attributes">@[inline]</div>
+<div class="decl_header"><span class="decl_kind">def</span>
+<span class="decl_name"><a class="break_within" href=".././Parser/Basic.html#Parser.takeMany"><span class="name">Parser</span>.<span class="name">takeMany</span></a></span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">σ</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">τ</span> : <a href=".././foundational_types.html">Type</a> u_2}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">ε</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">m</span> : <span class="fn"><a href=".././foundational_types.html">Type</a> u_1 → <a href=".././foundational_types.html">Type</a> u_3</span>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Stream.html#Parser.Stream">Parser.Stream</a> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Error.html#Parser.Error">Parser.Error</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Monad">Monad</a> <span class="fn">m</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">α</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="decl_args">
+<span class="fn">(<span class="fn">p</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">α</span></span>)</span></span>
+<span class="decl_args"> :</span><div class="decl_type"><span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">(<a href=".././Init/Prelude.html#Array">Array</a> <span class="fn">α</span>)</span></span></div></div><p><code><a href=".././Parser/Basic.html#Parser.takeMany">takeMany</a> p</code> parses zero or more occurrences of <code>p</code> until it fails, and returns the array of
+returned values of <code>p</code>. This parser never fails.</p><details><summary>Equations</summary><ul class="equations"><li class="equation"><span class="fn"><a href=".././Parser/Basic.html#Parser.takeMany">Parser.takeMany</a> <span class="fn">p</span></span> <a href=".././Init/Prelude.html#Eq">=</a> <span class="fn"><a href=".././Parser/Parser.html#Parser.foldl">Parser.foldl</a> <a href=".././Init/Prelude.html#Array.push">Array.push</a> <a href=".././Init/Prelude.html#List.toArray">#[</a><a href=".././Init/Prelude.html#List.toArray">]</a> <span class="fn">p</span></span></li></ul></details><details id="instances-for-list-Parser.takeMany" class="instances-for-list"><summary>Instances For</summary><ul class="instances-for-enum"></ul></details></div></div><div class="decl" id="Parser.takeMany1"><div class="def"><div class="gh_link"><a href="https://github.com/fgdorais/lean4-parser/blob/9cfe6f912bbb5ce5ad1e06d1b58a30bddae82e63/Parser/Basic.lean#L177-L182">source</a></div><div class="attributes">@[inline]</div>
+<div class="decl_header"><span class="decl_kind">def</span>
+<span class="decl_name"><a class="break_within" href=".././Parser/Basic.html#Parser.takeMany1"><span class="name">Parser</span>.<span class="name">takeMany1</span></a></span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">σ</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">τ</span> : <a href=".././foundational_types.html">Type</a> u_2}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">ε</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">m</span> : <span class="fn"><a href=".././foundational_types.html">Type</a> u_1 → <a href=".././foundational_types.html">Type</a> u_3</span>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Stream.html#Parser.Stream">Parser.Stream</a> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Error.html#Parser.Error">Parser.Error</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Monad">Monad</a> <span class="fn">m</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">α</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="decl_args">
+<span class="fn">(<span class="fn">p</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">α</span></span>)</span></span>
+<span class="decl_args"> :</span><div class="decl_type"><span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">(<a href=".././Init/Prelude.html#Array">Array</a> <span class="fn">α</span>)</span></span></div></div><p><code><a href=".././Parser/Basic.html#Parser.takeMany1">takeMany1</a> p</code> parses one or more occurrences of <code>p</code> until it fails, and returns the array of
+returned values of <code>p</code>. Consumes no input on error.</p><details><summary>Equations</summary><ul class="equations"><li class="equation"><span class="fn"><a href=".././Parser/Basic.html#Parser.takeMany1">Parser.takeMany1</a> <span class="fn">p</span></span> <a href=".././Init/Prelude.html#Eq">=</a>   <span class="fn"><a href=".././Parser/Parser.html#Parser.withBacktracking">Parser.withBacktracking</a> <span class="fn">do
+    let <span class="fn">__do_lift</span> ← <span class="fn">p</span>
+    <span class="fn"><a href=".././Parser/Parser.html#Parser.foldl">Parser.foldl</a> <a href=".././Init/Prelude.html#Array.push">Array.push</a> <a href=".././Init/Prelude.html#List.toArray">#[</a><span class="fn">__do_lift</span><a href=".././Init/Prelude.html#List.toArray">]</a> <span class="fn">p</span></span></span></span></li></ul></details><details id="instances-for-list-Parser.takeMany1" class="instances-for-list"><summary>Instances For</summary><ul class="instances-for-enum"></ul></details></div></div><div class="decl" id="Parser.takeManyN"><div class="def"><div class="gh_link"><a href="https://github.com/fgdorais/lean4-parser/blob/9cfe6f912bbb5ce5ad1e06d1b58a30bddae82e63/Parser/Basic.lean#L184-L190">source</a></div><div class="attributes">@[inline]</div>
+<div class="decl_header"><span class="decl_kind">def</span>
+<span class="decl_name"><a class="break_within" href=".././Parser/Basic.html#Parser.takeManyN"><span class="name">Parser</span>.<span class="name">takeManyN</span></a></span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">σ</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">τ</span> : <a href=".././foundational_types.html">Type</a> u_2}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">ε</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">m</span> : <span class="fn"><a href=".././foundational_types.html">Type</a> u_1 → <a href=".././foundational_types.html">Type</a> u_3</span>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Stream.html#Parser.Stream">Parser.Stream</a> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Error.html#Parser.Error">Parser.Error</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Monad">Monad</a> <span class="fn">m</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">α</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="decl_args">
+<span class="fn">(<span class="fn">n</span> : <a href=".././Init/Prelude.html#Nat">Nat</a>)</span></span>
+<span class="decl_args">
+<span class="fn">(<span class="fn">p</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">α</span></span>)</span></span>
+<span class="decl_args"> :</span><div class="decl_type"><span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">(<a href=".././Init/Prelude.html#Array">Array</a> <span class="fn">α</span>)</span></span></div></div><p><code><a href=".././Parser/Basic.html#Parser.takeManyN">takeManyN</a> n p</code> parses <code>n</code> or more occurrences of <code>p</code> until it fails, and returns the array of
+returned values of <code>p</code>. Consumes no input on error.</p><details><summary>Equations</summary><ul class="equations"><li class="equation"><span class="fn"><a href=".././Parser/Basic.html#Parser.takeManyN">Parser.takeManyN</a> <span class="fn">n</span> <span class="fn">p</span></span> <a href=".././Init/Prelude.html#Eq">=</a>   <span class="fn"><a href=".././Parser/Parser.html#Parser.withBacktracking">Parser.withBacktracking</a> <span class="fn">do
+    let <span class="fn">__do_lift</span> ← <span class="fn"><a href=".././Parser/Basic.html#Parser.take">Parser.take</a> <span class="fn">n</span> <span class="fn">p</span></span>
+    <span class="fn"><a href=".././Parser/Parser.html#Parser.foldl">Parser.foldl</a> <a href=".././Init/Prelude.html#Array.push">Array.push</a> <span class="fn">__do_lift</span> <span class="fn">p</span></span></span></span></li></ul></details><details id="instances-for-list-Parser.takeManyN" class="instances-for-list"><summary>Instances For</summary><ul class="instances-for-enum"></ul></details></div></div><div class="decl" id="Parser.takeUntil"><div class="def"><div class="gh_link"><a href="https://github.com/fgdorais/lean4-parser/blob/9cfe6f912bbb5ce5ad1e06d1b58a30bddae82e63/Parser/Basic.lean#L192-L205">source</a></div><div class="decl_header"><span class="decl_kind">def</span>
+<span class="decl_name"><a class="break_within" href=".././Parser/Basic.html#Parser.takeUntil"><span class="name">Parser</span>.<span class="name">takeUntil</span></a></span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">σ</span> : <a href=".././foundational_types.html">Type</a> (max u_1 u_2)}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">τ</span> : <a href=".././foundational_types.html">Type</a> u_3}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">ε</span> : <a href=".././foundational_types.html">Type</a> (max u_1 u_2)}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">m</span> : <span class="fn"><a href=".././foundational_types.html">Type</a> (max u_1 u_2) → <a href=".././foundational_types.html">Type</a> u_4</span>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Stream.html#Parser.Stream">Parser.Stream</a> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Error.html#Parser.Error">Parser.Error</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Monad">Monad</a> <span class="fn">m</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">β </span><span class="fn">α</span> : <a href=".././foundational_types.html">Type</a> (max u_1 u_2)}</span></span>
+</span><span class="decl_args">
+<span class="fn">(<span class="fn">stop</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">β</span></span>)</span></span>
+<span class="decl_args">
+<span class="fn">(<span class="fn">p</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">α</span></span>)</span></span>
+<span class="decl_args"> :</span><div class="decl_type"><span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> (<span class="fn"><a href=".././Init/Prelude.html#Array">Array</a> <span class="fn">α</span></span> <a href=".././Init/Prelude.html#Prod">×</a> <span class="fn">β</span>)</span></div></div><p><code><a href=".././Parser/Basic.html#Parser.takeUntil">takeUntil</a> stop p</code> parses zero or more occurrences of <code>p</code> until <code>stop</code> succeeds, and returns the
+array of returned values of <code>p</code> and the output of <code>stop</code>. If <code>p</code> fails before <code>stop</code> is encountered,
+the error from <code>p</code> is reported and no input is consumed.</p><details><summary>Equations</summary><ul class="equations"><li class="equation"><span class="fn"><a href=".././Parser/Basic.html#Parser.takeUntil">Parser.takeUntil</a> <span class="fn">stop</span> <span class="fn">p</span></span> <a href=".././Init/Prelude.html#Eq">=</a> <span class="fn"><a href=".././Parser/Parser.html#Parser.withBacktracking">Parser.withBacktracking</a> <span class="fn">(<a href=".././Parser/Basic.html#Parser.takeUntil.rest">Parser.takeUntil.rest</a> <span class="fn">stop</span> <span class="fn">p</span> <a href=".././Init/Prelude.html#List.toArray">#[</a><a href=".././Init/Prelude.html#List.toArray">]</a>)</span></span></li></ul></details><details id="instances-for-list-Parser.takeUntil" class="instances-for-list"><summary>Instances For</summary><ul class="instances-for-enum"></ul></details></div></div><div class="decl" id="Parser.takeUntil.rest"><div class="opaque"><div class="gh_link"><a href="https://github.com/fgdorais/lean4-parser/blob/9cfe6f912bbb5ce5ad1e06d1b58a30bddae82e63/Parser/Basic.lean#L202-L205">source</a></div><div class="decl_header"><span class="decl_kind">partial def</span>
+<span class="decl_name"><a class="break_within" href=".././Parser/Basic.html#Parser.takeUntil.rest"><span class="name">Parser</span>.<span class="name">takeUntil</span>.<span class="name">rest</span></a></span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">σ</span> : <a href=".././foundational_types.html">Type</a> (max u_1 u_2)}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">τ</span> : <a href=".././foundational_types.html">Type</a> u_3}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">ε</span> : <a href=".././foundational_types.html">Type</a> (max u_1 u_2)}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">m</span> : <span class="fn"><a href=".././foundational_types.html">Type</a> (max u_1 u_2) → <a href=".././foundational_types.html">Type</a> u_4</span>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Stream.html#Parser.Stream">Parser.Stream</a> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Error.html#Parser.Error">Parser.Error</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Monad">Monad</a> <span class="fn">m</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">β </span><span class="fn">α</span> : <a href=".././foundational_types.html">Type</a> (max u_1 u_2)}</span></span>
+</span><span class="decl_args">
+<span class="fn">(<span class="fn">stop</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">β</span></span>)</span></span>
+<span class="decl_args">
+<span class="fn">(<span class="fn">p</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">α</span></span>)</span></span>
+<span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Inhabited">Inhabited</a> <span class="fn">(<a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> (<span class="fn"><a href=".././Init/Prelude.html#Array">Array</a> <span class="fn">α</span></span> <a href=".././Init/Prelude.html#Prod">×</a> <span class="fn">β</span>))</span></span>]</span></span>
+</span><span class="decl_args">
+<span class="fn">(<span class="fn">acc</span> : <span class="fn"><a href=".././Init/Prelude.html#Array">Array</a> <span class="fn">α</span></span>)</span></span>
+<span class="decl_args"> :</span><div class="decl_type"><span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> (<span class="fn"><a href=".././Init/Prelude.html#Array">Array</a> <span class="fn">α</span></span> <a href=".././Init/Prelude.html#Prod">×</a> <span class="fn">β</span>)</span></div></div></div></div><div class="mod_doc"><h3 class="markdown-heading" id="drop-family"><code><a href=".././Parser/Basic.html#Parser.drop">drop</a></code> family <a class="hover-link" href="#drop-family">#</a></h3></div><div class="decl" id="Parser.drop"><div class="def"><div class="gh_link"><a href="https://github.com/fgdorais/lean4-parser/blob/9cfe6f912bbb5ce5ad1e06d1b58a30bddae82e63/Parser/Basic.lean#L209-L216">source</a></div><div class="attributes">@[inline]</div>
+<div class="decl_header"><span class="decl_kind">def</span>
+<span class="decl_name"><a class="break_within" href=".././Parser/Basic.html#Parser.drop"><span class="name">Parser</span>.<span class="name">drop</span></a></span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">σ</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">τ</span> : <a href=".././foundational_types.html">Type</a> u_2}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">ε</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">m</span> : <span class="fn"><a href=".././foundational_types.html">Type</a> u_1 → <a href=".././foundational_types.html">Type</a> u_3</span>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Stream.html#Parser.Stream">Parser.Stream</a> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Error.html#Parser.Error">Parser.Error</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Monad">Monad</a> <span class="fn">m</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">α</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="decl_args">
+<span class="fn">(<span class="fn">n</span> : <a href=".././Init/Prelude.html#Nat">Nat</a>)</span></span>
+<span class="decl_args">
+<span class="fn">(<span class="fn">p</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">α</span></span>)</span></span>
+<span class="decl_args"> :</span><div class="decl_type"><span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <a href=".././Init/Prelude.html#PUnit">PUnit</a></span></div></div><p><code><a href=".././Parser/Basic.html#Parser.drop">drop</a> n p</code> parses exactly <code>n</code> occurrences of <code>p</code> (without backtracking), ignoring all outputs.</p><details><summary>Equations</summary><ul class="equations"><li class="equation"><span class="fn"><a href=".././Parser/Basic.html#Parser.drop">Parser.drop</a> <span class="fn">0</span> <span class="fn">p</span></span> <a href=".././Init/Prelude.html#Eq">=</a> <span class="fn"><a href=".././Init/Prelude.html#Pure.pure">pure</a> <a href=".././Init/Prelude.html#PUnit.unit">PUnit.unit</a></span></li><li class="equation"><span class="fn"><a href=".././Parser/Basic.html#Parser.drop">Parser.drop</a> <span class="fn"><span class="fn">n_2</span>.<a href=".././Init/Prelude.html#Nat.succ">succ</a></span> <span class="fn">p</span></span> <a href=".././Init/Prelude.html#Eq">=</a> <span class="fn"><span class="fn">p</span> *&gt; <span class="fn"><a href=".././Parser/Basic.html#Parser.drop">Parser.drop</a> <span class="fn">n_2</span> <span class="fn">p</span></span></span></li></ul></details><details id="instances-for-list-Parser.drop" class="instances-for-list"><summary>Instances For</summary><ul class="instances-for-enum"></ul></details></div></div><div class="decl" id="Parser.dropUpTo"><div class="def"><div class="gh_link"><a href="https://github.com/fgdorais/lean4-parser/blob/9cfe6f912bbb5ce5ad1e06d1b58a30bddae82e63/Parser/Basic.lean#L218-L229">source</a></div><div class="attributes">@[inline]</div>
+<div class="decl_header"><span class="decl_kind">def</span>
+<span class="decl_name"><a class="break_within" href=".././Parser/Basic.html#Parser.dropUpTo"><span class="name">Parser</span>.<span class="name">dropUpTo</span></a></span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">σ</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">τ</span> : <a href=".././foundational_types.html">Type</a> u_2}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">ε</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">m</span> : <span class="fn"><a href=".././foundational_types.html">Type</a> u_1 → <a href=".././foundational_types.html">Type</a> u_3</span>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Stream.html#Parser.Stream">Parser.Stream</a> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Error.html#Parser.Error">Parser.Error</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Monad">Monad</a> <span class="fn">m</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">α</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="decl_args">
+<span class="fn">(<span class="fn">n</span> : <a href=".././Init/Prelude.html#Nat">Nat</a>)</span></span>
+<span class="decl_args">
+<span class="fn">(<span class="fn">p</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">α</span></span>)</span></span>
+<span class="decl_args"> :</span><div class="decl_type"><span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <a href=".././Init/Prelude.html#PUnit">PUnit</a></span></div></div><p><code><a href=".././Parser/Basic.html#Parser.dropUpTo">dropUpTo</a> n p</code> parses up to <code>n</code> occurrences of <code>p</code> (with backtracking) ignoring all outputs. This
+parser never fails.</p><details><summary>Equations</summary><ul class="equations"><li class="equation"><span class="fn"><a href=".././Parser/Basic.html#Parser.dropUpTo">Parser.dropUpTo</a> <span class="fn">0</span> <span class="fn">p</span></span> <a href=".././Init/Prelude.html#Eq">=</a> <span class="fn"><a href=".././Init/Prelude.html#Pure.pure">pure</a> <a href=".././Init/Prelude.html#PUnit.unit">PUnit.unit</a></span></li><li class="equation"><span class="fn"><a href=".././Parser/Basic.html#Parser.dropUpTo">Parser.dropUpTo</a> <span class="fn"><span class="fn">n_2</span>.<a href=".././Init/Prelude.html#Nat.succ">succ</a></span> <span class="fn">p</span></span> <a href=".././Init/Prelude.html#Eq">=</a> <span class="fn">do
+  let <span class="fn">__do_lift</span> ← <span class="fn"><a href=".././Parser/Parser.html#Parser.option?">Parser.option?</a> <span class="fn">p</span></span>
+  <span class="fn">match <span class="fn">__do_lift</span> with
+    | <span class="fn"><a href=".././Init/Prelude.html#Option.some">some</a> <span class="fn">val</span></span> =&gt; <span class="fn"><a href=".././Parser/Basic.html#Parser.drop">Parser.drop</a> <span class="fn">n_2</span> <span class="fn">p</span></span>
+    | <a href=".././Init/Prelude.html#Option.none">none</a> =&gt; <span class="fn"><a href=".././Init/Prelude.html#Pure.pure">pure</a> <a href=".././Init/Prelude.html#PUnit.unit">PUnit.unit</a></span></span></span></li></ul></details><details id="instances-for-list-Parser.dropUpTo" class="instances-for-list"><summary>Instances For</summary><ul class="instances-for-enum"></ul></details></div></div><div class="decl" id="Parser.dropMany"><div class="def"><div class="gh_link"><a href="https://github.com/fgdorais/lean4-parser/blob/9cfe6f912bbb5ce5ad1e06d1b58a30bddae82e63/Parser/Basic.lean#L231-L237">source</a></div><div class="attributes">@[inline]</div>
+<div class="decl_header"><span class="decl_kind">def</span>
+<span class="decl_name"><a class="break_within" href=".././Parser/Basic.html#Parser.dropMany"><span class="name">Parser</span>.<span class="name">dropMany</span></a></span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">σ</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">τ</span> : <a href=".././foundational_types.html">Type</a> u_2}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">ε</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">m</span> : <span class="fn"><a href=".././foundational_types.html">Type</a> u_1 → <a href=".././foundational_types.html">Type</a> u_3</span>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Stream.html#Parser.Stream">Parser.Stream</a> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Error.html#Parser.Error">Parser.Error</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Monad">Monad</a> <span class="fn">m</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">α</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="decl_args">
+<span class="fn">(<span class="fn">p</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">α</span></span>)</span></span>
+<span class="decl_args"> :</span><div class="decl_type"><span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <a href=".././Init/Prelude.html#PUnit">PUnit</a></span></div></div><p><code><a href=".././Parser/Basic.html#Parser.dropMany">dropMany</a> p</code> parses zero or more occurrences of <code>p</code> (with backtracking) until it fails, ignoring
+all outputs.</p><details><summary>Equations</summary><ul class="equations"><li class="equation"><span class="fn"><a href=".././Parser/Basic.html#Parser.dropMany">Parser.dropMany</a> <span class="fn">p</span></span> <a href=".././Init/Prelude.html#Eq">=</a> <span class="fn"><a href=".././Parser/Parser.html#Parser.foldl">Parser.foldl</a> <span class="fn">(<a href=".././Init/Prelude.html#Function.const">Function.const</a> <span class="fn">α</span>)</span> <a href=".././Init/Prelude.html#PUnit.unit">PUnit.unit</a> <span class="fn">p</span></span></li></ul></details><details id="instances-for-list-Parser.dropMany" class="instances-for-list"><summary>Instances For</summary><ul class="instances-for-enum"></ul></details></div></div><div class="decl" id="Parser.dropMany1"><div class="def"><div class="gh_link"><a href="https://github.com/fgdorais/lean4-parser/blob/9cfe6f912bbb5ce5ad1e06d1b58a30bddae82e63/Parser/Basic.lean#L239-L245">source</a></div><div class="attributes">@[inline]</div>
+<div class="decl_header"><span class="decl_kind">def</span>
+<span class="decl_name"><a class="break_within" href=".././Parser/Basic.html#Parser.dropMany1"><span class="name">Parser</span>.<span class="name">dropMany1</span></a></span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">σ</span> : <a href=".././foundational_types.html">Type</a>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">τ</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">ε</span> : <a href=".././foundational_types.html">Type</a>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">m</span> : <span class="fn"><a href=".././foundational_types.html">Type</a> → <a href=".././foundational_types.html">Type</a> u_2</span>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Stream.html#Parser.Stream">Parser.Stream</a> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Error.html#Parser.Error">Parser.Error</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Monad">Monad</a> <span class="fn">m</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">α</span> : <a href=".././foundational_types.html">Type</a>}</span></span>
+</span><span class="decl_args">
+<span class="fn">(<span class="fn">p</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">α</span></span>)</span></span>
+<span class="decl_args"> :</span><div class="decl_type"><span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <a href=".././Init/Prelude.html#PUnit">PUnit</a></span></div></div><p><code><a href=".././Parser/Basic.html#Parser.dropMany1">dropMany1</a> p</code> parses one or more occurrences of <code>p</code> (with backtracking) until it fails, ignoring
+all outputs.</p><details><summary>Equations</summary><ul class="equations"><li class="equation"><span class="fn"><a href=".././Parser/Basic.html#Parser.dropMany1">Parser.dropMany1</a> <span class="fn">p</span></span> <a href=".././Init/Prelude.html#Eq">=</a> <span class="fn"><span class="fn"><a href=".././Parser/Parser.html#Parser.withBacktracking">Parser.withBacktracking</a> <span class="fn">p</span></span> *&gt; <span class="fn"><a href=".././Parser/Parser.html#Parser.foldl">Parser.foldl</a> <span class="fn">(<a href=".././Init/Prelude.html#Function.const">Function.const</a> <span class="fn">α</span>)</span> <a href=".././Init/Prelude.html#Unit.unit">(</a><a href=".././Init/Prelude.html#Unit.unit">)</a> <span class="fn">p</span></span></span></li></ul></details><details id="instances-for-list-Parser.dropMany1" class="instances-for-list"><summary>Instances For</summary><ul class="instances-for-enum"></ul></details></div></div><div class="decl" id="Parser.dropManyN"><div class="def"><div class="gh_link"><a href="https://github.com/fgdorais/lean4-parser/blob/9cfe6f912bbb5ce5ad1e06d1b58a30bddae82e63/Parser/Basic.lean#L247-L252">source</a></div><div class="attributes">@[inline]</div>
+<div class="decl_header"><span class="decl_kind">def</span>
+<span class="decl_name"><a class="break_within" href=".././Parser/Basic.html#Parser.dropManyN"><span class="name">Parser</span>.<span class="name">dropManyN</span></a></span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">σ</span> : <a href=".././foundational_types.html">Type</a>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">τ</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">ε</span> : <a href=".././foundational_types.html">Type</a>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">m</span> : <span class="fn"><a href=".././foundational_types.html">Type</a> → <a href=".././foundational_types.html">Type</a> u_2</span>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Stream.html#Parser.Stream">Parser.Stream</a> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Error.html#Parser.Error">Parser.Error</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Monad">Monad</a> <span class="fn">m</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">α</span> : <a href=".././foundational_types.html">Type</a>}</span></span>
+</span><span class="decl_args">
+<span class="fn">(<span class="fn">n</span> : <a href=".././Init/Prelude.html#Nat">Nat</a>)</span></span>
+<span class="decl_args">
+<span class="fn">(<span class="fn">p</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">α</span></span>)</span></span>
+<span class="decl_args"> :</span><div class="decl_type"><span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <a href=".././Init/Prelude.html#PUnit">PUnit</a></span></div></div><p><code><a href=".././Parser/Basic.html#Parser.dropManyN">dropManyN</a> n p</code> parses <code>n</code> or more occurrences of <code>p</code> until it fails, ignoring all outputs.</p><details><summary>Equations</summary><ul class="equations"><li class="equation"><span class="fn"><a href=".././Parser/Basic.html#Parser.dropManyN">Parser.dropManyN</a> <span class="fn">n</span> <span class="fn">p</span></span> <a href=".././Init/Prelude.html#Eq">=</a> <span class="fn"><a href=".././Parser/Parser.html#Parser.withBacktracking">Parser.withBacktracking</a> <span class="fn">(<span class="fn"><a href=".././Parser/Basic.html#Parser.drop">Parser.drop</a> <span class="fn">n</span> <span class="fn">p</span></span> *&gt; <span class="fn"><a href=".././Parser/Parser.html#Parser.foldl">Parser.foldl</a> <span class="fn">(<a href=".././Init/Prelude.html#Function.const">Function.const</a> <span class="fn">α</span>)</span> <a href=".././Init/Prelude.html#Unit.unit">(</a><a href=".././Init/Prelude.html#Unit.unit">)</a> <span class="fn">p</span></span>)</span></span></li></ul></details><details id="instances-for-list-Parser.dropManyN" class="instances-for-list"><summary>Instances For</summary><ul class="instances-for-enum"></ul></details></div></div><div class="decl" id="Parser.dropUntil"><div class="def"><div class="gh_link"><a href="https://github.com/fgdorais/lean4-parser/blob/9cfe6f912bbb5ce5ad1e06d1b58a30bddae82e63/Parser/Basic.lean#L254-L265">source</a></div><div class="decl_header"><span class="decl_kind">def</span>
+<span class="decl_name"><a class="break_within" href=".././Parser/Basic.html#Parser.dropUntil"><span class="name">Parser</span>.<span class="name">dropUntil</span></a></span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">σ</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">τ</span> : <a href=".././foundational_types.html">Type</a> u_2}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">ε</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">m</span> : <span class="fn"><a href=".././foundational_types.html">Type</a> u_1 → <a href=".././foundational_types.html">Type</a> u_3</span>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Stream.html#Parser.Stream">Parser.Stream</a> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Error.html#Parser.Error">Parser.Error</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Monad">Monad</a> <span class="fn">m</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">β </span><span class="fn">α</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="decl_args">
+<span class="fn">(<span class="fn">stop</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">β</span></span>)</span></span>
+<span class="decl_args">
+<span class="fn">(<span class="fn">p</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">α</span></span>)</span></span>
+<span class="decl_args"> :</span><div class="decl_type"><span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">β</span></span></div></div><p><code><a href=".././Parser/Basic.html#Parser.dropUntil">dropUntil</a> stop p</code> runs <code>p</code> until <code>stop</code> succeeds, returns the output of <code>stop</code> ignoring all
+outputs from <code>p</code>. If <code>p</code> fails before encountering <code>stop</code> then the error from  <code>p</code> is reported
+and no input is consumed.</p><details><summary>Equations</summary><ul class="equations"><li class="equation"><span class="fn"><a href=".././Parser/Basic.html#Parser.dropUntil">Parser.dropUntil</a> <span class="fn">stop</span> <span class="fn">p</span></span> <a href=".././Init/Prelude.html#Eq">=</a> <span class="fn"><a href=".././Parser/Parser.html#Parser.withBacktracking">Parser.withBacktracking</a> <span class="fn">(<a href=".././Parser/Basic.html#Parser.dropUntil.loop">Parser.dropUntil.loop</a> <span class="fn">stop</span> <span class="fn">p</span>)</span></span></li></ul></details><details id="instances-for-list-Parser.dropUntil" class="instances-for-list"><summary>Instances For</summary><ul class="instances-for-enum"></ul></details></div></div><div class="decl" id="Parser.dropUntil.loop"><div class="opaque"><div class="gh_link"><a href="https://github.com/fgdorais/lean4-parser/blob/9cfe6f912bbb5ce5ad1e06d1b58a30bddae82e63/Parser/Basic.lean#L262-L265">source</a></div><div class="decl_header"><span class="decl_kind">partial def</span>
+<span class="decl_name"><a class="break_within" href=".././Parser/Basic.html#Parser.dropUntil.loop"><span class="name">Parser</span>.<span class="name">dropUntil</span>.<span class="name">loop</span></a></span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">σ</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">τ</span> : <a href=".././foundational_types.html">Type</a> u_2}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">ε</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">m</span> : <span class="fn"><a href=".././foundational_types.html">Type</a> u_1 → <a href=".././foundational_types.html">Type</a> u_3</span>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Stream.html#Parser.Stream">Parser.Stream</a> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Error.html#Parser.Error">Parser.Error</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Monad">Monad</a> <span class="fn">m</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">β </span><span class="fn">α</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="decl_args">
+<span class="fn">(<span class="fn">stop</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">β</span></span>)</span></span>
+<span class="decl_args">
+<span class="fn">(<span class="fn">p</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">α</span></span>)</span></span>
+<span class="decl_args"> :</span><div class="decl_type"><span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">β</span></span></div></div></div></div><div class="mod_doc"><p><code><a href=".././Parser/Basic.html#Parser.count">count</a></code> family</p></div><div class="decl" id="Parser.count"><div class="def"><div class="gh_link"><a href="https://github.com/fgdorais/lean4-parser/blob/9cfe6f912bbb5ce5ad1e06d1b58a30bddae82e63/Parser/Basic.lean#L269-L275">source</a></div><div class="attributes">@[inline]</div>
+<div class="decl_header"><span class="decl_kind">def</span>
+<span class="decl_name"><a class="break_within" href=".././Parser/Basic.html#Parser.count"><span class="name">Parser</span>.<span class="name">count</span></a></span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">σ</span> : <a href=".././foundational_types.html">Type</a>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">τ</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">ε</span> : <a href=".././foundational_types.html">Type</a>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">m</span> : <span class="fn"><a href=".././foundational_types.html">Type</a> → <a href=".././foundational_types.html">Type</a> u_2</span>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Stream.html#Parser.Stream">Parser.Stream</a> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Error.html#Parser.Error">Parser.Error</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Monad">Monad</a> <span class="fn">m</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">α</span> : <a href=".././foundational_types.html">Type</a>}</span></span>
+</span><span class="decl_args">
+<span class="fn">(<span class="fn">p</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">α</span></span>)</span></span>
+<span class="decl_args"> :</span><div class="decl_type"><span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <a href=".././Init/Prelude.html#Nat">Nat</a></span></div></div><p><code><a href=".././Parser/Basic.html#Parser.count">count</a> p</code> parses occurrences of <code>p</code> (with backtracking) until it fails and returns the count of
+successes.</p><details><summary>Equations</summary><ul class="equations"><li class="equation"><span class="fn"><a href=".././Parser/Basic.html#Parser.count">Parser.count</a> <span class="fn">p</span></span> <a href=".././Init/Prelude.html#Eq">=</a> <span class="fn"><a href=".././Parser/Parser.html#Parser.foldl">Parser.foldl</a> <span class="fn">(fun (<span class="fn">n</span> : <a href=".././Init/Prelude.html#Nat">Nat</a>) (<span class="fn">x</span> : <span class="fn">α</span>) =&gt; <span class="fn">n</span> <a href=".././Init/Prelude.html#HAdd.hAdd">+</a> <span class="fn">1</span>)</span> <span class="fn">0</span> <span class="fn">p</span></span></li></ul></details><details id="instances-for-list-Parser.count" class="instances-for-list"><summary>Instances For</summary><ul class="instances-for-enum"></ul></details></div></div><div class="decl" id="Parser.countUpTo"><div class="def"><div class="gh_link"><a href="https://github.com/fgdorais/lean4-parser/blob/9cfe6f912bbb5ce5ad1e06d1b58a30bddae82e63/Parser/Basic.lean#L277-L290">source</a></div><div class="attributes">@[inline]</div>
+<div class="decl_header"><span class="decl_kind">def</span>
+<span class="decl_name"><a class="break_within" href=".././Parser/Basic.html#Parser.countUpTo"><span class="name">Parser</span>.<span class="name">countUpTo</span></a></span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">σ</span> : <a href=".././foundational_types.html">Type</a>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">τ</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">ε</span> : <a href=".././foundational_types.html">Type</a>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">m</span> : <span class="fn"><a href=".././foundational_types.html">Type</a> → <a href=".././foundational_types.html">Type</a> u_2</span>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Stream.html#Parser.Stream">Parser.Stream</a> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Error.html#Parser.Error">Parser.Error</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Monad">Monad</a> <span class="fn">m</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">α</span> : <a href=".././foundational_types.html">Type</a>}</span></span>
+</span><span class="decl_args">
+<span class="fn">(<span class="fn">n</span> : <a href=".././Init/Prelude.html#Nat">Nat</a>)</span></span>
+<span class="decl_args">
+<span class="fn">(<span class="fn">p</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">α</span></span>)</span></span>
+<span class="decl_args"> :</span><div class="decl_type"><span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <a href=".././Init/Prelude.html#Nat">Nat</a></span></div></div><p><code><a href=".././Parser/Basic.html#Parser.countUpTo">countUpTo</a> n p</code> parses up to <code>n</code> occurrences of <code>p</code> until it fails, and returns the count of
+successes. This parser never fails.</p><details><summary>Equations</summary><ul class="equations"><li class="equation"><span class="fn"><a href=".././Parser/Basic.html#Parser.countUpTo">Parser.countUpTo</a> <span class="fn">n</span> <span class="fn">p</span></span> <a href=".././Init/Prelude.html#Eq">=</a> <span class="fn"><a href=".././Parser/Basic.html#Parser.countUpTo.loop">Parser.countUpTo.loop</a> <span class="fn">p</span> <span class="fn">n</span> <span class="fn">0</span></span></li></ul></details><details id="instances-for-list-Parser.countUpTo" class="instances-for-list"><summary>Instances For</summary><ul class="instances-for-enum"></ul></details></div></div><div class="decl" id="Parser.countUpTo.loop"><div class="def"><div class="gh_link"><a href="https://github.com/fgdorais/lean4-parser/blob/9cfe6f912bbb5ce5ad1e06d1b58a30bddae82e63/Parser/Basic.lean#L285-L290">source</a></div><div class="decl_header"><span class="decl_kind">def</span>
+<span class="decl_name"><a class="break_within" href=".././Parser/Basic.html#Parser.countUpTo.loop"><span class="name">Parser</span>.<span class="name">countUpTo</span>.<span class="name">loop</span></a></span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">σ</span> : <a href=".././foundational_types.html">Type</a>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">τ</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">ε</span> : <a href=".././foundational_types.html">Type</a>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">m</span> : <span class="fn"><a href=".././foundational_types.html">Type</a> → <a href=".././foundational_types.html">Type</a> u_2</span>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Stream.html#Parser.Stream">Parser.Stream</a> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Error.html#Parser.Error">Parser.Error</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Monad">Monad</a> <span class="fn">m</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">α</span> : <a href=".././foundational_types.html">Type</a>}</span></span>
+</span><span class="decl_args">
+<span class="fn">(<span class="fn">p</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">α</span></span>)</span></span>
+<span class="decl_args"> :</span><div class="decl_type"><span class="fn"><a href=".././Init/Prelude.html#Nat">Nat</a> → <a href=".././Init/Prelude.html#Nat">Nat</a> → <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <a href=".././Init/Prelude.html#Nat">Nat</a></span></span></div></div><details><summary>Equations</summary><ul class="equations"><li class="equation"><span class="fn"><a href=".././Parser/Basic.html#Parser.countUpTo.loop">Parser.countUpTo.loop</a> <span class="fn">p</span> <span class="fn">0</span> <span class="fn">x✝</span></span> <a href=".././Init/Prelude.html#Eq">=</a> <span class="fn"><a href=".././Init/Prelude.html#Pure.pure">pure</a> <span class="fn">x✝</span></span></li><li class="equation"><span class="fn"><a href=".././Parser/Basic.html#Parser.countUpTo.loop">Parser.countUpTo.loop</a> <span class="fn">p</span> <span class="fn"><span class="fn">n</span>.<a href=".././Init/Prelude.html#Nat.succ">succ</a></span> <span class="fn">x✝</span></span> <a href=".././Init/Prelude.html#Eq">=</a> <span class="fn">do
+  let <span class="fn">__do_lift</span> ← <span class="fn"><a href=".././Parser/Parser.html#Parser.option?">Parser.option?</a> <span class="fn">p</span></span>
+  <span class="fn">match <span class="fn">__do_lift</span> with
+    | <span class="fn"><a href=".././Init/Prelude.html#Option.some">some</a> <span class="fn">val</span></span> =&gt; <span class="fn"><a href=".././Parser/Basic.html#Parser.countUpTo.loop">Parser.countUpTo.loop</a> <span class="fn">p</span> <span class="fn">n</span> (<span class="fn">x✝</span> <a href=".././Init/Prelude.html#HAdd.hAdd">+</a> <span class="fn">1</span>)</span>
+    | <a href=".././Init/Prelude.html#Option.none">none</a> =&gt; <span class="fn"><a href=".././Init/Prelude.html#Pure.pure">pure</a> <span class="fn">x✝</span></span></span></span></li></ul></details><details id="instances-for-list-Parser.countUpTo.loop" class="instances-for-list"><summary>Instances For</summary><ul class="instances-for-enum"></ul></details></div></div><div class="decl" id="Parser.countUntil"><div class="def"><div class="gh_link"><a href="https://github.com/fgdorais/lean4-parser/blob/9cfe6f912bbb5ce5ad1e06d1b58a30bddae82e63/Parser/Basic.lean#L292-L305">source</a></div><div class="decl_header"><span class="decl_kind">def</span>
+<span class="decl_name"><a class="break_within" href=".././Parser/Basic.html#Parser.countUntil"><span class="name">Parser</span>.<span class="name">countUntil</span></a></span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">σ</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">τ</span> : <a href=".././foundational_types.html">Type</a> u_2}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">ε</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">m</span> : <span class="fn"><a href=".././foundational_types.html">Type</a> u_1 → <a href=".././foundational_types.html">Type</a> u_3</span>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Stream.html#Parser.Stream">Parser.Stream</a> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Error.html#Parser.Error">Parser.Error</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Monad">Monad</a> <span class="fn">m</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">β </span><span class="fn">α</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="decl_args">
+<span class="fn">(<span class="fn">stop</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">β</span></span>)</span></span>
+<span class="decl_args">
+<span class="fn">(<span class="fn">p</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">α</span></span>)</span></span>
+<span class="decl_args"> :</span><div class="decl_type"><span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> (<a href=".././Init/Prelude.html#Nat">Nat</a> <a href=".././Init/Prelude.html#Prod">×</a> <span class="fn">β</span>)</span></div></div><p><code><a href=".././Parser/Basic.html#Parser.countUntil">countUntil</a> stop p</code> counts zero or more occurrences of <code>p</code> until <code>stop</code> succeeds, and returns
+the count of successes and the output of <code>stop</code>. If <code>p</code> fails before encountering <code>stop</code> then the
+error from  <code>p</code> is reported and no input is consumed.</p><details><summary>Equations</summary><ul class="equations"><li class="equation"><span class="fn"><a href=".././Parser/Basic.html#Parser.countUntil">Parser.countUntil</a> <span class="fn">stop</span> <span class="fn">p</span></span> <a href=".././Init/Prelude.html#Eq">=</a> <span class="fn"><a href=".././Parser/Parser.html#Parser.withBacktracking">Parser.withBacktracking</a> <span class="fn">(<a href=".././Parser/Basic.html#Parser.countUntil.loop">Parser.countUntil.loop</a> <span class="fn">stop</span> <span class="fn">p</span> <span class="fn">0</span>)</span></span></li></ul></details><details id="instances-for-list-Parser.countUntil" class="instances-for-list"><summary>Instances For</summary><ul class="instances-for-enum"></ul></details></div></div><div class="decl" id="Parser.countUntil.loop"><div class="opaque"><div class="gh_link"><a href="https://github.com/fgdorais/lean4-parser/blob/9cfe6f912bbb5ce5ad1e06d1b58a30bddae82e63/Parser/Basic.lean#L302-L305">source</a></div><div class="decl_header"><span class="decl_kind">partial def</span>
+<span class="decl_name"><a class="break_within" href=".././Parser/Basic.html#Parser.countUntil.loop"><span class="name">Parser</span>.<span class="name">countUntil</span>.<span class="name">loop</span></a></span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">σ</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">τ</span> : <a href=".././foundational_types.html">Type</a> u_2}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">ε</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">m</span> : <span class="fn"><a href=".././foundational_types.html">Type</a> u_1 → <a href=".././foundational_types.html">Type</a> u_3</span>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Stream.html#Parser.Stream">Parser.Stream</a> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Error.html#Parser.Error">Parser.Error</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Monad">Monad</a> <span class="fn">m</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">β </span><span class="fn">α</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="decl_args">
+<span class="fn">(<span class="fn">stop</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">β</span></span>)</span></span>
+<span class="decl_args">
+<span class="fn">(<span class="fn">p</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">α</span></span>)</span></span>
+<span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Inhabited">Inhabited</a> <span class="fn">(<a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> (<a href=".././Init/Prelude.html#Nat">Nat</a> <a href=".././Init/Prelude.html#Prod">×</a> <span class="fn">β</span>))</span></span>]</span></span>
+</span><span class="decl_args">
+<span class="fn">(<span class="fn">ct</span> : <a href=".././Init/Prelude.html#Nat">Nat</a>)</span></span>
+<span class="decl_args"> :</span><div class="decl_type"><span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> (<a href=".././Init/Prelude.html#Nat">Nat</a> <a href=".././Init/Prelude.html#Prod">×</a> <span class="fn">β</span>)</span></div></div></div></div><div class="mod_doc"><h3 class="markdown-heading" id="endBy-family"><code><a href=".././Parser/Basic.html#Parser.endBy">endBy</a></code> family <a class="hover-link" href="#endBy-family">#</a></h3></div><div class="decl" id="Parser.endBy"><div class="def"><div class="gh_link"><a href="https://github.com/fgdorais/lean4-parser/blob/9cfe6f912bbb5ce5ad1e06d1b58a30bddae82e63/Parser/Basic.lean#L316-L330">source</a></div><div class="attributes">@[inline]</div>
+<div class="decl_header"><span class="decl_kind">def</span>
+<span class="decl_name"><a class="break_within" href=".././Parser/Basic.html#Parser.endBy"><span class="name">Parser</span>.<span class="name">endBy</span></a></span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">σ</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">τ</span> : <a href=".././foundational_types.html">Type</a> u_2}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">ε</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">m</span> : <span class="fn"><a href=".././foundational_types.html">Type</a> u_1 → <a href=".././foundational_types.html">Type</a> u_3</span>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Stream.html#Parser.Stream">Parser.Stream</a> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Error.html#Parser.Error">Parser.Error</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Monad">Monad</a> <span class="fn">m</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">β </span><span class="fn">α</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="decl_args">
+<span class="fn">(<span class="fn">sep</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">β</span></span>)</span></span>
+<span class="decl_args">
+<span class="fn">(<span class="fn">p</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">α</span></span>)</span></span>
+<span class="decl_args">
+<span class="fn">(<span class="fn">strict</span> : <a href=".././Init/Prelude.html#Bool">Bool</a> := <a href=".././Init/Prelude.html#Bool.false">false</a>)</span></span>
+<span class="decl_args"> :</span><div class="decl_type"><span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">(<a href=".././Init/Prelude.html#Array">Array</a> <span class="fn">α</span>)</span></span></div></div><p><code><a href=".././Parser/Basic.html#Parser.endBy">endBy</a> p sep</code> parses zero or more occurrences of <code>p</code>, separated and ended by <code>sep</code>, returns
+the array of values returned by <code>p</code>.</p><p>The optional <code>strict</code> parameter controls error reporting:</p><ul>
+<li>If <code>strict = false</code> then this parser never fails and returns the longest possible array.</li>
+<li>If <code>strict = true</code> then this parser returns the longest possible array but fails if there is a
+final occurrence of <code>p</code> without a trailing <code>sep</code>. Then the error of <code>sep</code> is reported.</li>
+</ul><p>No input is consumed on error.</p><details><summary>Equations</summary><ul class="equations"><li class="equation"><span class="fn"><a href=".././Parser/Basic.html#Parser.endBy">Parser.endBy</a> <span class="fn">sep</span> <span class="fn">p</span> <span class="fn">strict</span></span> <a href=".././Init/Prelude.html#Eq">=</a> <span class="fn"><a href=".././Parser/Parser.html#Parser.withBacktracking">Parser.withBacktracking</a> <span class="fn">(<a href=".././Parser/Basic.html#_private.Parser.Basic.0.Parser.endByCore">Parser.endByCore✝</a> <span class="fn">sep</span> <span class="fn">p</span> <a href=".././Init/Prelude.html#List.toArray">#[</a><a href=".././Init/Prelude.html#List.toArray">]</a> <span class="fn">strict</span>)</span></span></li></ul></details><details id="instances-for-list-Parser.endBy" class="instances-for-list"><summary>Instances For</summary><ul class="instances-for-enum"></ul></details></div></div><div class="decl" id="Parser.endBy1"><div class="def"><div class="gh_link"><a href="https://github.com/fgdorais/lean4-parser/blob/9cfe6f912bbb5ce5ad1e06d1b58a30bddae82e63/Parser/Basic.lean#L332-L346">source</a></div><div class="attributes">@[inline]</div>
+<div class="decl_header"><span class="decl_kind">def</span>
+<span class="decl_name"><a class="break_within" href=".././Parser/Basic.html#Parser.endBy1"><span class="name">Parser</span>.<span class="name">endBy1</span></a></span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">σ</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">τ</span> : <a href=".././foundational_types.html">Type</a> u_2}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">ε</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">m</span> : <span class="fn"><a href=".././foundational_types.html">Type</a> u_1 → <a href=".././foundational_types.html">Type</a> u_3</span>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Stream.html#Parser.Stream">Parser.Stream</a> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Error.html#Parser.Error">Parser.Error</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Monad">Monad</a> <span class="fn">m</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">β </span><span class="fn">α</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="decl_args">
+<span class="fn">(<span class="fn">sep</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">β</span></span>)</span></span>
+<span class="decl_args">
+<span class="fn">(<span class="fn">p</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">α</span></span>)</span></span>
+<span class="decl_args">
+<span class="fn">(<span class="fn">strict</span> : <a href=".././Init/Prelude.html#Bool">Bool</a> := <span class="fn"><a href=".././Init/Prelude.html#Decidable.decide">decide</a> <a href=".././Init/Prelude.html#False">False</a></span>)</span></span>
+<span class="decl_args"> :</span><div class="decl_type"><span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">(<a href=".././Init/Prelude.html#Array">Array</a> <span class="fn">α</span>)</span></span></div></div><p><code><a href=".././Parser/Basic.html#Parser.endBy1">endBy1</a> p sep</code> parses one or more occurrences of <code>p</code>, separated and ended by <code>sep</code>, returns
+the array of values returned by <code>p</code>.</p><p>The optional <code>strict</code> parameter controls error reporting after parsing the initial <code>p</code> and <code>sep</code>:</p><ul>
+<li>If <code>strict = false</code> then this parser never fails and returns the longest possible array.</li>
+<li>If <code>strict = true</code> then this parser returns the longest possible array but fails if there is a
+final occurrence of <code>p</code> without a trailing <code>sep</code>. Then the error of <code>sep</code> is reported.</li>
+</ul><p>No input is consumed on error.</p><details><summary>Equations</summary><ul class="equations"><li class="equation"><span class="fn"><a href=".././Parser/Basic.html#Parser.endBy1">Parser.endBy1</a> <span class="fn">sep</span> <span class="fn">p</span> <span class="fn">strict</span></span> <a href=".././Init/Prelude.html#Eq">=</a>   <span class="fn"><a href=".././Parser/Parser.html#Parser.withBacktracking">Parser.withBacktracking</a> <span class="fn">do
+    let <span class="fn">__do_lift</span> ← <span class="fn"><span class="fn">p</span> &lt;* <span class="fn">sep</span></span>
+    <span class="fn"><a href=".././Parser/Basic.html#_private.Parser.Basic.0.Parser.endByCore">Parser.endByCore✝</a> <span class="fn">sep</span> <span class="fn">p</span> <a href=".././Init/Prelude.html#List.toArray">#[</a><span class="fn">__do_lift</span><a href=".././Init/Prelude.html#List.toArray">]</a> <span class="fn">strict</span></span></span></span></li></ul></details><details id="instances-for-list-Parser.endBy1" class="instances-for-list"><summary>Instances For</summary><ul class="instances-for-enum"></ul></details></div></div><div class="mod_doc"><h3 class="markdown-heading" id="sepBy-family"><code><a href=".././Parser/Basic.html#Parser.sepBy">sepBy</a></code> family <a class="hover-link" href="#sepBy-family">#</a></h3></div><div class="decl" id="Parser.sepBy"><div class="def"><div class="gh_link"><a href="https://github.com/fgdorais/lean4-parser/blob/9cfe6f912bbb5ce5ad1e06d1b58a30bddae82e63/Parser/Basic.lean#L357-L374">source</a></div><div class="attributes">@[inline]</div>
+<div class="decl_header"><span class="decl_kind">def</span>
+<span class="decl_name"><a class="break_within" href=".././Parser/Basic.html#Parser.sepBy"><span class="name">Parser</span>.<span class="name">sepBy</span></a></span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">σ</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">τ</span> : <a href=".././foundational_types.html">Type</a> u_2}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">ε</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">m</span> : <span class="fn"><a href=".././foundational_types.html">Type</a> u_1 → <a href=".././foundational_types.html">Type</a> u_3</span>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Stream.html#Parser.Stream">Parser.Stream</a> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Error.html#Parser.Error">Parser.Error</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Monad">Monad</a> <span class="fn">m</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">β </span><span class="fn">α</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="decl_args">
+<span class="fn">(<span class="fn">sep</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">β</span></span>)</span></span>
+<span class="decl_args">
+<span class="fn">(<span class="fn">p</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">α</span></span>)</span></span>
+<span class="decl_args">
+<span class="fn">(<span class="fn">strict</span> : <a href=".././Init/Prelude.html#Bool">Bool</a> := <a href=".././Init/Prelude.html#Bool.false">false</a>)</span></span>
+<span class="decl_args"> :</span><div class="decl_type"><span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">(<a href=".././Init/Prelude.html#Array">Array</a> <span class="fn">α</span>)</span></span></div></div><p><code><a href=".././Parser/Basic.html#Parser.sepBy">sepBy</a> p sep</code> parses zero or more occurrences of <code>p</code>, separated by <code>sep</code>, returns the array of
+values returned by <code>p</code>.</p><p>The optional <code>strict</code> parameter controls error reporting:</p><ul>
+<li>If <code>strict = false</code> then this parser never fails and returns the longest possible array.</li>
+<li>If <code>strict = true</code> then this parser returns the longest possible array but fails if there is a
+final occurrence of <code>sep</code> without a trailing <code>p</code>. Then the error of <code>p</code> is reported.</li>
+</ul><p>No input is consumed on error.</p><details><summary>Equations</summary><ul class="equations"><li class="equation"><span class="fn"><a href=".././Parser/Basic.html#Parser.sepBy">Parser.sepBy</a> <span class="fn">sep</span> <span class="fn">p</span> <span class="fn">strict</span></span> <a href=".././Init/Prelude.html#Eq">=</a>   <span class="fn"><a href=".././Parser/Parser.html#Parser.withBacktracking">Parser.withBacktracking</a> <span class="fn">do
+    let <span class="fn">__do_lift</span> ← <span class="fn"><a href=".././Parser/Parser.html#Parser.option?">Parser.option?</a> <span class="fn">p</span></span>
+    <span class="fn">match <span class="fn">__do_lift</span> with
+      | <span class="fn"><a href=".././Init/Prelude.html#Option.some">some</a> <span class="fn">x</span></span> =&gt; <span class="fn"><a href=".././Parser/Basic.html#_private.Parser.Basic.0.Parser.sepByCore">Parser.sepByCore✝</a> <span class="fn">sep</span> <span class="fn">p</span> <a href=".././Init/Prelude.html#List.toArray">#[</a><span class="fn">x</span><a href=".././Init/Prelude.html#List.toArray">]</a> <span class="fn">strict</span></span>
+      | <a href=".././Init/Prelude.html#Option.none">none</a> =&gt; <span class="fn"><a href=".././Init/Prelude.html#Pure.pure">pure</a> <a href=".././Init/Prelude.html#List.toArray">#[</a><a href=".././Init/Prelude.html#List.toArray">]</a></span></span></span></span></li></ul></details><details id="instances-for-list-Parser.sepBy" class="instances-for-list"><summary>Instances For</summary><ul class="instances-for-enum"></ul></details></div></div><div class="decl" id="Parser.sepBy1"><div class="def"><div class="gh_link"><a href="https://github.com/fgdorais/lean4-parser/blob/9cfe6f912bbb5ce5ad1e06d1b58a30bddae82e63/Parser/Basic.lean#L376-L390">source</a></div><div class="attributes">@[inline]</div>
+<div class="decl_header"><span class="decl_kind">def</span>
+<span class="decl_name"><a class="break_within" href=".././Parser/Basic.html#Parser.sepBy1"><span class="name">Parser</span>.<span class="name">sepBy1</span></a></span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">σ</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">τ</span> : <a href=".././foundational_types.html">Type</a> u_2}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">ε</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">m</span> : <span class="fn"><a href=".././foundational_types.html">Type</a> u_1 → <a href=".././foundational_types.html">Type</a> u_3</span>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Stream.html#Parser.Stream">Parser.Stream</a> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Error.html#Parser.Error">Parser.Error</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Monad">Monad</a> <span class="fn">m</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">β </span><span class="fn">α</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="decl_args">
+<span class="fn">(<span class="fn">sep</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">β</span></span>)</span></span>
+<span class="decl_args">
+<span class="fn">(<span class="fn">p</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">α</span></span>)</span></span>
+<span class="decl_args">
+<span class="fn">(<span class="fn">strict</span> : <a href=".././Init/Prelude.html#Bool">Bool</a> := <a href=".././Init/Prelude.html#Bool.false">false</a>)</span></span>
+<span class="decl_args"> :</span><div class="decl_type"><span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">(<a href=".././Init/Prelude.html#Array">Array</a> <span class="fn">α</span>)</span></span></div></div><p><code><a href=".././Parser/Basic.html#Parser.sepBy1">sepBy1</a> p sep</code> parses one or more occurrences of <code>p</code>, separated by <code>sep</code>, returns the array of
+values returned by <code>p</code>.</p><p>The optional <code>strict</code> parameter controls error reporting after parsing the initial <code>p</code>:</p><ul>
+<li>If <code>strict = false</code> then this parser never fails and returns the longest possible array.</li>
+<li>If <code>strict = true</code> then this parser returns the longest possible array but fails if there is a
+final occurrence of <code>sep</code> without a trailing <code>p</code>. Then the error of <code>p</code> is reported.</li>
+</ul><p>No input is consumed on error.</p><details><summary>Equations</summary><ul class="equations"><li class="equation"><span class="fn"><a href=".././Parser/Basic.html#Parser.sepBy1">Parser.sepBy1</a> <span class="fn">sep</span> <span class="fn">p</span> <span class="fn">strict</span></span> <a href=".././Init/Prelude.html#Eq">=</a>   <span class="fn"><a href=".././Parser/Parser.html#Parser.withBacktracking">Parser.withBacktracking</a> <span class="fn">do
+    let <span class="fn">__do_lift</span> ← <span class="fn">p</span>
+    <span class="fn"><a href=".././Parser/Basic.html#_private.Parser.Basic.0.Parser.sepByCore">Parser.sepByCore✝</a> <span class="fn">sep</span> <span class="fn">p</span> <a href=".././Init/Prelude.html#List.toArray">#[</a><span class="fn">__do_lift</span><a href=".././Init/Prelude.html#List.toArray">]</a> <span class="fn">strict</span></span></span></span></li></ul></details><details id="instances-for-list-Parser.sepBy1" class="instances-for-list"><summary>Instances For</summary><ul class="instances-for-enum"></ul></details></div></div><div class="decl" id="Parser.sepNoEndBy"><div class="def"><div class="gh_link"><a href="https://github.com/fgdorais/lean4-parser/blob/9cfe6f912bbb5ce5ad1e06d1b58a30bddae82e63/Parser/Basic.lean#L392-L398">source</a></div><div class="attributes">@[inline]</div>
+<div class="decl_header"><span class="decl_kind">def</span>
+<span class="decl_name"><a class="break_within" href=".././Parser/Basic.html#Parser.sepNoEndBy"><span class="name">Parser</span>.<span class="name">sepNoEndBy</span></a></span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">σ</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">τ</span> : <a href=".././foundational_types.html">Type</a> u_2}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">ε</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">m</span> : <span class="fn"><a href=".././foundational_types.html">Type</a> u_1 → <a href=".././foundational_types.html">Type</a> u_3</span>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Stream.html#Parser.Stream">Parser.Stream</a> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Error.html#Parser.Error">Parser.Error</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Monad">Monad</a> <span class="fn">m</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">β </span><span class="fn">α</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="decl_args">
+<span class="fn">(<span class="fn">sep</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">β</span></span>)</span></span>
+<span class="decl_args">
+<span class="fn">(<span class="fn">p</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">α</span></span>)</span></span>
+<span class="decl_args"> :</span><div class="decl_type"><span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">(<a href=".././Init/Prelude.html#Array">Array</a> <span class="fn">α</span>)</span></span></div></div><p><code><a href=".././Parser/Basic.html#Parser.sepNoEndBy">sepNoEndBy</a> p sep</code> parses zero or more occurrences of <code>p</code>, separated <code>sep</code> but without a trailing
+<code>sep</code>, returns the array of values returned by <code>p</code>.</p><details><summary>Equations</summary><ul class="equations"><li class="equation"><span class="fn"><a href=".././Parser/Basic.html#Parser.sepNoEndBy">Parser.sepNoEndBy</a> <span class="fn">sep</span> <span class="fn">p</span></span> <a href=".././Init/Prelude.html#Eq">=</a> <span class="fn"><a href=".././Parser/Basic.html#Parser.sepBy">Parser.sepBy</a> <span class="fn">sep</span> <span class="fn">p</span> <a href=".././Init/Prelude.html#Bool.true">true</a></span></li></ul></details><details id="instances-for-list-Parser.sepNoEndBy" class="instances-for-list"><summary>Instances For</summary><ul class="instances-for-enum"></ul></details></div></div><div class="decl" id="Parser.sepNoEndBy1"><div class="def"><div class="gh_link"><a href="https://github.com/fgdorais/lean4-parser/blob/9cfe6f912bbb5ce5ad1e06d1b58a30bddae82e63/Parser/Basic.lean#L400-L406">source</a></div><div class="attributes">@[inline]</div>
+<div class="decl_header"><span class="decl_kind">def</span>
+<span class="decl_name"><a class="break_within" href=".././Parser/Basic.html#Parser.sepNoEndBy1"><span class="name">Parser</span>.<span class="name">sepNoEndBy1</span></a></span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">σ</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">τ</span> : <a href=".././foundational_types.html">Type</a> u_2}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">ε</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">m</span> : <span class="fn"><a href=".././foundational_types.html">Type</a> u_1 → <a href=".././foundational_types.html">Type</a> u_3</span>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Stream.html#Parser.Stream">Parser.Stream</a> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Error.html#Parser.Error">Parser.Error</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Monad">Monad</a> <span class="fn">m</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">β </span><span class="fn">α</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="decl_args">
+<span class="fn">(<span class="fn">sep</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">β</span></span>)</span></span>
+<span class="decl_args">
+<span class="fn">(<span class="fn">p</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">α</span></span>)</span></span>
+<span class="decl_args"> :</span><div class="decl_type"><span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">(<a href=".././Init/Prelude.html#Array">Array</a> <span class="fn">α</span>)</span></span></div></div><p><code><a href=".././Parser/Basic.html#Parser.sepNoEndBy1">sepNoEndBy1</a> p sep</code> parses one or more occurrences of <code>p</code>, separated <code>sep</code> but without a trailing
+<code>sep</code>, returns the array of values returned by <code>p</code>.</p><details><summary>Equations</summary><ul class="equations"><li class="equation"><span class="fn"><a href=".././Parser/Basic.html#Parser.sepNoEndBy1">Parser.sepNoEndBy1</a> <span class="fn">sep</span> <span class="fn">p</span></span> <a href=".././Init/Prelude.html#Eq">=</a> <span class="fn"><a href=".././Parser/Basic.html#Parser.sepBy1">Parser.sepBy1</a> <span class="fn">sep</span> <span class="fn">p</span> <a href=".././Init/Prelude.html#Bool.true">true</a></span></li></ul></details><details id="instances-for-list-Parser.sepNoEndBy1" class="instances-for-list"><summary>Instances For</summary><ul class="instances-for-enum"></ul></details></div></div><div class="decl" id="Parser.sepEndBy"><div class="def"><div class="gh_link"><a href="https://github.com/fgdorais/lean4-parser/blob/9cfe6f912bbb5ce5ad1e06d1b58a30bddae82e63/Parser/Basic.lean#L408-L413">source</a></div><div class="attributes">@[inline]</div>
+<div class="decl_header"><span class="decl_kind">def</span>
+<span class="decl_name"><a class="break_within" href=".././Parser/Basic.html#Parser.sepEndBy"><span class="name">Parser</span>.<span class="name">sepEndBy</span></a></span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">σ</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">τ</span> : <a href=".././foundational_types.html">Type</a> u_2}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">ε</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">m</span> : <span class="fn"><a href=".././foundational_types.html">Type</a> u_1 → <a href=".././foundational_types.html">Type</a> u_3</span>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Stream.html#Parser.Stream">Parser.Stream</a> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Error.html#Parser.Error">Parser.Error</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Monad">Monad</a> <span class="fn">m</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">β </span><span class="fn">α</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="decl_args">
+<span class="fn">(<span class="fn">sep</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">β</span></span>)</span></span>
+<span class="decl_args">
+<span class="fn">(<span class="fn">p</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">α</span></span>)</span></span>
+<span class="decl_args"> :</span><div class="decl_type"><span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">(<a href=".././Init/Prelude.html#Array">Array</a> <span class="fn">α</span>)</span></span></div></div><p><code><a href=".././Parser/Basic.html#Parser.sepEndBy">sepEndBy</a> p sep</code> parses zero or more occurrences of <code>p</code>, separated by <code>sep</code> with an optional
+trailing <code>sep</code>, returns the array of values returned by <code>p</code>. This parser never fails.</p><details><summary>Equations</summary><ul class="equations"><li class="equation"><span class="fn"><a href=".././Parser/Basic.html#Parser.sepEndBy">Parser.sepEndBy</a> <span class="fn">sep</span> <span class="fn">p</span></span> <a href=".././Init/Prelude.html#Eq">=</a> <span class="fn"><span class="fn"><a href=".././Parser/Basic.html#Parser.sepBy">Parser.sepBy</a> <span class="fn">sep</span> <span class="fn">p</span></span> &lt;* <span class="fn"><a href=".././Parser/Parser.html#Parser.optional">Parser.optional</a> <span class="fn">sep</span></span></span></li></ul></details><details id="instances-for-list-Parser.sepEndBy" class="instances-for-list"><summary>Instances For</summary><ul class="instances-for-enum"></ul></details></div></div><div class="decl" id="Parser.sepEndBy1"><div class="def"><div class="gh_link"><a href="https://github.com/fgdorais/lean4-parser/blob/9cfe6f912bbb5ce5ad1e06d1b58a30bddae82e63/Parser/Basic.lean#L415-L421">source</a></div><div class="attributes">@[inline]</div>
+<div class="decl_header"><span class="decl_kind">def</span>
+<span class="decl_name"><a class="break_within" href=".././Parser/Basic.html#Parser.sepEndBy1"><span class="name">Parser</span>.<span class="name">sepEndBy1</span></a></span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">σ</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">τ</span> : <a href=".././foundational_types.html">Type</a> u_2}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">ε</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">m</span> : <span class="fn"><a href=".././foundational_types.html">Type</a> u_1 → <a href=".././foundational_types.html">Type</a> u_3</span>}</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Stream.html#Parser.Stream">Parser.Stream</a> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Parser/Error.html#Parser.Error">Parser.Error</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">[<span class="fn"><a href=".././Init/Prelude.html#Monad">Monad</a> <span class="fn">m</span></span>]</span></span>
+</span><span class="impl_arg"><span class="decl_args">
+<span class="fn">{<span class="fn">β </span><span class="fn">α</span> : <a href=".././foundational_types.html">Type</a> u_1}</span></span>
+</span><span class="decl_args">
+<span class="fn">(<span class="fn">sep</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">β</span></span>)</span></span>
+<span class="decl_args">
+<span class="fn">(<span class="fn">p</span> : <span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">α</span></span>)</span></span>
+<span class="decl_args"> :</span><div class="decl_type"><span class="fn"><a href=".././Parser/Parser.html#ParserT">ParserT</a> <span class="fn">ε</span> <span class="fn">σ</span> <span class="fn">τ</span> <span class="fn">m</span> <span class="fn">(<a href=".././Init/Prelude.html#Array">Array</a> <span class="fn">α</span>)</span></span></div></div><p><code><a href=".././Parser/Basic.html#Parser.sepEndBy1">sepEndBy1</a> p sep</code> parses one or more occurrences of <code>p</code>, separated by <code>sep</code> with an optional
+trailing <code>sep</code>, returns the array of values returned by <code>p</code>. This parser never fails.</p><details><summary>Equations</summary><ul class="equations"><li class="equation"><span class="fn"><a href=".././Parser/Basic.html#Parser.sepEndBy1">Parser.sepEndBy1</a> <span class="fn">sep</span> <span class="fn">p</span></span> <a href=".././Init/Prelude.html#Eq">=</a> <span class="fn"><span class="fn"><a href=".././Parser/Basic.html#Parser.sepBy1">Parser.sepBy1</a> <span class="fn">sep</span> <span class="fn">p</span></span> &lt;* <span class="fn"><a href=".././Parser/Parser.html#Parser.optional">Parser.optional</a> <span class="fn">sep</span></span></span></li></ul></details><details id="instances-for-list-Parser.sepEndBy1" class="instances-for-list"><summary>Instances For</summary><ul class="instances-for-enum"></ul></details></div></div></main>
+<nav class="nav"><iframe src=".././navbar.html" class="navframe" frameBorder="0"></iframe></nav></body></html>
