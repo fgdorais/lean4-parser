@@ -52,8 +52,8 @@ instance (τ) : Parser.Stream (Subarray τ) τ where
   getPosition s := s.start
   setPosition s p :=
     if h : p ≤ s.stop
-    then {s with start := p, start_le_stop := h}
-    else {s with start := s.stop, start_le_stop := Nat.le_refl s.stop}
+    then ⟨{s.internalRepresentation with start := p, start_le_stop := h}⟩
+    else ⟨{s.internalRepresentation with start := s.stop, start_le_stop := Nat.le_refl s.stop}⟩
 
 @[reducible]
 instance : Parser.Stream Batteries.ByteSubarray UInt8 where
