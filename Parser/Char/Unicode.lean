@@ -48,9 +48,9 @@ def hexDigit : ParserT ε σ Char m (Fin 16) :=
 -/
 
 /-- parse character from given general category -/
-def parseGeneralCategory (category : Unicode.GeneralCategory) : ParserT ε σ Char m Char :=
-  withErrorMessage s!"expected character of general category {category.toAbbrev}" do
-    tokenFilter (Unicode.isInGeneralCategory . category)
+def parseGeneralCategory (category : Unicode.GC) : ParserT ε σ Char m Char :=
+  withErrorMessage s!"expected character of general category {category}" do
+    tokenFilter (. ∈ category)
 
 namespace GeneralCategory
 
