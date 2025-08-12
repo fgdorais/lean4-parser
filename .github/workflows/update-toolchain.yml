@@ -12,7 +12,7 @@ jobs:
     steps:
 
       - name: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: install jq
         uses: dcarbone/install-jq-action@v3
