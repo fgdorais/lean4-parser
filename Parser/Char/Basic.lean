@@ -26,8 +26,8 @@ def chars (tks : String) : ParserT ε σ Char m String :=
 def string [Parser.Error ε Substring Char] (tks : String) : ParserT ε Substring Char m String :=
   withErrorMessage s!"expected {repr tks}" do
     let ⟨str, start, stop⟩ ← getStream
-    if start + tks.endPos ≤ stop ∧ String.substrEq tks 0 str start tks.endPos.byteIdx then
-      setPosition (start + tks.endPos)
+    if start.offsetBy tks.endPos ≤ stop ∧ String.Pos.Raw.substrEq tks 0 str start tks.endPos.byteIdx then
+      setPosition (start.offsetBy tks.endPos)
       return tks
     else
       throwUnexpected

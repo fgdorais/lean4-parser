@@ -6,7 +6,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 import Parser.Prelude
 
 /-- `Parser.Stream` class extends `Stream` with position features -/
-protected class Parser.Stream (σ : Type _) (τ : outParam (Type _)) extends Stream σ τ where
+protected class Parser.Stream (σ : Type _) (τ : outParam (Type _)) extends Std.Stream σ τ where
   /-- Position type -/
   Position : Type _
   /-- Get current stream position -/
@@ -26,12 +26,12 @@ abbrev Segment.start [Parser.Stream σ τ] (s : Segment σ) := s.1
 /-- Stop position of stream segment -/
 abbrev Segment.stop [Parser.Stream σ τ] (s : Segment σ) := s.2
 
-/-- Wrapper to make a `Parser.Stream` from a core `Stream` -/
+/-- Wrapper to make a `Parser.Stream` from a `Std.Stream` -/
 @[nolint unusedArguments]
-def mkDefault (σ τ) [Stream σ τ] := σ
+def mkDefault (σ τ) [Std.Stream σ τ] := σ
 
 @[reducible]
-instance (σ τ) [self : Stream σ τ] : Parser.Stream (mkDefault σ τ) τ where
+instance (σ τ) [self : Std.Stream σ τ] : Parser.Stream (mkDefault σ τ) τ where
   toStream := self
   Position := σ
   getPosition s := s
@@ -39,7 +39,7 @@ instance (σ τ) [self : Stream σ τ] : Parser.Stream (mkDefault σ τ) τ wher
 
 @[reducible]
 instance : Parser.Stream Substring Char where
-  Position := String.Pos
+  Position := String.Pos.Raw
   getPosition s := s.startPos
   setPosition s p :=
     if p ≤ s.stopPos
