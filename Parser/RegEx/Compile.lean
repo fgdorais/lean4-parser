@@ -43,7 +43,7 @@ import Parser.RegEx.Basic
 namespace Parser.RegEx
 open Char
 
-private abbrev REParser := TrivialParser Substring Char
+private abbrev REParser := TrivialParser Substring.Raw Char
 
 mutual
 
