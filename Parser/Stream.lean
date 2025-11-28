@@ -38,6 +38,12 @@ instance (σ τ) [self : Std.Stream σ τ] : Parser.Stream (mkDefault σ τ) τ 
   setPosition _ p := p
 
 @[reducible]
+instance : Parser.Stream String.Slice Char where
+  Position := String.Slice
+  getPosition s := s
+  setPosition _ s := s
+
+@[reducible]
 instance : Parser.Stream Substring.Raw Char where
   Position := String.Pos.Raw
   getPosition s := s.startPos
