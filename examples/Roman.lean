@@ -28,7 +28,7 @@ namespace Roman
 open Parser Char
 
 /-- Roman parser monad -/
-protected abbrev Parser := Parser Unit Substring Char
+protected abbrev Parser := Parser Unit String.Slice Char
 
 /-- Parse a roman numeral (uppercase) -/
 protected def parse : Roman.Parser Nat :=
@@ -82,7 +82,7 @@ end Roman
 /-- Interpret the string as a roman numeral -/
 def String.toNatRoman? (s : String) (upper : Bool := true) : Option Nat :=
   let s := if upper then s else s.map .toUpper
-  match Parser.run (Roman.parse <* Parser.endOfInput) s with
+  match Parser.run (Roman.parse <* Parser.endOfInput) s.toSlice with
   | .ok _ (n+1) => some (n+1)
   | _ => none
 

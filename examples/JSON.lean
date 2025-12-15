@@ -25,7 +25,7 @@ namespace JSON
 open Parser Char
 
 /-- JSON parser monad -/
-protected abbrev Parser := SimpleParser Substring Char
+protected abbrev Parser := SimpleParser String.Slice Char
 
 /-- Parse JSON white spaces
 
@@ -155,9 +155,9 @@ protected partial def value : JSON.Parser Unit :=
     JSON.array,
     JSON.string,
     JSON.number,
-    drop 1 <| string "true",
-    drop 1 <| string "false",
-    drop 1 <| string "null",
+    drop 1 <| chars "true",
+    drop 1 <| chars "false",
+    drop 1 <| chars "null",
     throwUnexpectedWithMessage none "expected value"
   ]
 
@@ -204,7 +204,7 @@ end
 
 /-- JSON validator -/
 def validate (str : String) : Bool :=
-  match Parser.run (ws *> JSON.value <* ws <* endOfInput) str with
+  match Parser.run (ws *> JSON.value <* ws <* endOfInput) str.toSlice with
   | .ok _ _ => true
   | .error _ _ => false
 

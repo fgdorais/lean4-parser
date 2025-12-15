@@ -105,7 +105,7 @@ instance : ToString Syntax :=
 -/
 
 /-- BNF parser monad -/
-abbrev BNFParser := SimpleParser Substring Char
+abbrev BNFParser := SimpleParser String.Slice Char
 
 namespace BNFParser
 open Parser Char
@@ -199,7 +199,7 @@ partial def exprAlt : BNFParser ExprAlt :=
 def rule : BNFParser (String × ExprAlt) :=
   withErrorMessage "<rule>" do
     let name ← spaces *> char '<' *> name <* char '>'
-    let _ ← spaces *> string "::="
+    let _ ← spaces *> chars "::="
     let expr ← exprAlt <* lineEnd
     return (name, expr)
 
@@ -214,7 +214,7 @@ end BNFParser
 
 /-- Parse BNF from string -/
 def parse (input : String) : Except String BNF.Syntax :=
-  match (BNFParser.syntax <* Parser.endOfInput).run input.toSubstring with
+  match (BNFParser.syntax <* Parser.endOfInput).run input.toSlice with
   | .ok _ stx => .ok stx
   | .error _ err => .error ("error: " ++ toString err)
 
