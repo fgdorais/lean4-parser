@@ -27,6 +27,10 @@ backtracking and error reporting.
 * The type `Position` is used to record position data for the stream type.
 * `getPosition (s : σ) : Position` returns the current position of stream `s`.
 * `setPosition (s : σ) (p : Position) : σ` restores stream `s` to position `p`.
+* `remaining (s : σ) : Nat` returns an upper bound on remaining tokens in `s`.
+
+  This value must strictly decrease when a token is consumed (`next?` returns `some`).
+  It is used as a termination measure for total fold combinators.
 
 Implementations should try to make the `Position` type as lightweight as possible for `getPosition`
 and `setPosition` to work properly. Often `Position` is just a scalar type or another simple type.
@@ -36,6 +40,9 @@ protected class Parser.Stream (σ : Type _) (τ : outParam (Type _)) extends Std
   Position : Type _
   getPosition : σ → Position
   setPosition : σ → Position → σ
+  /-- An upper bound on the number of remaining tokens. Must strictly decrease when `next?`
+      returns `some`. Used as a well-founded termination measure for fold combinators. -/
+  remaining : σ → Nat
 attribute [reducible, inherit_doc Parser.Stream] Parser.Stream.Position
 attribute [inherit_doc Parser.Stream] Parser.Stream.getPosition Parser.Stream.setPosition
 
@@ -58,18 +65,26 @@ prefer tailored `Parser.Stream` instances to this default.
 @[nolint unusedArguments]
 def mkDefault (σ τ) [Std.Stream σ τ] := σ
 
+/-- Count remaining tokens by iterating the stream. O(n) — only used by `mkDefault`. -/
+private partial def countStreamRemaining (next? : σ → Option (τ × σ)) (s : σ) : Nat :=
+  match next? s with
+  | none => 0
+  | some (_, s') => countStreamRemaining next? s' + 1
+
 @[reducible]
 instance (σ τ) [self : Std.Stream σ τ] : Parser.Stream (mkDefault σ τ) τ where
   toStream := self
   Position := σ
   getPosition s := s
   setPosition _ p := p
+  remaining s := countStreamRemaining self.next? s
 
 @[reducible]
 instance : Parser.Stream String.Slice Char where
   Position := String.Slice
   getPosition s := s
   setPosition _ s := s
+  remaining s := s.endExclusive.offset.byteIdx - s.startInclusive.offset.byteIdx
 
 @[reducible]
 instance : Parser.Stream Substring.Raw Char where
@@ -80,6 +95,7 @@ instance : Parser.Stream Substring.Raw Char where
       { s with startPos := p }
     else
       { s with startPos := s.stopPos }
+  remaining s := s.stopPos.byteIdx - s.startPos.byteIdx
 
 @[reducible]
 instance (τ) : Parser.Stream (Subarray τ) τ where
@@ -90,12 +106,14 @@ instance (τ) : Parser.Stream (Subarray τ) τ where
       ⟨{ s.internalRepresentation with start := p, start_le_stop := h }⟩
     else
       ⟨{ s.internalRepresentation with start := s.stop, start_le_stop := Nat.le_refl s.stop }⟩
+  remaining s := s.stop - s.start
 
 @[reducible]
 instance : Parser.Stream ByteSlice UInt8 where
   Position := Nat
   getPosition s := s.start
   setPosition s p := s.slice p
+  remaining s := s.stop - s.start
 
 /-- `OfList` is a view of a list stream that keeps track of consumed tokens. -/
 structure OfList (τ : Type _) where
@@ -129,6 +147,7 @@ instance (τ) : Parser.Stream (OfList τ) τ where
   Position := Nat
   getPosition s := s.past.length
   setPosition := OfList.setPosition
+  remaining s := s.next.length
   next? s :=
     match s with
     | ⟨x :: rest, past⟩ => some (x, ⟨rest, x :: past⟩)
