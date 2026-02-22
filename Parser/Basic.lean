@@ -128,20 +128,22 @@ def test (p : ParserT ε σ τ m α) : ParserT ε σ τ m Bool :=
 /-! ### `foldr` -/
 
 /-- `foldr f p q` folds `f` from right to left, parsing `p` repeatedly until it fails, then
-finishing with `q`. Uses `Stream.remaining` as fuel to ensure termination. -/
+finishing with `q`. Terminates via well-founded recursion on `Stream.remaining`. -/
 @[inline]
 def foldr (f : α → β → β) (p : ParserT ε σ τ m α) (q : ParserT ε σ τ m β) :
   ParserT ε σ τ m β := do
-  let fuel := Stream.remaining (← getStream)
-  go fuel
+  go (← getStream)
 where
-  go : Nat → ParserT ε σ τ m β
-    | 0 => q
-    | n + 1 => try
-        let x ← withBacktracking p
-        let y ← go n
-        return f x y
-      catch _ => q
+  go (s₀ : σ) : ParserT ε σ τ m β := do
+    try
+      let x ← withBacktracking p
+      let s₁ ← getStream
+      if _h : Stream.remaining s₁ < Stream.remaining s₀ then
+        return f x (← go s₁)
+      else
+        return f x (← q)
+    catch _ => q
+  termination_by Stream.remaining s₀
 
 /-! ### `take` family -/
 
@@ -203,17 +205,19 @@ the error from `p` is reported and no input is consumed.
 def takeUntil (stop : ParserT ε σ τ m β) (p : ParserT ε σ τ m α) :
   ParserT ε σ τ m (Array α × β) :=
   withBacktracking do
-    let fuel := Stream.remaining (← getStream)
-    rest fuel #[]
+    rest (← getStream) #[]
 where
-  rest : Nat → Array α → ParserT ε σ τ m (Array α × β)
-    | 0, acc => do
-      let y ← stop
-      return (acc, y)
-    | n + 1, acc => do
-      match ← option? stop with
-      | some y => return (acc, y)
-      | none => rest n <| acc.push (← p)
+  rest (s₀ : σ) (acc : Array α) : ParserT ε σ τ m (Array α × β) := do
+    match ← option? stop with
+    | some y => return (acc, y)
+    | none =>
+      let x ← p
+      let s₁ ← getStream
+      if _h : Stream.remaining s₁ < Stream.remaining s₀ then
+        rest s₁ (acc.push x)
+      else
+        return (acc.push x, ← stop)
+  termination_by Stream.remaining s₀
 
 /-! ### `drop` family -/
 
@@ -269,15 +273,19 @@ and no input is consumed.
 -/
 def dropUntil (stop : ParserT ε σ τ m β) (p : ParserT ε σ τ m α) : ParserT ε σ τ m β :=
   withBacktracking do
-    let fuel := Stream.remaining (← getStream)
-    loop fuel
+    loop (← getStream)
 where
-  loop : Nat → ParserT ε σ τ m β
-    | 0 => stop
-    | n + 1 => do
-      match ← option? stop with
-      | some s => return s
-      | none => p *> loop n
+  loop (s₀ : σ) : ParserT ε σ τ m β := do
+    match ← option? stop with
+    | some y => return y
+    | none =>
+      let _ ← p
+      let s₁ ← getStream
+      if _h : Stream.remaining s₁ < Stream.remaining s₀ then
+        loop s₁
+      else
+        stop
+  termination_by Stream.remaining s₀
 
 /-! `count` family -/
 
@@ -312,17 +320,19 @@ error from  `p` is reported and no input is consumed.
 def countUntil (stop : ParserT ε σ τ m β) (p : ParserT ε σ τ m α) :
   ParserT ε σ τ m (Nat × β) :=
   withBacktracking do
-    let fuel := Stream.remaining (← getStream)
-    loop fuel 0
+    loop (← getStream) 0
 where
-  loop : Nat → Nat → ParserT ε σ τ m (Nat × β)
-    | 0, ct => do
-      let s ← stop
-      return (ct, s)
-    | n + 1, ct => do
-      match ← option? stop with
-      | some s => return (ct, s)
-      | none => p *> loop n (ct+1)
+  loop (s₀ : σ) (ct : Nat) : ParserT ε σ τ m (Nat × β) := do
+    match ← option? stop with
+    | some y => return (ct, y)
+    | none =>
+      let _ ← p
+      let s₁ ← getStream
+      if h : Stream.remaining s₁ < Stream.remaining s₀ then
+        loop s₁ (ct + 1)
+      else
+        return (ct + 1, ← stop)
+  termination_by Stream.remaining s₀
 
 /-! ### `endBy` family -/
 

@@ -186,28 +186,30 @@ def withErrorMessage (msg : String) (p : ParserT ε σ τ m α) : ParserT ε σ 
 /-! ### `foldl` family -/
 
 /--
-Core loop for `efoldlP`. Terminates structurally on `fuel` (initially `Stream.remaining s`).
+Core loop for `efoldlP`. Terminates via well-founded recursion on `Stream.remaining s`.
 
-When `p` succeeds without consuming input (i.e., `Stream.remaining` does not decrease), the loop
-stops and returns as if `p` had failed. This prevents infinite loops from non-consuming parsers
-while preserving the original semantics for well-behaved (consuming) parsers.
+After each successful `p >>= f` step, we check whether `Stream.remaining` decreased. If not
+(the parser succeeded without consuming input), the loop stops to prevent infinite iteration.
+This matches the original fuel-based semantics but uses `remaining` directly as the termination
+measure rather than a separate fuel parameter.
 -/
 @[specialize]
 private def efoldlPAux [Inhabited ε] [Inhabited σ] [Inhabited β]
-  (f : β → α → ParserT ε σ τ m β) (p : ParserT ε σ τ m α) (y : β) (s : σ)
-  (fuel : Nat := Stream.remaining s) :
-  m (Parser.Result ε σ (β × ε × Bool)) :=
-  match fuel with
-  | 0 =>
-    -- Out of fuel: treat as if p failed (no input consumed).
-    return .ok s (y, Error.unexpected (Stream.getPosition s) none, false)
-  | fuel' + 1 =>
-    let savePos := Stream.getPosition s
-    p s >>= fun
-      | .ok s x => f y x s >>= fun
-        | .ok s y => efoldlPAux f p y s (min fuel' (Stream.remaining s))
-        | .error s e => return .ok (Stream.setPosition s savePos) (y, e, true)
-      | .error s e => return .ok (Stream.setPosition s savePos) (y, e, false)
+  (f : β → α → ParserT ε σ τ m β) (p : ParserT ε σ τ m α) (y : β) (s : σ) :
+  m (Parser.Result ε σ (β × ε × Bool)) := do
+  let savePos := Stream.getPosition s
+  match ← p s with
+  | .ok s' x =>
+    match ← f y x s' with
+    | .ok s'' y' =>
+      if _h : Stream.remaining s'' < Stream.remaining s then
+        efoldlPAux f p y' s''
+      else
+        -- Parser didn't consume; stop to avoid infinite loop.
+        return .ok s'' (y', Error.unexpected (Stream.getPosition s'') none, false)
+    | .error s'' e => return .ok (Stream.setPosition s'' savePos) (y, e, true)
+  | .error s' e => return .ok (Stream.setPosition s' savePos) (y, e, false)
+termination_by Stream.remaining s
 
 /--
 `foldlP f init p` folds the parser function `f` from left to right using `init` as an intitial

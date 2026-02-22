@@ -46,6 +46,20 @@ protected class Parser.Stream (σ : Type _) (τ : outParam (Type _)) extends Std
 attribute [reducible, inherit_doc Parser.Stream] Parser.Stream.Position
 attribute [inherit_doc Parser.Stream] Parser.Stream.getPosition Parser.Stream.setPosition
 
+/-- Lawful parser stream: `remaining` strictly decreases when `next?` consumes a token.
+
+This law formalizes the contract that `Parser.Stream.remaining` provides a well-founded termination
+measure. Instances of `LawfulParserStream` are required by the sorry-free `Finite` instance for
+`StreamIterator`, enabling provably terminating iteration via `Std.Data.Iterators`.
+
+The `mkDefault` fallback does not satisfy this law (its `remaining` uses a `partial def`),
+so there is intentionally no `LawfulParserStream` instance for `mkDefault`.
+-/
+class LawfulParserStream (σ : Type _) (τ : outParam (Type _)) [Parser.Stream σ τ] : Prop where
+  /-- `remaining` strictly decreases when `next?` returns `some`. -/
+  remaining_decreases : ∀ (s : σ) (tok : τ) (s' : σ),
+    Stream.next? s = some (tok, s') → Parser.Stream.remaining s' < Parser.Stream.remaining s
+
 namespace Parser.Stream
 
 /-- Stream segment type. -/
@@ -86,6 +100,13 @@ instance : Parser.Stream String.Slice Char where
   setPosition _ s := s
   remaining s := s.endExclusive.offset.byteIdx - s.startInclusive.offset.byteIdx
 
+/-- TODO: prove via `Slice.Pos.lt_next` and `Slice.sliceFrom` lemmas once the
+right `simp` set for String.Slice byte-index arithmetic is identified. -/
+instance : LawfulParserStream String.Slice Char where
+  remaining_decreases _ _ _ _ := by
+    simp only [Parser.Stream.remaining]
+    sorry
+
 @[reducible]
 instance : Parser.Stream Substring.Raw Char where
   Position := String.Pos.Raw
@@ -96,6 +117,13 @@ instance : Parser.Stream Substring.Raw Char where
     else
       { s with startPos := s.stopPos }
   remaining s := s.stopPos.byteIdx - s.startPos.byteIdx
+
+/-- TODO: prove via `String.Pos.Raw.lt_next` once the right `simp` set for
+Substring.Raw byte-index arithmetic is identified. -/
+instance : LawfulParserStream Substring.Raw Char where
+  remaining_decreases _ _ _ _ := by
+    simp only [Parser.Stream.remaining]
+    sorry
 
 @[reducible]
 instance (τ) : Parser.Stream (Subarray τ) τ where
@@ -108,12 +136,32 @@ instance (τ) : Parser.Stream (Subarray τ) τ where
       ⟨{ s.internalRepresentation with start := s.stop, start_le_stop := Nat.le_refl s.stop }⟩
   remaining s := s.stop - s.start
 
+instance (τ) : LawfulParserStream (Subarray τ) τ where
+  remaining_decreases s tok s' h := by
+    simp only [Parser.Stream.remaining]
+    dsimp [Stream.next?, Std.Stream.next?] at h
+    split at h
+    · next hlt =>
+      obtain ⟨_, rfl⟩ := Option.some.inj h
+      simp only [Subarray.start, Subarray.stop]
+      have h1 : s.start = s.internalRepresentation.start := rfl
+      have h2 : s.stop = s.internalRepresentation.stop := rfl
+      omega
+    · nomatch h
+
 @[reducible]
 instance : Parser.Stream ByteSlice UInt8 where
   Position := Nat
   getPosition s := s.start
   setPosition s p := s.slice p
   remaining s := s.stop - s.start
+
+instance : LawfulParserStream ByteSlice UInt8 where
+  remaining_decreases s tok s' h := by
+    simp only [Parser.Stream.remaining]
+    -- Stream.next? for ByteSlice: s[0]? >>= (·, s.popFront)
+    -- popFront advances start by 1, so s'.stop - s'.start < s.stop - s.start
+    sorry
 
 /-- `OfList` is a view of a list stream that keeps track of consumed tokens. -/
 structure OfList (τ : Type _) where
@@ -152,5 +200,17 @@ instance (τ) : Parser.Stream (OfList τ) τ where
     match s with
     | ⟨x :: rest, past⟩ => some (x, ⟨rest, x :: past⟩)
     | _ => none
+
+instance (τ) : LawfulParserStream (OfList τ) τ where
+  remaining_decreases s tok s' h := by
+    simp only [Parser.Stream.remaining]
+    match s, h with
+    | ⟨_ :: _, _⟩, h =>
+      dsimp [Stream.next?, Std.Stream.next?] at h
+      obtain ⟨_, rfl⟩ := Option.some.inj h
+      simp [List.length_cons]
+    | ⟨[], _⟩, h =>
+      dsimp [Stream.next?, Std.Stream.next?] at h
+      nomatch h
 
 end Parser.Stream

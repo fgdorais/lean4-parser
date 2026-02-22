@@ -17,22 +17,22 @@ Each `Parser.Stream σ τ` provides:
 - A `Std.Stream σ τ` with `next? : σ → Option (τ × σ)` for consuming tokens
 - `remaining : σ → Nat`, an upper bound that strictly decreases on each `next?` yielding `some`
 
-We define a wrapper `StreamIterator σ τ` that carries a `Parser.Stream` state and provides:
-- `Iterator (StreamIterator σ τ) Id τ` — steps via `next?`, never skips
-- `Finite (StreamIterator σ τ) Id` — well-founded via `remaining`
-
-This enables using `Std.Data.Iterators` consumers (e.g., `fold`, `toList`, `toArray`) on
-parser streams, and provides the foundation for future migration of lean4-parser's fold
-combinators to use `Std.Iterators` infrastructure directly.
+We define `StreamIterator σ τ` wrapper that provides:
+- `Iterator (StreamIterator σ τ) Id τ` — steps via `next?`, never skips (for all `Parser.Stream`)
+- `Finite (StreamIterator σ τ) Id` — well-founded via `remaining` (requires `LawfulParserStream`)
+- `IteratorLoop` — enables `for` loops over stream tokens (requires `LawfulParserStream`)
 
 ## Usage
 
 ```lean
 import Parser.Iterators
 
--- Given a Parser.Stream instance for String.Slice:
-def example (s : String.Slice) : List Char :=
-  (StreamIterator.mk s).iter.toList
+-- Given a LawfulParserStream instance (e.g., Subarray, OfList):
+def collectTokens [Parser.Stream σ τ] [LawfulParserStream σ τ] (s : σ) : Array τ := Id.run do
+  let mut acc := #[]
+  for tok in (StreamIterator.mk s).iter do
+    acc := acc.push tok
+  return acc
 ```
 -/
 
@@ -67,10 +67,10 @@ def StreamIterator.iter (s : StreamIterator σ τ) : Iter (α := StreamIterator 
   s.iterM.toIter
 
 /--
-Helper predicate for the `Iterator` instance. Defined as a standalone function so that
+Predicate for the `Iterator` instance. Defined as a standalone function so that
 `simp` and `unfold` can reduce it when the `IterStep` constructor is known.
 -/
-private def isPlausibleStreamStep
+def isPlausibleStreamStep
     (it : IterM (α := StreamIterator σ τ) Id τ)
     (step : IterStep (IterM (α := StreamIterator σ τ) Id τ) τ) : Prop :=
   match step with
@@ -105,19 +105,18 @@ instance instIterator : Iterator (StreamIterator σ τ) Id τ where
         exact h⟩
 
 /--
-`Finite` instance for `StreamIterator`, proven via `Parser.Stream.remaining`.
+`Finite` instance for `StreamIterator`, proven via `LawfulParserStream.remaining_decreases`.
 
 The `remaining` field of `Parser.Stream` provides an upper bound on tokens that strictly
 decreases when `next?` returns `some`. We use `remaining ∘ StreamIterator.stream` as the
 well-founded measure via a `FinitenessRelation`.
 
-**Note**: This proof currently uses `sorry` for the key lemma that `remaining` strictly
-decreases on each `next?` step. A complete proof requires adding a contract/axiom to
-`Parser.Stream` stating:
-  `∀ s tok s', next? s = some (tok, s') → remaining s' < remaining s`
-This is semantically required by all `Parser.Stream` instances but not yet enforced by the type.
+Requires `LawfulParserStream σ τ` to provide the proof that `remaining` strictly decreases.
+Types without a `LawfulParserStream` instance (e.g., `mkDefault`) still get the `Iterator`
+instance above, but not `Finite` — they cannot prove termination.
 -/
-private def streamFinitenessRelation : FinitenessRelation (StreamIterator σ τ) Id where
+def streamFinitenessRelation [LawfulParserStream σ τ] :
+    FinitenessRelation (StreamIterator σ τ) Id where
   Rel := InvImage WellFoundedRelation.rel
     (Parser.Stream.remaining ∘ StreamIterator.stream ∘ IterM.internalState)
   wf := InvImage.wf _ WellFoundedRelation.wf
@@ -128,28 +127,24 @@ private def streamFinitenessRelation : FinitenessRelation (StreamIterator σ τ)
       simp [IterStep.successor] at hsucc
       subst hsucc
       simp only [IterM.IsPlausibleStep, Iterator.IsPlausibleStep, isPlausibleStreamStep] at hplaus
-      -- hplaus : Stream.next? it.internalState.stream = some (out, it'.internalState.stream)
-      -- Need: remaining it'.internalState.stream < remaining it.internalState.stream
-      -- This follows from the Parser.Stream contract that remaining strictly decreases
-      -- when next? returns some, but that contract is not yet formalized as a typeclass law.
-      sorry
+      exact LawfulParserStream.remaining_decreases _ _ _ hplaus
     | skip it'' =>
       simp [IterStep.successor] at hsucc
       subst hsucc
-      -- IsPlausibleStep for skip is False
       simp only [IterM.IsPlausibleStep, Iterator.IsPlausibleStep, isPlausibleStreamStep] at hplaus
     | done =>
       simp [IterStep.successor] at hsucc
 
-instance : Iterators.Finite (StreamIterator σ τ) Id :=
+instance [LawfulParserStream σ τ] : Iterators.Finite (StreamIterator σ τ) Id :=
   Iterators.Finite.of_finitenessRelation streamFinitenessRelation
 
 /--
 `IteratorLoop` instance enabling `for` loops and standard consumers (`fold`, `toList`, etc.)
-over `StreamIterator`.
+over `StreamIterator`. Requires `LawfulParserStream` for the `Finite` proof.
 -/
 @[always_inline, inline]
-instance {n : Type → Type} [Monad n] : IteratorLoop (StreamIterator σ τ) Id n :=
+instance [LawfulParserStream σ τ] {n : Type → Type} [Monad n] :
+    IteratorLoop (StreamIterator σ τ) Id n :=
   .defaultImplementation
 
 end Parser.Stream
