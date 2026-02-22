@@ -6,6 +6,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 import Parser.Basic
 import Parser.Char
 import Parser.Error
+import Parser.Iterators
 import Parser.Parser
 import Parser.Prelude
 import Parser.RegEx
