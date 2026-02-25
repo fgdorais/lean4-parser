@@ -32,8 +32,8 @@ Implementations should try to make the `Position` type as lightweight as possibl
 and `setPosition` to work properly. Often `Position` is just a scalar type or another simple type.
 This may allow for parsers to use the stream state more efficiently.
 -/
-protected class Parser.Stream (σ : Type _) (τ : outParam (Type _)) extends Std.Stream σ τ where
-  Position : Type _
+protected class Parser.Stream.{u_1} (σ : Type _) (τ : outParam (Type _)) extends Std.Stream σ τ where
+  Position : Type u_1
   getPosition : σ → Position
   setPosition : σ → Position → σ
 attribute [reducible, inherit_doc Parser.Stream] Parser.Stream.Position
