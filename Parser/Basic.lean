@@ -252,6 +252,26 @@ def dropMany (p : ParserT ε σ τ m α) : ParserT ε σ τ m PUnit :=
   foldl (Function.const α) .unit p
 
 /--
+One-step unfolding of `dropMany` for `m = Id`.
+
+Applies `foldl_eq` with `f = Function.const α` and `init = PUnit.unit`.
+Since `Function.const α PUnit.unit x = PUnit.unit` for all `x`, the
+recursive call is simply `dropMany p s'`.
+-/
+theorem dropMany_eq (p : Parser ε σ τ α) (s : σ) :
+    (dropMany p : Parser ε σ τ _) s =
+      match p s with
+      | .ok s' _ =>
+        if _h : Stream.remaining s' < Stream.remaining s then
+          (dropMany p : Parser ε σ τ _) s'
+        else .ok s' PUnit.unit
+      | .error s' _ =>
+        .ok (Stream.setPosition s' (Stream.getPosition s)) PUnit.unit := by
+  show (foldl (Function.const α) PUnit.unit p) s = _
+  rw [foldl_eq]; simp only [Function.const]
+  cases hp : p s <;> rfl
+
+/--
 `dropMany1 p` parses one or more occurrences of `p` (with backtracking) until it fails, ignoring
 all outputs.
 -/
@@ -296,6 +316,26 @@ successes.
 @[inline]
 def count (p : ParserT ε σ τ m α) : ParserT ε σ τ m Nat :=
   foldl (fun n _ => n+1) 0 p
+
+/--
+One-step unfolding of `count` for `m = Id`.
+
+Applies `foldl_eq` with `f = fun n _ => n+1` and `init = 0`.
+After one successful parse, the accumulator is 1, so the recursive call
+uses `foldl (fun n _ => n+1) 1 p`.
+-/
+theorem count_eq (p : Parser ε σ τ α) (s : σ) :
+    (count p : Parser ε σ τ _) s =
+      match p s with
+      | .ok s' _ =>
+        if _h : Stream.remaining s' < Stream.remaining s then
+          (foldl (fun n (_ : α) => n+1) 1 p : Parser ε σ τ _) s'
+        else .ok s' 1
+      | .error s' _ =>
+        .ok (Stream.setPosition s' (Stream.getPosition s)) 0 := by
+  show (foldl (fun n (_ : α) => n + 1) 0 p) s = _
+  rw [foldl_eq]; simp only [Nat.zero_add]
+  cases hp : p s <;> rfl
 
 /--
 `countUpTo n p` parses up to `n` occurrences of `p` until it fails, and returns the count of
