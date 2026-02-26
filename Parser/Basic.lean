@@ -127,15 +127,21 @@ def test (p : ParserT ε σ τ m α) : ParserT ε σ τ m Bool :=
 
 /-! ### `foldr` -/
 
-/-- `foldr f p q` -/
+/-- `foldr f p q` folds `f` from right to left, parsing `p` repeatedly until it fails, then
+finishing with `q`. Uses `Stream.remaining` as fuel to ensure termination. -/
 @[inline]
-partial def foldr (f : α → β → β) (p : ParserT ε σ τ m α) (q : ParserT ε σ τ m β) :
-  ParserT ε σ τ m β :=
-  try
-    let x ← withBacktracking p
-    let y ← foldr f p q
-    return f x y
-  catch _ => q
+def foldr (f : α → β → β) (p : ParserT ε σ τ m α) (q : ParserT ε σ τ m β) :
+  ParserT ε σ τ m β := do
+  let fuel := Stream.remaining (← getStream)
+  go fuel
+where
+  go : Nat → ParserT ε σ τ m β
+    | 0 => q
+    | n + 1 => try
+        let x ← withBacktracking p
+        let y ← go n
+        return f x y
+      catch _ => q
 
 /-! ### `take` family -/
 
@@ -194,15 +200,20 @@ def takeManyN (n : Nat) (p : ParserT ε σ τ m α) : ParserT ε σ τ m (Array 
 array of returned values of `p` and the output of `stop`. If `p` fails before `stop` is encountered,
 the error from `p` is reported and no input is consumed.
 -/
-partial def takeUntil (stop : ParserT ε σ τ m β) (p : ParserT ε σ τ m α) :
+def takeUntil (stop : ParserT ε σ τ m β) (p : ParserT ε σ τ m α) :
   ParserT ε σ τ m (Array α × β) :=
-  have := Inhabited.mk do return ((#[] : Array α), (← stop))
-  withBacktracking do rest #[]
+  withBacktracking do
+    let fuel := Stream.remaining (← getStream)
+    rest fuel #[]
 where
-  rest [Inhabited (ParserT ε σ τ m (Array α × β))] (acc : Array α) := do
-    match ← option? stop with
-    | some y => return (acc, y)
-    | none => rest <| acc.push (← p)
+  rest : Nat → Array α → ParserT ε σ τ m (Array α × β)
+    | 0, acc => do
+      let y ← stop
+      return (acc, y)
+    | n + 1, acc => do
+      match ← option? stop with
+      | some y => return (acc, y)
+      | none => rest n <| acc.push (← p)
 
 /-! ### `drop` family -/
 
@@ -256,13 +267,17 @@ def dropManyN (n : Nat) (p : ParserT ε σ τ m α) : ParserT ε σ τ m PUnit :
 outputs from `p`. If `p` fails before encountering `stop` then the error from  `p` is reported
 and no input is consumed.
 -/
-partial def dropUntil (stop : ParserT ε σ τ m β) (p : ParserT ε σ τ m α) : ParserT ε σ τ m β :=
-  withBacktracking loop
+def dropUntil (stop : ParserT ε σ τ m β) (p : ParserT ε σ τ m α) : ParserT ε σ τ m β :=
+  withBacktracking do
+    let fuel := Stream.remaining (← getStream)
+    loop fuel
 where
-  loop := do
-    match ← option? stop with
-    | some s => return s
-    | none => p *> loop
+  loop : Nat → ParserT ε σ τ m β
+    | 0 => stop
+    | n + 1 => do
+      match ← option? stop with
+      | some s => return s
+      | none => p *> loop n
 
 /-! `count` family -/
 
@@ -271,7 +286,7 @@ where
 successes.
 -/
 @[inline]
-partial def count (p : ParserT ε σ τ m α) : ParserT ε σ τ m Nat :=
+def count (p : ParserT ε σ τ m α) : ParserT ε σ τ m Nat :=
   foldl (fun n _ => n+1) 0 p
 
 /--
@@ -294,15 +309,20 @@ where
 the count of successes and the output of `stop`. If `p` fails before encountering `stop` then the
 error from  `p` is reported and no input is consumed.
 -/
-partial def countUntil (stop : ParserT ε σ τ m β) (p : ParserT ε σ τ m α) :
-  ParserT ε σ τ m (Nat × β) := do
-  let _ := Inhabited.mk do return (0, ← stop)
-  withBacktracking do loop 0
+def countUntil (stop : ParserT ε σ τ m β) (p : ParserT ε σ τ m α) :
+  ParserT ε σ τ m (Nat × β) :=
+  withBacktracking do
+    let fuel := Stream.remaining (← getStream)
+    loop fuel 0
 where
-  loop [Inhabited (ParserT ε σ τ m (Nat × β))] (ct : Nat) := do
-    match ← option? stop with
-    | some s => return (ct, s)
-    | none => p *> loop (ct+1)
+  loop : Nat → Nat → ParserT ε σ τ m (Nat × β)
+    | 0, ct => do
+      let s ← stop
+      return (ct, s)
+    | n + 1, ct => do
+      match ← option? stop with
+      | some s => return (ct, s)
+      | none => p *> loop n (ct+1)
 
 /-! ### `endBy` family -/
 
