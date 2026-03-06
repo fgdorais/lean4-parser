@@ -36,6 +36,15 @@ protected class Parser.Stream.{u_1} (σ : Type _) (τ : outParam (Type _)) exten
   Position : Type u_1
   getPosition : σ → Position
   setPosition : σ → Position → σ
+  /-- Returns a natural number measure of remaining input.
+
+  This is used by fold combinators as a termination measure to guarantee totality.
+  Each call to `next?` that returns `some` must strictly decrease `remaining`.
+
+  Fold combinators check at runtime that `remaining` decreases after each parser
+  iteration, so even an incorrect implementation cannot cause non-termination.
+  However, an incorrect implementation may cause folds to terminate prematurely. -/
+  remaining : σ → Nat
 attribute [reducible, inherit_doc Parser.Stream] Parser.Stream.Position
 attribute [inherit_doc Parser.Stream] Parser.Stream.getPosition Parser.Stream.setPosition
 
@@ -64,12 +73,14 @@ instance (σ τ) [self : Std.Stream σ τ] : Parser.Stream (mkDefault σ τ) τ 
   Position := σ
   getPosition s := s
   setPosition _ p := p
+  remaining _ := 0 -- fold combinators will not function with mkDefault
 
 @[reducible]
 instance : Parser.Stream String.Slice Char where
   Position := String.Slice
   getPosition s := s
   setPosition _ s := s
+  remaining s := s.utf8ByteSize
 
 @[reducible]
 instance : Parser.Stream Substring.Raw Char where
@@ -80,6 +91,7 @@ instance : Parser.Stream Substring.Raw Char where
       { s with startPos := p }
     else
       { s with startPos := s.stopPos }
+  remaining s := s.bsize
 
 @[reducible]
 instance (τ) : Parser.Stream (Subarray τ) τ where
@@ -90,12 +102,14 @@ instance (τ) : Parser.Stream (Subarray τ) τ where
       ⟨{ s.internalRepresentation with start := p, start_le_stop := h }⟩
     else
       ⟨{ s.internalRepresentation with start := s.stop, start_le_stop := Nat.le_refl s.stop }⟩
+  remaining s := s.stop - s.start
 
 @[reducible]
 instance : Parser.Stream ByteSlice UInt8 where
   Position := Nat
   getPosition s := s.start
   setPosition s p := s.slice p
+  remaining s := s.size
 
 /-- `OfList` is a view of a list stream that keeps track of consumed tokens. -/
 structure OfList (τ : Type _) where
@@ -133,5 +147,6 @@ instance (τ) : Parser.Stream (OfList τ) τ where
     match s with
     | ⟨x :: rest, past⟩ => some (x, ⟨rest, x :: past⟩)
     | _ => none
+  remaining s := s.next.length
 
 end Parser.Stream

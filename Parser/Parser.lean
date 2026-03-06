@@ -186,15 +186,20 @@ def withErrorMessage (msg : String) (p : ParserT ε σ τ m α) : ParserT ε σ 
 /-! ### `foldl` family -/
 
 @[specialize]
-private partial def efoldlPAux [Inhabited ε] [Inhabited σ] [Inhabited β]
+private def efoldlPAux [Inhabited ε] [Inhabited σ] [Inhabited β]
   (f : β → α → ParserT ε σ τ m β) (p : ParserT ε σ τ m α) (y : β) (s : σ) :
   m (Parser.Result ε σ (β × ε × Bool)) :=
   let savePos := Stream.getPosition s
   p s >>= fun
-    | .ok s x => f y x s >>= fun
-      | .ok s y => efoldlPAux f p y s
-      | .error s e => return .ok (Stream.setPosition s savePos) (y, e, true)
-    | .error s e => return .ok (Stream.setPosition s savePos) (y, e, false)
+    | .ok s' x => f y x s' >>= fun
+      | .ok s'' y =>
+        if _h : Stream.remaining s'' < Stream.remaining s then
+          efoldlPAux f p y s''
+        else
+          return .ok (Stream.setPosition s'' savePos) (y, default, true)
+      | .error s' e => return .ok (Stream.setPosition s' savePos) (y, e, true)
+    | .error s' e => return .ok (Stream.setPosition s' savePos) (y, e, false)
+termination_by Stream.remaining s
 
 /--
 `foldlP f init p` folds the parser function `f` from left to right using `init` as an intitial
