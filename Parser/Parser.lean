@@ -185,16 +185,73 @@ def withErrorMessage (msg : String) (p : ParserT ε σ τ m α) : ParserT ε σ 
 
 /-! ### `foldl` family -/
 
+/--
+Core loop for `efoldlP`. Terminates via well-founded recursion on `Stream.remaining s`.
+
+After each successful `p >>= f` step, we check whether `Stream.remaining` decreased. If not
+(the parser succeeded without consuming input), the loop stops to prevent infinite iteration.
+This matches the original fuel-based semantics but uses `remaining` directly as the termination
+measure rather than a separate fuel parameter.
+-/
 @[specialize]
-private partial def efoldlPAux [Inhabited ε] [Inhabited σ] [Inhabited β]
+private def efoldlPAux [Inhabited ε] [Inhabited σ] [Inhabited β]
   (f : β → α → ParserT ε σ τ m β) (p : ParserT ε σ τ m α) (y : β) (s : σ) :
-  m (Parser.Result ε σ (β × ε × Bool)) :=
+  m (Parser.Result ε σ (β × ε × Bool)) := do
   let savePos := Stream.getPosition s
-  p s >>= fun
-    | .ok s x => f y x s >>= fun
-      | .ok s y => efoldlPAux f p y s
-      | .error s e => return .ok (Stream.setPosition s savePos) (y, e, true)
-    | .error s e => return .ok (Stream.setPosition s savePos) (y, e, false)
+  match ← p s with
+  | .ok s' x =>
+    match ← f y x s' with
+    | .ok s'' y' =>
+      if _h : Stream.remaining s'' < Stream.remaining s then
+        efoldlPAux f p y' s''
+      else
+        -- Parser didn't consume; stop to avoid infinite loop.
+        return .ok s'' (y', Error.unexpected (Stream.getPosition s'') none, false)
+    | .error s'' e => return .ok (Stream.setPosition s'' savePos) (y, e, true)
+  | .error s' e => return .ok (Stream.setPosition s' savePos) (y, e, false)
+termination_by Stream.remaining s
+
+/-! ### `efoldlPAux` one-step equation (m = Id)
+
+For the identity monad, `efoldlPAux` reduces to a direct case split on
+`p s` and `f y x s'`.  This one-step equation is the foundation for
+downstream `@[simp]` lemmas for `foldl`, `dropMany`, and `count`.
+-/
+
+/--
+One-step unfolding of `efoldlPAux` for `m = Id`.
+
+This expresses the recursive function as a case split:
+- If `p s` fails → return accumulator, backtrack position, error from `p`.
+- If `p s` succeeds with `(s', x)` and `f y x s'` fails → return accumulator,
+  backtrack position, error from `f`.
+- If both succeed with stream `s''` and `remaining s'' < remaining s` → recurse.
+- If both succeed but stream didn't advance → stop, return accumulator.
+-/
+private theorem efoldlPAux_eq [Inhabited ε] [Inhabited σ] [Inhabited β]
+    (f : β → α → Parser ε σ τ β) (p : Parser ε σ τ α) (y : β) (s : σ) :
+    efoldlPAux (m := Id) f p y s =
+      match p s with
+      | .ok s' x =>
+        match f y x s' with
+        | .ok s'' y' =>
+          if _h : Stream.remaining s'' < Stream.remaining s then
+            efoldlPAux (m := Id) f p y' s''
+          else
+            .ok s'' (y', Error.unexpected (Stream.getPosition s'') none, false)
+        | .error s'' e =>
+          .ok (Stream.setPosition s'' (Stream.getPosition s)) (y, e, true)
+      | .error s' e =>
+        .ok (Stream.setPosition s' (Stream.getPosition s)) (y, e, false) := by
+  rw [efoldlPAux]
+  simp only [bind, Bind.bind, pure, Pure.pure]
+  cases hp : p s with
+  | ok s' x =>
+    simp only []
+    cases hf : f y x s' with
+    | ok s'' y' => simp only []
+    | error s'' e => rfl
+  | error s' e => rfl
 
 /--
 `foldlP f init p` folds the parser function `f` from left to right using `init` as an intitial
@@ -259,6 +316,83 @@ This parser never fails.
 @[inline]
 def foldl (f : β → α → β) (init : β) (p : ParserT ε σ τ m α) : ParserT ε σ τ m β :=
   Prod.fst <$> efoldl f init p
+
+/-! ### Fold-combinator specification lemmas (m = Id)
+
+One-step unfolding lemmas that make the fold combinators
+deductively transparent for proofs.  All are specialized to
+`m = Id` (the `Parser` abbreviation), since the monadic plumbing
+reduces to identity / function application for `Id`.
+-/
+
+/--
+`efoldlPAux` is independent of the `Inhabited` instances.
+
+The `[Inhabited ε] [Inhabited σ] [Inhabited β]` arguments are required
+by well-founded recursion infrastructure but do not appear in the
+function body.  This lemma allows changing instances freely.
+-/
+private theorem efoldlPAux_inhabited_irrel
+    (iε : Inhabited ε) (iσ : Inhabited σ) (iβ : Inhabited β)
+    (jε : Inhabited ε) (jσ : Inhabited σ) (jβ : Inhabited β)
+    (f : β → α → Parser ε σ τ β) (p : Parser ε σ τ α) (y : β) (s : σ) :
+    @efoldlPAux _ Id _ _ _ _ _ _ _ iε iσ iβ f p y s =
+    @efoldlPAux _ Id _ _ _ _ _ _ _ jε jσ jβ f p y s := by
+  rw [@efoldlPAux_eq _ _ _ _ _ _ _ iε iσ iβ f p y s,
+      @efoldlPAux_eq _ _ _ _ _ _ _ jε jσ jβ f p y s]
+  split -- match p s
+  · split -- match f y _ _
+    · split -- if remaining < remaining
+      · exact efoldlPAux_inhabited_irrel iε iσ iβ jε jσ jβ f p _ _
+      · rfl
+    · rfl
+  · rfl
+termination_by Stream.remaining s
+
+/--
+One-step unfolding of `foldl` for `m = Id`.
+
+`foldl f init p` applied to stream `s` performs one step:
+- If `p s` succeeds with `(s', x)` and `remaining s' < remaining s`,
+  it recurses with `foldl f (f init x) p s'`.
+- If `p s` succeeds but stream didn't advance, returns `f init x`.
+- If `p s` fails, returns `init` with position restored.
+-/
+theorem foldl_eq (f : β → α → β) (init : β) (p : Parser ε σ τ α) (s : σ) :
+    (foldl f init p : Parser ε σ τ _) s =
+      match p s with
+      | .ok s' x =>
+        if _h : Stream.remaining s' < Stream.remaining s then
+          (foldl f (f init x) p : Parser ε σ τ _) s'
+        else .ok s' (f init x)
+      | .error s' _ =>
+        .ok (Stream.setPosition s' (Stream.getPosition s)) init := by
+  -- Unfold the full foldl chain to efoldlPAux on both sides
+  simp only [foldl, efoldl, efoldlM, efoldlP,
+             Functor.map, bind, Bind.bind, pure, Pure.pure,
+             monadLift, MonadLift.monadLift]
+  -- Unfold efoldlPAux one step with explicit Inhabited instances
+  rw [@efoldlPAux_eq _ _ _ _ _ _ _
+      ⟨Error.unexpected (Stream.getPosition s) none⟩ ⟨s⟩ ⟨init⟩]
+  -- Case-split on p s
+  cases hp : p s with
+  | ok s' x =>
+    -- Reduce inner matches: F init x s' = .ok s' (f init x), etc.
+    simp only []
+    -- Split on the consuming condition
+    by_cases h : Stream.remaining s' < Stream.remaining s
+    · -- Consuming: reduce dite on both sides
+      simp only [dif_pos h]
+      -- Both sides: match chain wrapping efoldlPAux with different Inhabited
+      congr 1; congr 1
+      exact efoldlPAux_inhabited_irrel
+        ⟨Error.unexpected (Stream.getPosition s) none⟩ ⟨s⟩ ⟨init⟩
+        ⟨Error.unexpected (Stream.getPosition s') none⟩ ⟨s'⟩ ⟨f init x⟩
+        (fun y x s => .ok s (f y x)) p (f init x) s'
+    · -- Not consuming
+      simp only [dif_neg h]
+  | error s' e =>
+    simp only []
 
 /-! ### `option` family -/
 
