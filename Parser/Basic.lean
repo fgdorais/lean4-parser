@@ -129,13 +129,21 @@ def test (p : ParserT ε σ τ m α) : ParserT ε σ τ m Bool :=
 
 /-- `foldr f p q` -/
 @[inline]
-partial def foldr (f : α → β → β) (p : ParserT ε σ τ m α) (q : ParserT ε σ τ m β) :
-  ParserT ε σ τ m β :=
-  try
-    let x ← withBacktracking p
-    let y ← foldr f p q
-    return f x y
-  catch _ => q
+def foldr (f : α → β → β) (p : ParserT ε σ τ m α) (q : ParserT ε σ τ m β) :
+  ParserT ε σ τ m β := fun s => foldrAux s
+where
+  foldrAux (s : σ) : m (Parser.Result ε σ β) :=
+    let savePos := Stream.getPosition s
+    p s >>= fun
+    | .ok s' x =>
+      if _h : Stream.remaining s' < Stream.remaining s then
+        foldrAux s' >>= fun
+        | .ok s'' y => return .ok s'' (f x y)
+        | .error s'' e => return .error s'' e
+      else
+        q (Stream.setPosition s' savePos)
+    | .error s' _ => q (Stream.setPosition s' savePos)
+  termination_by Stream.remaining s
 
 /-! ### `take` family -/
 
@@ -194,15 +202,25 @@ def takeManyN (n : Nat) (p : ParserT ε σ τ m α) : ParserT ε σ τ m (Array 
 array of returned values of `p` and the output of `stop`. If `p` fails before `stop` is encountered,
 the error from `p` is reported and no input is consumed.
 -/
-partial def takeUntil (stop : ParserT ε σ τ m β) (p : ParserT ε σ τ m α) :
+def takeUntil (stop : ParserT ε σ τ m β) (p : ParserT ε σ τ m α) :
   ParserT ε σ τ m (Array α × β) :=
   have := Inhabited.mk do return ((#[] : Array α), (← stop))
-  withBacktracking do rest #[]
+  withBacktracking fun s => rest #[] s
 where
-  rest [Inhabited (ParserT ε σ τ m (Array α × β))] (acc : Array α) := do
-    match ← option? stop with
-    | some y => return (acc, y)
-    | none => rest <| acc.push (← p)
+  rest [Inhabited (ParserT ε σ τ m (Array α × β))] (acc : Array α) (s : σ) :
+      m (Parser.Result ε σ (Array α × β)) :=
+    (option? stop) s >>= fun
+    | .ok s' (some y) => return .ok s' (acc, y)
+    | .ok s' none =>
+      p s' >>= fun
+      | .ok s'' x =>
+        if _h : Stream.remaining s'' < Stream.remaining s then
+          rest (acc.push x) s''
+        else
+          return .error s'' (Error.unexpected (Stream.getPosition s'') none)
+      | .error s'' e => return .error s'' e
+    | .error s' e => return .error s' e
+  termination_by Stream.remaining s
 
 /-! ### `drop` family -/
 
@@ -256,13 +274,22 @@ def dropManyN (n : Nat) (p : ParserT ε σ τ m α) : ParserT ε σ τ m PUnit :
 outputs from `p`. If `p` fails before encountering `stop` then the error from  `p` is reported
 and no input is consumed.
 -/
-partial def dropUntil (stop : ParserT ε σ τ m β) (p : ParserT ε σ τ m α) : ParserT ε σ τ m β :=
-  withBacktracking loop
+def dropUntil (stop : ParserT ε σ τ m β) (p : ParserT ε σ τ m α) : ParserT ε σ τ m β :=
+  withBacktracking fun s => loop s
 where
-  loop := do
-    match ← option? stop with
-    | some s => return s
-    | none => p *> loop
+  loop (s : σ) : m (Parser.Result ε σ β) :=
+    (option? stop) s >>= fun
+    | .ok s' (some v) => return .ok s' v
+    | .ok s' none =>
+      p s' >>= fun
+      | .ok s'' _ =>
+        if _h : Stream.remaining s'' < Stream.remaining s then
+          loop s''
+        else
+          return .error s'' (Error.unexpected (Stream.getPosition s'') none)
+      | .error s'' e => return .error s'' e
+    | .error s' e => return .error s' e
+  termination_by Stream.remaining s
 
 /-! `count` family -/
 
@@ -271,7 +298,7 @@ where
 successes.
 -/
 @[inline]
-partial def count (p : ParserT ε σ τ m α) : ParserT ε σ τ m Nat :=
+def count (p : ParserT ε σ τ m α) : ParserT ε σ τ m Nat :=
   foldl (fun n _ => n+1) 0 p
 
 /--
@@ -294,15 +321,25 @@ where
 the count of successes and the output of `stop`. If `p` fails before encountering `stop` then the
 error from  `p` is reported and no input is consumed.
 -/
-partial def countUntil (stop : ParserT ε σ τ m β) (p : ParserT ε σ τ m α) :
+def countUntil (stop : ParserT ε σ τ m β) (p : ParserT ε σ τ m α) :
   ParserT ε σ τ m (Nat × β) := do
   let _ := Inhabited.mk do return (0, ← stop)
-  withBacktracking do loop 0
+  withBacktracking fun s => loop 0 s
 where
-  loop [Inhabited (ParserT ε σ τ m (Nat × β))] (ct : Nat) := do
-    match ← option? stop with
-    | some s => return (ct, s)
-    | none => p *> loop (ct+1)
+  loop [Inhabited (ParserT ε σ τ m (Nat × β))] (ct : Nat) (s : σ) :
+      m (Parser.Result ε σ (Nat × β)) :=
+    (option? stop) s >>= fun
+    | .ok s' (some v) => return .ok s' (ct, v)
+    | .ok s' none =>
+      p s' >>= fun
+      | .ok s'' _ =>
+        if _h : Stream.remaining s'' < Stream.remaining s then
+          loop (ct+1) s''
+        else
+          return .error s'' (Error.unexpected (Stream.getPosition s'') none)
+      | .error s'' e => return .error s'' e
+    | .error s' e => return .error s' e
+  termination_by Stream.remaining s
 
 /-! ### `endBy` family -/
 

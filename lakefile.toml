@@ -12,6 +12,9 @@ git = "https://github.com/fgdorais/lean4-unicode-basic"
 rev = "main"
 
 [[lean_lib]]
+name = "WellFoundedStreams"
+
+[[lean_lib]]
 name = "Parser"
 
 [[lean_exe]]
