@@ -67,9 +67,13 @@ instance (σ τ) [self : Std.Stream σ τ] : Parser.Stream (mkDefault σ τ) τ 
 
 @[reducible]
 instance : Parser.Stream String.Slice Char where
-  Position := String.Slice
-  getPosition s := s
-  setPosition _ s := s
+  Position := String.Pos.Raw
+  getPosition s := s.startInclusive.offset
+  setPosition s p :=
+    if h : p.IsValid s.str then
+      s.str.slice! ⟨p, h⟩ s.endExclusive
+    else
+      panic! "invalid position for string"
 
 @[reducible]
 instance : Parser.Stream Substring.Raw Char where
