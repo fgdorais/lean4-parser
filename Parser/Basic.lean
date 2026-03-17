@@ -88,13 +88,13 @@ def tokenList [BEq τ] (tks : List τ) : ParserT ε σ τ m (List τ) :=
 backtracked with the same error.
 -/
 def lookAhead (p : ParserT ε σ τ m α) : ParserT ε σ τ m α := do
-  let savePos ← getPosition
+  let savePos := Stream.getPosition (← getStream)
   try
     let x ← p
-    setPosition savePos
+    setStream <| Stream.setPosition (← getStream) (Stream.cast savePos)
     return x
   catch e =>
-    setPosition savePos
+    setStream <| Stream.setPosition (← getStream) (Stream.cast savePos)
     throw e
 
 /--

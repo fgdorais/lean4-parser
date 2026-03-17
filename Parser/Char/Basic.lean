@@ -15,38 +15,38 @@ def char (tk : Char) : ParserT ε σ Char m Char :=
   withErrorMessage s!"expected {repr tk}" <| token tk
 
 /-- `chars tks` accepts and returns string `tks`, otherwise fails -/
-def chars (tks : String) : ParserT ε σ Char m String :=
-  withErrorMessage s!"expected {repr tks}" do
+def chars (tks : String.Slice) : ParserT ε σ Char m String :=
+  withErrorMessage s!"expected {tks}" do
     let mut acc : String := ""
-    for tk in tks.toList do
+    for tk in tks do
       acc := acc.push (← token tk)
     return acc
 
-/-- `string tks` accepts and returns string `tks`, otherwise fails -/
-def string [Parser.Error ε Substring.Raw Char] (tks : String) : ParserT ε Substring.Raw Char m String :=
-  withErrorMessage s!"expected {repr tks}" do
-    let ⟨str, start, stop⟩ ← getStream
-    if start.offsetBy tks.rawEndPos ≤ stop ∧ String.Pos.Raw.substrEq tks 0 str start tks.rawEndPos.byteIdx then
-      setPosition (start.offsetBy tks.rawEndPos)
-      return tks
-    else
-      throwUnexpected
+-- /-- `string tks` accepts and returns string `tks`, otherwise fails -/
+-- def string [Parser.Error ε Substring.Raw Char] (tks : String) : ParserT ε Substring.Raw Char m String :=
+--   withErrorMessage s!"expected {repr tks}" do
+--     let ⟨str, start, stop⟩ ← getStream
+--     if start.offsetBy tks.rawEndPos ≤ stop ∧ String.Pos.Raw.substrEq tks 0 str start tks.rawEndPos.byteIdx then
+--       setPosition (start.offsetBy tks.rawEndPos)
+--       return tks
+--     else
+--       throwUnexpected
 
-/-- `captureStr p` parses `p` and returns the output of `p` with the corresponding Substring.Raw -/
-def captureStr [Parser.Error ε Substring.Raw Char] (p : ParserT ε Substring.Raw Char m α) :
-  ParserT ε Substring.Raw Char m (α × Substring.Raw) := do
-  let ⟨str,_,_⟩ ← getStream
-  let (x, start, stop) ← withCapture p
-  return (x, ⟨str, start, stop⟩)
+-- /-- `captureStr p` parses `p` and returns the output of `p` with the corresponding Substring.Raw -/
+-- def captureStr [Parser.Error ε Substring.Raw Char] (p : ParserT ε Substring.Raw Char m α) :
+--   ParserT ε Substring.Raw Char m (α × Substring.Raw) := do
+--   let ⟨str,_,_⟩ ← getStream
+--   let (x, start, stop) ← withCapture p
+--   return (x, ⟨str, start, stop⟩)
 
-/-- `matchStr re` accepts and returns substring matches for regex `re` groups, otherwise fails -/
-def matchStr [Parser.Error ε Substring.Raw Char] (re : RegEx Char) :
-  ParserT ε Substring.Raw Char m (Array (Option Substring.Raw)) := do
-  let ⟨str,_,_⟩ ← getStream
-  let ms ← re.match
-  return ms.map fun
-    | some (start, stop) => some ⟨str, start, stop⟩
-    | none => none
+-- /-- `matchStr re` accepts and returns substring matches for regex `re` groups, otherwise fails -/
+-- def matchStr [Parser.Error ε Substring.Raw Char] (re : RegEx Char) :
+--   ParserT ε Substring.Raw Char m (Array (Option Substring.Raw)) := do
+--   let ⟨str,_,_⟩ ← getStream
+--   let ms ← re.match
+--   return ms.map fun
+--     | some (start, stop) => some ⟨str, start, stop⟩
+--     | none => none
 
 /-- Parse space (U+0020) -/
 @[inline]

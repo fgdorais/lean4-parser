@@ -214,7 +214,7 @@ end BNFParser
 
 /-- Parse BNF from string -/
 def parse (input : String) : Except String BNF.Syntax :=
-  match (BNFParser.syntax <* Parser.endOfInput).run input.toSlice with
+  match (BNFParser.syntax <* Parser.endOfInput).run input with
   | .ok _ stx => .ok stx
   | .error _ err => .error ("error: " ++ toString err)
 

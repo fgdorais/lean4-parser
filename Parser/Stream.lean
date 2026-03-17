@@ -33,22 +33,23 @@ and `setPosition` to work properly. Often `Position` is just a scalar type or an
 This may allow for parsers to use the stream state more efficiently.
 -/
 protected class Parser.Stream.{u_1} (σ : Type _) (τ : outParam (Type _)) extends Std.Stream σ τ where
-  Position : Type u_1
-  getPosition : σ → Position
-  setPosition : σ → Position → σ
+  Position : σ → Type u_1
+  getPosition (s : σ) : Position s
+  setPosition (s : σ) : Position s → σ
+  cast : Position s → Position s'
 attribute [reducible, inherit_doc Parser.Stream] Parser.Stream.Position
 attribute [inherit_doc Parser.Stream] Parser.Stream.getPosition Parser.Stream.setPosition
 
 namespace Parser.Stream
 
 /-- Stream segment type. -/
-def Segment (σ) [Parser.Stream σ τ] := Stream.Position σ × Stream.Position σ
+def Segment (s : σ) [Parser.Stream σ τ] := Stream.Position s × Stream.Position s
 
 /-- Start position of stream segment. -/
-abbrev Segment.start [Parser.Stream σ τ] (s : Segment σ) := s.1
+abbrev Segment.start (s : σ) [Parser.Stream σ τ] (seg : Segment s) := seg.1
 
 /-- Stop position of stream segment. -/
-abbrev Segment.stop [Parser.Stream σ τ] (s : Segment σ) := s.2
+abbrev Segment.stop (s : σ) [Parser.Stream σ τ] (seg : Segment s) := seg.2
 
 /-- Default wrapper to make a `Parser.Stream` from a plain `Stream`.
 
@@ -61,45 +62,50 @@ def mkDefault (σ τ) [Std.Stream σ τ] := σ
 @[reducible]
 instance (σ τ) [self : Std.Stream σ τ] : Parser.Stream (mkDefault σ τ) τ where
   toStream := self
-  Position := σ
+  Position _ := σ
   getPosition s := s
   setPosition _ p := p
+  cast p := p
 
 @[reducible]
 instance : Parser.Stream String.Slice Char where
-  Position := String.Pos.Raw
+  Position _ := String.Pos.Raw
   getPosition s := s.startInclusive.offset
   setPosition s p :=
     if h : p.IsValid s.str then
       s.str.slice! ⟨p, h⟩ s.endExclusive
     else
       panic! "invalid position for string"
+  cast p := p
 
 @[reducible]
 instance : Parser.Stream Substring.Raw Char where
-  Position := String.Pos.Raw
+  Position _ := String.Pos.Raw
   getPosition s := s.startPos
   setPosition s p :=
     if p ≤ s.stopPos then
       { s with startPos := p }
     else
       { s with startPos := s.stopPos }
+  cast p := p
 
 @[reducible]
 instance (τ) : Parser.Stream (Subarray τ) τ where
-  Position := Nat
+  Position _ := Nat
   getPosition s := s.start
   setPosition s p :=
     if h : p ≤ s.stop then
       ⟨{ s.internalRepresentation with start := p, start_le_stop := h }⟩
     else
       ⟨{ s.internalRepresentation with start := s.stop, start_le_stop := Nat.le_refl s.stop }⟩
+  cast p := p
 
 @[reducible]
 instance : Parser.Stream ByteSlice UInt8 where
-  Position := Nat
+  Position _ := Nat
   getPosition s := s.start
   setPosition s p := s.slice p
+  cast p := p
 
 /-- `OfList` is a view of a list stream that keeps track of consumed tokens. -/
 structure OfList (τ : Type _) where
@@ -130,12 +136,13 @@ def mkOfList {τ} (data : List τ) (pos : Nat := 0) : OfList τ :=
 
 @[reducible]
 instance (τ) : Parser.Stream (OfList τ) τ where
-  Position := Nat
+  Position _ := Nat
   getPosition s := s.past.length
   setPosition := OfList.setPosition
   next? s :=
     match s with
     | ⟨x :: rest, past⟩ => some (x, ⟨rest, x :: past⟩)
     | _ => none
+  cast p := p
 
 end Parser.Stream

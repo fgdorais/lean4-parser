@@ -8,3 +8,6 @@ import UnicodeBasic
 
 instance : Std.Stream String.Slice Char where
   next? s := s.front? >>= fun c => return (c, s.drop 1)
+
+instance (s : String) : Repr s.Pos where
+  reprPrec p n := Repr.reprPrec p.offset n

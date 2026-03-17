@@ -89,23 +89,23 @@ protected def drop (re : RegEx α) : ParserT ε σ α m Unit :=
 protected def count (re : RegEx α) : ParserT ε σ α m Nat :=
   re.foldr (fun _ => Nat.succ) (pure 0)
 
-/-- Parses tokens matching regex `re` returning all the matching group segments, otherwise fails -/
-protected partial def «match» (re : RegEx α) : ParserT ε σ α m (Array (Option (Stream.Segment σ))) := do
-  loop re 0 (Array.replicate re.depth none)
-where
-  loop : RegEx α → Nat → Array (Option (Stream.Segment σ)) → ParserT ε σ α m (Array (Option (Stream.Segment σ)))
-    | .set s, _, ms => tokenFilter s *> return ms
-    | .alt e₁ e₂, lvl, ms => loop e₁ lvl ms <|> loop e₂ (lvl + e₁.depth) ms
-    | .cat e₁ e₂, lvl, ms => loop e₁ lvl ms >>= loop e₂ (lvl + e₁.depth)
-    | .repUpTo 0 _, _, ms => return ms
-    | .repUpTo (n+1) e, lvl, ms => loop e lvl ms >>= loop (.repUpTo n e) lvl <|> return ms
-    | .repMany e, lvl, ms => loop e lvl ms >>= loop (.repMany e) lvl <|> return ms
-    | .group e, lvl, ms => do
-      let mut ms := ms
-      for i in [lvl:ms.size] do ms := ms.set! i none
-      let start ← Parser.getPosition
-      ms ← loop e (lvl+1) ms
-      let stop ← Parser.getPosition
-      return ms.set! lvl (some (start, stop))
+-- /-- Parses tokens matching regex `re` returning all the matching group segments, otherwise fails -/
+-- protected partial def «match» (re : RegEx α) : ParserT ε σ α m (Array (Option (Stream.Segment σ))) := do
+--   loop re 0 (Array.replicate re.depth none)
+-- where
+--   loop : RegEx α → Nat → Array (Option (Stream.Segment σ)) → ParserT ε σ α m (Array (Option (Stream.Segment σ)))
+--     | .set s, _, ms => tokenFilter s *> return ms
+--     | .alt e₁ e₂, lvl, ms => loop e₁ lvl ms <|> loop e₂ (lvl + e₁.depth) ms
+--     | .cat e₁ e₂, lvl, ms => loop e₁ lvl ms >>= loop e₂ (lvl + e₁.depth)
+--     | .repUpTo 0 _, _, ms => return ms
+--     | .repUpTo (n+1) e, lvl, ms => loop e lvl ms >>= loop (.repUpTo n e) lvl <|> return ms
+--     | .repMany e, lvl, ms => loop e lvl ms >>= loop (.repMany e) lvl <|> return ms
+--     | .group e, lvl, ms => do
+--       let mut ms := ms
+--       for i in [lvl:ms.size] do ms := ms.set! i none
+--       let start ← Parser.getPosition
+--       ms ← loop e (lvl+1) ms
+--       let stop ← Parser.getPosition
+--       return ms.set! lvl (some (start, stop))
 
 end
