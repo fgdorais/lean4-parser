@@ -2,9 +2,11 @@
 Copyright © 2022-2025 François G. Dorais, Kyrill Serdyuk, Emma Shroyer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
+module
 
 import Parser.Prelude
-import Parser.Stream
+public import Parser.Stream
+public section
 
 /-! # Parser Error
 
@@ -84,7 +86,7 @@ inductive Simple (σ τ) [Parser.Stream σ τ]
   | addMessage : Simple σ τ → Stream.Position σ → String → Simple σ τ
 
 -- The derive handler for `Repr` fails, this is a workaround.
-private def Simple.reprPrec {σ τ} [Parser.Stream σ τ] [Repr τ] [Repr (Stream.Position σ)] :
+protected def Simple.reprPrec {σ τ} [Parser.Stream σ τ] [Repr τ] [Repr (Stream.Position σ)] :
   Simple σ τ → Nat → Std.Format
   | unexpected pos a, prec =>
     Repr.addAppParen
@@ -102,7 +104,7 @@ private def Simple.reprPrec {σ τ} [Parser.Stream σ τ] [Repr τ] [Repr (Strea
         (Std.Format.nest (if prec >= max_prec then 1 else 2)
           (Std.Format.text "Parser.Error.Simple.addMessage" ++
             Std.Format.line ++
-            reprPrec e max_prec ++
+            Simple.reprPrec e max_prec ++
             Std.Format.line ++
             reprArg pos ++
             Std.Format.line ++
@@ -112,7 +114,7 @@ private def Simple.reprPrec {σ τ} [Parser.Stream σ τ] [Repr τ] [Repr (Strea
 instance (σ τ) [Parser.Stream σ τ] [Repr τ] [Repr (Stream.Position σ)] : Repr (Simple σ τ) where
   reprPrec := Simple.reprPrec
 
-private def Simple.toString {σ τ} [Repr τ] [Parser.Stream σ τ] [Repr (Parser.Stream.Position σ)] :
+protected def Simple.toString {σ τ} [Repr τ] [Parser.Stream σ τ] [Repr (Parser.Stream.Position σ)] :
   Simple σ τ → String
   | unexpected pos (some tok) => s!"unexpected token {repr tok} at {repr pos}"
   | unexpected pos none => s!"unexpected token at {repr pos}"
