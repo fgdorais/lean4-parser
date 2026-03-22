@@ -2,11 +2,14 @@
 Copyright © 2022-2024 François G. Dorais, Kyrill Serdyuk, Emma Shroyer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
+module
 
 import Parser.Prelude
-import Parser.Error
-import Parser.Parser
-import Parser.Stream
+public import Parser.Error
+public import Parser.Parser
+public import Parser.Stream
+
+public section
 
 namespace Parser
 variable [Parser.Stream σ τ] [Parser.Error ε σ τ] [Monad m]
