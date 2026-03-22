@@ -2,10 +2,13 @@
 Copyright © 2022-2024 François G. Dorais, Kyrill Serdyuk, Emma Shroyer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
+module
 
 import Parser.Prelude
-import Parser.Error
-import Parser.Stream
+public import Parser.Error
+public import Parser.Stream
+
+public section
 
 /-- Parser result type. -/
 protected inductive Parser.Result.{u} (ε σ α : Type u) : Type u
@@ -19,6 +22,7 @@ protected inductive Parser.Result.{u} (ε σ α : Type u) : Type u
 `ParserT ε σ τ` is a monad transformer to parse tokens of type `τ` from the stream type `σ` with
 error type `ε`.
 -/
+@[expose]
 def ParserT (ε σ τ : Type _) [Parser.Stream σ τ] [Parser.Error ε σ τ] (m : Type _ → Type _)
   (α : Type _) : Type _ := σ → m (Parser.Result ε σ α)
 
