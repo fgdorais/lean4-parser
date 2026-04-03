@@ -1,11 +1,11 @@
-{"version": "1.1.0",
+{"version": "1.2.0",
  "packagesDir": ".lake/packages",
  "packages":
  [{"url": "https://github.com/fgdorais/lean4-unicode-basic",
    "type": "git",
    "subDir": null,
    "scope": "",
-   "rev": "42d2b4ed2e0a4ff27297332b18ad8690814b2574",
+   "rev": "869d78784cf1b82c87f023122449566961947d2e",
    "name": "UnicodeBasic",
    "manifestFile": "lake-manifest.json",
    "inputRev": "main",
@@ -15,11 +15,12 @@
    "type": "git",
    "subDir": null,
    "scope": "",
-   "rev": "46f6618b9942c1f67ebe3b8051163ddb8d8ff496",
+   "rev": "bf597c77bf9b8e66720d724928207f5911533113",
    "name": "batteries",
    "manifestFile": "lake-manifest.json",
    "inputRev": "main",
    "inherited": false,
    "configFile": "lakefile.toml"}],
  "name": "Parser",
- "lakeDir": ".lake"}
+ "lakeDir": ".lake",
+ "fixedToolchain": false}
