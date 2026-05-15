@@ -2,10 +2,13 @@
 Copyright © 2022-2023 François G. Dorais, Kyrill Serdyuk, Emma Shroyer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
+module
 
 import Parser.Char
 import Parser.Char.Numeric
-import Parser.RegEx.Basic
+public import Parser.RegEx.Basic
+
+public section
 
 /-! ## RegEx Syntax
 
@@ -38,7 +41,6 @@ import Parser.RegEx.Basic
   Character classes support single characters and character ranges. The special characters `-`,
   `[`, `\`, `]` must be preceded by an escape character `\` within a class.
 -/
-
 
 namespace Parser.RegEx
 open Char
@@ -177,3 +179,5 @@ protected def compile! (s : String) : RegEx Char :=
   match RegEx.compile? s with
   | some r => r
   | none => panic! "invalid regular expression"
+
+end Parser.RegEx

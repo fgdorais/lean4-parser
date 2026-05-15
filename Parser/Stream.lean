@@ -2,8 +2,11 @@
 Copyright © 2022-2025 François G. Dorais, Kyrill Serdyuk, Emma Shroyer. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
+module
 
-import Parser.Prelude
+public import Parser.Prelude
+
+public section
 
 /-! # Parser Stream
 
@@ -42,6 +45,7 @@ attribute [inherit_doc Parser.Stream] Parser.Stream.getPosition Parser.Stream.se
 namespace Parser.Stream
 
 /-- Stream segment type. -/
+@[expose]
 def Segment (σ) [Parser.Stream σ τ] := Stream.Position σ × Stream.Position σ
 
 /-- Start position of stream segment. -/
@@ -55,7 +59,7 @@ abbrev Segment.stop [Parser.Stream σ τ] (s : Segment σ) := s.2
 This wrapper uses the entire stream state as position information; this is not efficient. Always
 prefer tailored `Parser.Stream` instances to this default.
 -/
-@[nolint unusedArguments]
+@[expose]
 def mkDefault (σ τ) [Std.Stream σ τ] := σ
 
 @[reducible]
