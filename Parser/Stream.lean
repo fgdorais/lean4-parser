@@ -3,7 +3,9 @@ Copyright © 2022-2025 François G. Dorais, Kyrill Serdyuk, Emma Shroyer. All ri
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+
 public import Parser.Prelude
+
 public section
 
 /-! # Parser Stream

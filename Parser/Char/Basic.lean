@@ -8,6 +8,7 @@ public import Parser.Basic
 public import Parser.RegEx.Basic
 
 public section
+
 namespace Parser.Char
 variable {ε σ m} [Parser.Stream σ Char] [Parser.Error ε σ Char] [Monad m]
 
@@ -168,5 +169,3 @@ def hexDigit : ParserT ε σ Char m (Fin 16) :=
               none
 
 end ASCII
-
-end Parser.Char

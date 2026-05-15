@@ -363,3 +363,5 @@ where
       p s >>= fun
       | .ok s v => return .ok s v
       | .error s f => go ps (combine e f) (Stream.setPosition s savePos)
+
+end Parser

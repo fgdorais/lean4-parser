@@ -42,7 +42,6 @@ public section
   `[`, `\`, `]` must be preceded by an escape character `\` within a class.
 -/
 
-
 namespace Parser.RegEx
 open Char
 
@@ -180,3 +179,5 @@ protected def compile! (s : String) : RegEx Char :=
   match RegEx.compile? s with
   | some r => r
   | none => panic! "invalid regular expression"
+
+end Parser.RegEx

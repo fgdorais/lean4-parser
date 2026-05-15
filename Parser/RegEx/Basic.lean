@@ -8,6 +8,7 @@ module
 public import Parser.Basic
 
 public section
+
 namespace Parser
 
 /-- Type of regular expressions -/
@@ -111,3 +112,5 @@ where
       return ms.set! lvl (some (start, stop))
 
 end
+
+end Parser.RegEx

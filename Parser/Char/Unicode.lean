@@ -7,6 +7,7 @@ module
 public import Parser.Char.Basic
 
 public section
+
 namespace Parser.Char.Unicode
 variable {ε σ m} [Parser.Stream σ Char] [Parser.Error ε σ Char] [Monad m]
 

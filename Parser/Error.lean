@@ -6,6 +6,7 @@ module
 
 import Parser.Prelude
 public import Parser.Stream
+
 public section
 
 /-! # Parser Error

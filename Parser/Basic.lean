@@ -422,3 +422,5 @@ trailing `sep`, returns the array of values returned by `p`. This parser never f
 @[inline]
 def sepEndBy1 (sep : ParserT ε σ τ m β) (p : ParserT ε σ τ m α) : ParserT ε σ τ m (Array α) :=
   sepBy1 sep p <* optional sep
+
+end Parser
