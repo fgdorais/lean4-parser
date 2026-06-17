@@ -11,7 +11,7 @@ public import Parser.Stream
 public section
 
 /-- Parser result type. -/
-protected inductive Parser.Result.{u} (ε σ α : Type u) : Type u
+protected inductive Parser.Result (ε σ α : Type _) : Type u
   /-- Result: success! -/
   | ok : σ → α → Parser.Result ε σ α
   /-- Result: error! -/
@@ -156,7 +156,7 @@ def withBacktracking (p : ParserT ε σ τ m α) : ParserT ε σ τ m α := do
 /--
 `withCapture p` parses `p` and returns the output of `p` with the corresponding stream segment.
 -/
-def withCapture {ε σ α : Type _} [Parser.Stream σ τ] [Parser.Error ε σ τ] (p : ParserT ε σ τ m α) :
+def withCapture (p : ParserT ε σ τ m α) :
   ParserT ε σ τ m (α × Stream.Segment σ) := do
   let startPos ← getPosition
   let x ← p

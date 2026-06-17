@@ -22,11 +22,11 @@ variable [Parser.Stream σ τ] [Parser.Error ε σ τ] [Monad m]
 This is a low-level parser to customize how the parser stream is used.
 -/
 @[inline]
-def tokenCore (next? : σ → Option (τ × σ)) : ParserT ε σ τ m (ULift τ) := do
+def tokenCore (next? : σ → Option (τ × σ)) : ParserT ε σ τ m τ := do
   match next? (← getStream) with
   | some (tok, stream) =>
     let _ ← setStream stream
-    return ⟨tok⟩
+    return tok
   | none => throwUnexpected
 
 /--
@@ -35,7 +35,7 @@ the unexpected token.
 -/
 @[specialize]
 def tokenMap (test : τ → Option α) : ParserT ε σ τ m α := do
-  let ⟨tok⟩ ← tokenCore Stream.next?
+  let tok ← tokenCore Stream.next?
   match test tok with
   | some x => return x
   | none => throwUnexpected tok
@@ -192,6 +192,7 @@ returned values of `p`. Consumes no input on error.
 def takeManyN (n : Nat) (p : ParserT ε σ τ m α) : ParserT ε σ τ m (Array α) :=
   withBacktracking do foldl Array.push (← take n p) p
 
+set_option linter.checkUnivs false in
 /--
 `takeUntil stop p` parses zero or more occurrences of `p` until `stop` succeeds, and returns the
 array of returned values of `p` and the output of `stop`. If `p` fails before `stop` is encountered,
@@ -245,14 +246,14 @@ all outputs.
 -/
 @[inline]
 def dropMany1 (p : ParserT ε σ τ m α) : ParserT ε σ τ m PUnit :=
-  withBacktracking p *> foldl (Function.const α) () p
+  withBacktracking p *> foldl (Function.const α) PUnit.unit p
 
 /--
 `dropManyN n p` parses `n` or more occurrences of `p` until it fails, ignoring all outputs.
 -/
 @[inline]
 def dropManyN (n : Nat) (p : ParserT ε σ τ m α) : ParserT ε σ τ m PUnit :=
-  withBacktracking do drop n p *> foldl (Function.const α) () p
+  withBacktracking do drop n p *> foldl (Function.const α) PUnit.unit p
 
 /--
 `dropUntil stop p` runs `p` until `stop` succeeds, returns the output of `stop` ignoring all
