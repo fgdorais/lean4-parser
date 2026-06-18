@@ -192,13 +192,12 @@ returned values of `p`. Consumes no input on error.
 def takeManyN (n : Nat) (p : ParserT ε σ τ m α) : ParserT ε σ τ m (Array α) :=
   withBacktracking do foldl Array.push (← take n p) p
 
-set_option linter.checkUnivs false in
 /--
 `takeUntil stop p` parses zero or more occurrences of `p` until `stop` succeeds, and returns the
 array of returned values of `p` and the output of `stop`. If `p` fails before `stop` is encountered,
 the error from `p` is reported and no input is consumed.
 -/
-partial def takeUntil (stop : ParserT ε σ τ m β) (p : ParserT ε σ τ m α) :
+partial def takeUntil {α β : Type u_1} (stop : ParserT ε σ τ m β) (p : ParserT ε σ τ m α) :
   ParserT ε σ τ m (Array α × β) :=
   have := Inhabited.mk do return ((#[] : Array α), (← stop))
   withBacktracking do rest #[]
