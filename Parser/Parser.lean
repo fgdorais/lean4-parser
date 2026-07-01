@@ -168,17 +168,17 @@ def withCapture (p : ParserT ε σ τ m α) :
 /-- Throw error on unexpected token. -/
 @[inline]
 def throwUnexpected (input : Option τ := none) : ParserT ε σ τ m α := do
-  throw (Error.unexpected (← getPosition) input)
+  throw (Error.unexpected (← getStream) (← getPosition) input)
 
 /-- Throw error with additional message. -/
 @[inline]
 def throwErrorWithMessage (e : ε) (msg : String) : ParserT ε σ τ m α := do
-  throw (Error.addMessage e (← getPosition) msg)
+  throw (Error.addMessage e (← getStream) (← getPosition) msg)
 
 /-- Throw error on unexpected token with error message. -/
 @[inline]
 def throwUnexpectedWithMessage (input : Option τ := none) (msg : String) : ParserT ε σ τ m α := do
-  throwErrorWithMessage (Error.unexpected (← getPosition) input) msg
+  throwErrorWithMessage (Error.unexpected (← getStream) (← getPosition) input) msg
 
 /-- Add message on parser error. -/
 @[inline]
@@ -216,7 +216,7 @@ def efoldlP (f : β → α → ParserT ε σ τ m β) (init : β) (p : ParserT �
   fun s =>
     have : Inhabited β := ⟨init⟩
     have : Inhabited σ := ⟨s⟩
-    have : Inhabited ε := ⟨Error.unexpected (Stream.getPosition s) none⟩
+    have : Inhabited ε := ⟨Error.unexpected s (Stream.getPosition s) none⟩
     efoldlPAux f p init s
 
 /--
@@ -354,7 +354,7 @@ The default is to only report the error from the last parser.
 -/
 def first (ps : List (ParserT ε σ τ m α)) (combine : ε → ε → ε := fun _ => id) :
   ParserT ε σ τ m α := do
-  go ps (Error.unexpected (← getPosition) none)
+  go ps (Error.unexpected (← getStream) (← getPosition) none)
 where
   go : List (ParserT ε σ τ m α) → ε → ParserT ε σ τ m α
     | [], e, s => return .error s e

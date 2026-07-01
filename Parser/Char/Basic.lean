@@ -46,7 +46,7 @@ def captureStr {α} [h : Parser.Error ε String.Slice Char] (p : ParserT ε Stri
     return (x, ⟨s.str, ⟨start, h'.1⟩ , ⟨stop, h'.2.1⟩, String.Pos.le_iff.1 h'.2.2⟩)
   else
     have : Inhabited (ParserT ε String.Slice Char m (α × String.Slice)) :=
-      ⟨fun s => return .error s (h.unexpected 0 none)⟩
+      ⟨fun s => return .error s (h.unexpected s 0 none)⟩
     unreachable!
 
 /--
