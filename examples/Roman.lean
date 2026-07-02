@@ -83,7 +83,7 @@ end Roman
 def String.toNatRoman? (s : String) (upper : Bool := true) : Option Nat :=
   let s := if upper then s else s.map .toUpper
   match Parser.run (Roman.parse <* Parser.endOfInput) s.toSlice with
-  | .ok _ (n+1) => some (n+1)
+  | .ok _ _ (n+1) => some (n+1)
   | _ => none
 
 @[inline, inherit_doc String.toNatRoman?]

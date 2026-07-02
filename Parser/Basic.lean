@@ -12,7 +12,7 @@ public import Parser.Stream
 public section
 
 namespace Parser
-variable [Parser.Stream σ τ] [Parser.Error ε σ τ] [Monad m]
+variable {σ τ} [Parser.Stream σ τ] {ε} [Parser.Error ε σ τ] {m} [Monad m]
 
 /-! # Token Functions -/
 
@@ -22,10 +22,11 @@ variable [Parser.Stream σ τ] [Parser.Error ε σ τ] [Monad m]
 This is a low-level parser to customize how the parser stream is used.
 -/
 @[inline]
-def tokenCore (next? : σ → Option (τ × σ)) : ParserT ε σ τ m τ := do
-  match next? (← getStream) with
-  | some (tok, stream) =>
-    let _ ← setStream stream
+def tokenCore (next? : Stream.Position σ → Option (τ × Stream.Position σ)) :
+    ParserT ε σ τ m τ := do
+  match next? (← getPosition) with
+  | some (tok, pos) =>
+    setPosition pos
     return tok
   | none => throwUnexpected
 
@@ -35,7 +36,7 @@ the unexpected token.
 -/
 @[specialize]
 def tokenMap (test : τ → Option α) : ParserT ε σ τ m α := do
-  let tok ← tokenCore Stream.next?
+  let tok ← tokenCore (Stream.next? (← getStream))
   match test tok with
   | some x => return x
   | none => throwUnexpected tok

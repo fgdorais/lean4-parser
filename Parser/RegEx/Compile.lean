@@ -171,8 +171,8 @@ end
 /-- Compiles a regex from a string, returns `none` on faiure -/
 protected def compile? (s : String) : Option (RegEx Char) :=
   match Parser.run (re0 <* endOfInput) s with
-  | .ok _ r => some r
-  | .error _ _ => none
+  | .ok _ _ r => some r
+  | .error _ _ _ => none
 
 /-- Compiles a regex from a string, panics on faiure -/
 protected def compile! (s : String) : RegEx Char :=

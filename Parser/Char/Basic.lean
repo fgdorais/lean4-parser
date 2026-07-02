@@ -26,15 +26,18 @@ def chars (tks : String) : ParserT ε σ Char m String :=
     return acc
 
 /-- `string tks` accepts and returns string `tks`, otherwise fails -/
-def string [Parser.Error ε String.Slice Char] (tks : String.Slice) :
-    ParserT ε String.Slice Char m String.Slice :=
-  withErrorMessage s!"expected {repr tks.toString}" do
-    match (← getStream).dropPrefix? tks with
-    | some s =>
-      setStream s
-      return tks
-    | none =>
-      throwUnexpected
+def string [Parser.Error ε String.Slice Char] (tks : String) :
+    ParserT ε String.Slice Char m String :=
+  withErrorMessage s!"expected {repr tks}" do
+    let s ← getStream
+    let pos ← getPosition
+    if h : pos.IsValidForSlice s then
+      match (s.sliceFrom ⟨pos, h⟩).skipPrefix? tks with
+      | some ⟨pos', _⟩ =>
+        setPosition pos'
+        return tks
+      | none => throwUnexpected
+    else throwUnexpected
 
 /-- `captureStr p` parses `p` and returns the output of `p` with the corresponding `String.Slice` -/
 def captureStr {α} [h : Parser.Error ε String.Slice Char] (p : ParserT ε String.Slice Char m α) :
@@ -46,7 +49,7 @@ def captureStr {α} [h : Parser.Error ε String.Slice Char] (p : ParserT ε Stri
     return (x, ⟨s.str, ⟨start, h'.1⟩ , ⟨stop, h'.2.1⟩, String.Pos.le_iff.1 h'.2.2⟩)
   else
     have : Inhabited (ParserT ε String.Slice Char m (α × String.Slice)) :=
-      ⟨fun s => return .error s (h.unexpected 0 none)⟩
+      ⟨fun s pos => return .error s pos (h.unexpected 0 none)⟩
     unreachable!
 
 /--

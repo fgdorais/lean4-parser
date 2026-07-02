@@ -205,7 +205,7 @@ end
 /-- JSON validator -/
 def validate (str : String) : Bool :=
   match Parser.run (ws *> JSON.value <* ws <* endOfInput) str.toSlice with
-  | .ok _ _ => true
-  | .error _ _ => false
+  | .ok _ _ _ => true
+  | .error _ _ _ => false
 
 end JSON
