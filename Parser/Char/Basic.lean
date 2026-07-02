@@ -26,29 +26,38 @@ def chars (tks : String) : ParserT ε σ Char m String :=
     return acc
 
 /-- `string tks` accepts and returns string `tks`, otherwise fails -/
-def string [Parser.Error ε Substring.Raw Char] (tks : String) : ParserT ε Substring.Raw Char m String :=
+def string [Parser.Error ε String.Slice Char] (tks : String) :
+    ParserT ε String.Slice Char m String :=
   withErrorMessage s!"expected {repr tks}" do
-    let ⟨str, start, stop⟩ ← getStream
-    if start.offsetBy tks.rawEndPos ≤ stop ∧ String.Pos.Raw.substrEq tks 0 str start tks.rawEndPos.byteIdx then
-      setPosition (start.offsetBy tks.rawEndPos)
+    match (← getStream).dropPrefix? tks with
+    | some s =>
+      setStream s
       return tks
-    else
+    | none =>
       throwUnexpected
 
-/-- `captureStr p` parses `p` and returns the output of `p` with the corresponding Substring.Raw -/
-def captureStr [Parser.Error ε Substring.Raw Char] (p : ParserT ε Substring.Raw Char m α) :
-  ParserT ε Substring.Raw Char m (α × Substring.Raw) := do
-  let ⟨str,_,_⟩ ← getStream
+/-- `captureStr p` parses `p` and returns the output of `p` with the corresponding `String.Slice` -/
+def captureStr [Parser.Error ε String.Slice Char] (p : ParserT ε String.Slice Char m α) :
+  ParserT ε String.Slice Char m (α × String.Slice) := do
+  let s ← getStream
   let (x, start, stop) ← withCapture p
-  return (x, ⟨str, start, stop⟩)
+  -- This should always hold
+  if h : start.IsValid s.str ∧ stop.IsValid s.str ∧ start ≤ stop then
+    return (x, ⟨s.str, ⟨start, h.1⟩ , ⟨stop, h.2.1⟩, String.Pos.le_iff.1 h.2.2⟩)
+  else throwUnexpected
 
-/-- `matchStr re` accepts and returns substring matches for regex `re` groups, otherwise fails -/
-def matchStr [Parser.Error ε Substring.Raw Char] (re : RegEx Char) :
-  ParserT ε Substring.Raw Char m (Array (Option Substring.Raw)) := do
-  let ⟨str,_,_⟩ ← getStream
+/--
+`matchStr re` accepts and returns the `String.Slice` matches for regex `re` groups, otherwise fails
+-/
+def matchStr [Parser.Error ε String.Slice Char] (re : RegEx Char) :
+  ParserT ε String.Slice Char m (Array (Option String.Slice)) := do
+  let s ← getStream
   let ms ← re.match
   return ms.map fun
-    | some (start, stop) => some ⟨str, start, stop⟩
+    | some (start, stop) =>
+      if h : start.IsValid s.str ∧ stop.IsValid s.str ∧ start ≤ stop then
+        some ⟨s.str, ⟨start, h.1⟩ , ⟨stop, h.2.1⟩, h.2.2⟩
+      else unreachable!
     | none => none
 
 /-- Parse space (U+0020) -/

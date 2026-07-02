@@ -45,7 +45,7 @@ public section
 namespace Parser.RegEx
 open Char
 
-private abbrev REParser := TrivialParser Substring.Raw Char
+private abbrev REParser := TrivialParser String.Slice Char
 
 mutual
 
