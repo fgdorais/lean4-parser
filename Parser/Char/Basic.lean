@@ -26,9 +26,9 @@ def chars (tks : String) : ParserT ε σ Char m String :=
     return acc
 
 /-- `string tks` accepts and returns string `tks`, otherwise fails -/
-def string [Parser.Error ε String.Slice Char] (tks : String) :
-    ParserT ε String.Slice Char m String :=
-  withErrorMessage s!"expected {repr tks}" do
+def string [Parser.Error ε String.Slice Char] (tks : String.Slice) :
+    ParserT ε String.Slice Char m String.Slice :=
+  withErrorMessage s!"expected {repr tks.toString}" do
     match (← getStream).dropPrefix? tks with
     | some s =>
       setStream s
@@ -37,14 +37,17 @@ def string [Parser.Error ε String.Slice Char] (tks : String) :
       throwUnexpected
 
 /-- `captureStr p` parses `p` and returns the output of `p` with the corresponding `String.Slice` -/
-def captureStr [Parser.Error ε String.Slice Char] (p : ParserT ε String.Slice Char m α) :
+def captureStr {α} [h : Parser.Error ε String.Slice Char] (p : ParserT ε String.Slice Char m α) :
   ParserT ε String.Slice Char m (α × String.Slice) := do
   let s ← getStream
   let (x, start, stop) ← withCapture p
   -- This should always hold
-  if h : start.IsValid s.str ∧ stop.IsValid s.str ∧ start ≤ stop then
-    return (x, ⟨s.str, ⟨start, h.1⟩ , ⟨stop, h.2.1⟩, String.Pos.le_iff.1 h.2.2⟩)
-  else throwUnexpected
+  if h' : start.IsValid s.str ∧ stop.IsValid s.str ∧ start ≤ stop then
+    return (x, ⟨s.str, ⟨start, h'.1⟩ , ⟨stop, h'.2.1⟩, String.Pos.le_iff.1 h'.2.2⟩)
+  else
+    have : Inhabited (ParserT ε String.Slice Char m (α × String.Slice)) :=
+      ⟨fun s => return .error s (h.unexpected 0 none)⟩
+    unreachable!
 
 /--
 `matchStr re` accepts and returns the `String.Slice` matches for regex `re` groups, otherwise fails
