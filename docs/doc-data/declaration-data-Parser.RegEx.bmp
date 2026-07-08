@@ -1,0 +1,1 @@
+{"declarations":[],"imports":["Init","Parser.RegEx.Basic","Parser.RegEx.Compile"],"instances":[],"name":"Parser.RegEx"}
