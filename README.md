@@ -14,7 +14,7 @@ name = "Parser"
 git = "https://github.com/fgdorais/lean4-parser"
 rev = "main"
 ```
-Then add `import Parser` at the top of any Lean file where you plan to use this library. 
+Then add `import Parser` at the top of any Lean file where you plan to use this library.
 For example:
 ```lean
 import Parser
@@ -24,7 +24,7 @@ open Parser Char
 /--
 Parses a list of sign-separated integers (no spaces) from an input string and returns the sum.
 -/
-def parseSum : SimpleParser Substring Char Int := do
+def parseSum : SimpleParser String.Slice Char Int := do
   let mut sum : Int := 0
   -- parse until all input is consumed
   while ! (← test endOfInput) do
