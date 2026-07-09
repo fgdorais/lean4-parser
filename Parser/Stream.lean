@@ -103,7 +103,7 @@ instance (τ) : Parser.Stream (Subarray τ) τ where
 instance : Parser.Stream ByteSlice UInt8 where
   Position := Nat
   getPosition s := s.start
-  setPosition s p := s.slice p
+  setPosition s p := s.byteArray.toByteSlice p s.stop
 
 /-- `OfList` is a view of a list stream that keeps track of consumed tokens. -/
 structure OfList (τ : Type _) where
