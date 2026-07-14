@@ -14,5 +14,5 @@ def parseSum : SimpleParser String.Slice Char Int := do
   return sum
 
 #guard 42 == match parseSum.run "11-1+2-3+33" with
-  | .ok _ sum => sum
-  | .error _ e => panic! (toString e)
+  | .ok _ _ sum => sum
+  | .error _ _ e => panic! (toString e)
