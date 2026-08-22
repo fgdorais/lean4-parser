@@ -43,7 +43,7 @@ public section
 -/
 
 namespace Parser.RegEx
-open Char
+open Parser.Char
 
 private abbrev REParser := TrivialParser String.Slice Char
 
