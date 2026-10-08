@@ -274,7 +274,7 @@ where
 successes.
 -/
 @[inline]
-partial def count (p : ParserT ε σ τ m α) : ParserT ε σ τ m Nat :=
+def count (p : ParserT ε σ τ m α) : ParserT ε σ τ m Nat :=
   foldl (fun n _ => n+1) 0 p
 
 /--
@@ -345,7 +345,7 @@ The optional `strict` parameter controls error reporting after parsing the initi
 No input is consumed on error.
 -/
 @[inline]
-def endBy1 (sep : ParserT ε σ τ m β) (p : ParserT ε σ τ m α) (strict : Bool := False) :
+def endBy1 (sep : ParserT ε σ τ m β) (p : ParserT ε σ τ m α) (strict : Bool := false) :
   ParserT ε σ τ m (Array α) := withBacktracking do endByCore sep p #[← p <* sep] strict
 
 /-! ### `sepBy` family -/
