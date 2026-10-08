@@ -1,6 +1,7 @@
 name = "Parser"
 defaultTargets = ["Parser"]
 allowImportAll = true
+testDriver = "ParserTest"
 
 [[require]]
 name = "batteries"
@@ -15,5 +16,5 @@ rev = "main"
 [[lean_lib]]
 name = "Parser"
 
-[[lean_exe]]
-name = "test"
+[[lean_lib]]
+name = "ParserTest"
