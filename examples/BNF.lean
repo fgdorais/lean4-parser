@@ -145,7 +145,7 @@ def character : BNFParser Char :=
 /-- Parser for <line-end> -/
 def lineEnd : BNFParser Unit :=
   withErrorMessage "<line-end>" do
-    dropMany (spaces <* eol)
+    dropMany1 (spaces <* eol)
 
 /-- Parser for <name-character> -/
 def nameCharacter : BNFParser Char :=
