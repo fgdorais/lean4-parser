@@ -35,10 +35,11 @@ the unexpected token.
 -/
 @[specialize]
 def tokenMap (test : τ → Option α) : ParserT ε σ τ m α := do
+  let pos ← getPosition
   let tok ← tokenCore Stream.next?
   match test tok with
   | some x => return x
-  | none => throwUnexpected tok
+  | none => throw (Error.unexpected pos (some tok))
 
 /--
 `anyToken` consumes and returns one token from the stream. Only fails on end of stream.
