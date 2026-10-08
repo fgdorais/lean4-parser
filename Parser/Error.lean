@@ -63,7 +63,8 @@ This error type records the position and, optionally, the offending token where 
 occurred; any additional information is discarded. This is useful for parsers where the cause of
 parsing errors is predictable and only the position of the error is needed for processing.
 -/
-abbrev Basic (σ τ) [Parser.Stream σ τ] := Parser.Stream.Position σ × Option τ
+@[expose]
+def Basic (σ τ) [Parser.Stream σ τ] := Parser.Stream.Position σ × Option τ
 
 instance (σ τ) [Parser.Stream σ τ] : Parser.Error (Basic σ τ) σ τ where
   unexpected p t := (p, t)
