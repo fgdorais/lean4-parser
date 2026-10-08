@@ -201,7 +201,7 @@ private partial def efoldlPAux [Inhabited ε] [Inhabited σ] [Inhabited β]
     | .error s e => return .ok (Stream.setPosition s savePos) (y, e, false)
 
 /--
-`foldlP f init p` folds the parser function `f` from left to right using `init` as an intitial
+`efoldlP f init p` folds the parser function `f` from left to right using `init` as an initial
 value and the parser `p` to generate inputs of type `α`. The folding ends as soon as the update
 parser function `(p >>= f ⬝)` fails. Then the final folding result is returned along with the pair:
 
@@ -220,7 +220,7 @@ def efoldlP (f : β → α → ParserT ε σ τ m β) (init : β) (p : ParserT �
     efoldlPAux f p init s
 
 /--
-`foldlM f init p` folds the monadic function `f` from left to right using `init` as an intitial
+`efoldlM f init p` folds the monadic function `f` from left to right using `init` as an initial
 value and the parser `p` to generate inputs of type `α`. The folding ends as soon as `p` fails and
 the error reported by `p` is returned along with the result of folding. This parser never fails.
 -/
@@ -229,7 +229,7 @@ def efoldlM (f : β → α → m β) (init : β) (p : ParserT ε σ τ m α) : P
   efoldlP (fun y x => monadLift <| f y x) init p >>= fun (y,e,_) => return (y,e)
 
 /--
-`foldl f init p` folds the function `f` from left to right using `init` as an intitial value
+`efoldl f init p` folds the function `f` from left to right using `init` as an initial value
 and the parser `p` to generate inputs of type `α`. The folding ends as soon as `p` fails and the
 error reported by `p` is returned along with the result of folding. This parser never fails.
 -/
@@ -238,7 +238,7 @@ def efoldl (f : β → α → β) (init : β) (p : ParserT ε σ τ m α) : Pars
   efoldlM (fun y x => pure <| f y x) init p
 
 /--
-`foldlP f init p` folds the parser function `f` from left to right using `init` as an intitial
+`foldlP f init p` folds the parser function `f` from left to right using `init` as an initial
 value and the parser `p` to generate inputs of type `α`. The folding ends as soon as the update
 function `(p >>= f ·)` fails. This parser never fails.
 -/
@@ -247,7 +247,7 @@ def foldlP (f : β → α → ParserT ε σ τ m β) (init : β) (p : ParserT ε
   Prod.fst <$> efoldlP f init p
 
 /--
-`foldlM f init p` folds the monadic function `f` from left to right using `init` as an intitial
+`foldlM f init p` folds the monadic function `f` from left to right using `init` as an initial
 value and the parser `p` to generate inputs of type `α`. The folding ends as soon as `p` fails.
 This parser never fails.
 -/
@@ -256,7 +256,7 @@ def foldlM (f : β → α → m β) (init : β) (p : ParserT ε σ τ m α) : Pa
   Prod.fst <$> efoldlM f init p
 
 /--
-`foldl f init p` folds the function `f` from left to right using `init` as an intitial value and
+`foldl f init p` folds the function `f` from left to right using `init` as an initial value and
 the parser `p` to generate inputs of type `α`. The folding ends as soon as `p` fails.
 This parser never fails.
 -/

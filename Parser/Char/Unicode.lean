@@ -43,7 +43,7 @@ def digit : ParserT ε σ Char m (Fin 10) :=
 
 /-- parse hexadecimal digit character -/
 def hexDigit : ParserT ε σ Char m (Fin 16) :=
-  withErrorMessage "expected hexadecimal decimal digit" do
+  withErrorMessage "expected hexadecimal digit" do
     tokenMap Unicode.getHexDigit?
 
 /-!
