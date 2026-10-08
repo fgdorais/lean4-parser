@@ -74,7 +74,7 @@ def tokenArray [BEq τ] (tks : Array τ) : ParserT ε σ τ m (Array τ) :=
     return acc
 
 /--
-`tokenArray tks` accepts and returns tokens from `tks` in order, otherwise fails reporting the
+`tokenList tks` accepts and returns tokens from `tks` in order, otherwise fails reporting the
 first unexpected token.
 -/
 def tokenList [BEq τ] (tks : List τ) : ParserT ε σ τ m (List τ) :=

@@ -14,7 +14,7 @@ Roman numerals are composed from seven basic tokens:
 These are combined using additive and subtractive notation to form decimal places:
 
 * units: I = 1, II = 2, III = 3, IV = 4, V = 5, VI = 6, VII = 7, VIII = 8, IX = 9.
-* tens: X = 10, XX = 20, XXX = 30, XL = 40, L = 50, LX = 60, LXX = 70, LXXX = 80, XD = 90.
+* tens: X = 10, XX = 20, XXX = 30, XL = 40, L = 50, LX = 60, LXX = 70, LXXX = 80, XC = 90.
 * hundreds: C = 100, CC = 200, CCC = 300, CD = 400, D = 500, DC = 600, DCC = 700, DCCC = 800,
   CM = 900.
 * thousands: M = 1000, MM = 2000, MMM = 3000.
@@ -70,7 +70,7 @@ where
     first [
       -- IX = 9
       char 'I' *> char 'X' *> pure (n + 9),
-      -- V = 5, VI = 6, VII = 7, VIII = 80
+      -- V = 5, VI = 6, VII = 7, VIII = 8
       char 'V' *> (n + 5 + .) <$> countUpTo 3 (char 'I'),
       -- IV = 4
       char 'I' *> char 'V' *> pure (n + 4),
