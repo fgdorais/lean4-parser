@@ -116,7 +116,7 @@ protected def string : JSON.Parser Unit :=
     char '"' *> dropUntil (drop 1 <| char '"') do
       first [
         char '\\' *> escape,                    -- `"\" <escape> |`
-        drop 1 <| tokenFilter fun c => c ≥ ' ', -- `<character>`
+        drop 1 <| tokenFilter fun c => c ≥ ' ' && c != '\\', -- `<character>`
         throwUnexpected
       ]
 where
@@ -175,6 +175,7 @@ Specification:
 protected partial def object : JSON.Parser Unit :=
   withErrorMessage "expected object" do
     drop 1 <| char '{'
+    ws
     let _ ← sepBy (char ',') do
       let _ ← ws *> JSON.string <* ws
       drop 1 <| char ':'
@@ -195,6 +196,7 @@ Specification:
 protected partial def array : JSON.Parser Unit :=
   withErrorMessage "expected array" do
     drop 1 <| char '['
+    ws
     let _ ← sepBy (char ',') do
       let _ ← ws *> JSON.value <* ws
     drop 1 <| char ']'
