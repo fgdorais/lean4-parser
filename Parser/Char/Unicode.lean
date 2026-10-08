@@ -233,6 +233,8 @@ def format : ParserT ε σ Char m Char :=
     tokenFilter Unicode.GeneralCategory.isFormat
 
 /-- parse surrogate character (general category Cs) -/
+@[deprecated "a Lean `Char` is never a surrogate, so this parser never succeeds"
+  (since := "2026-10-08")]
 def surrogate : ParserT ε σ Char m Char :=
   withErrorMessage "expected surrogate character (Cs)" do
     tokenFilter Unicode.GeneralCategory.isSurrogate
@@ -243,9 +245,12 @@ def privateUse : ParserT ε σ Char m Char :=
     tokenFilter Unicode.GeneralCategory.isPrivateUse
 
 /-- parse unassigned character (general category Cn) -/
-def noncharacter : ParserT ε σ Char m Char :=
+def unassigned : ParserT ε σ Char m Char :=
   withErrorMessage "expected unassigned character (Cn)" do
     tokenFilter Unicode.GeneralCategory.isUnassigned
+
+@[deprecated unassigned (since := "2026-10-08"), inherit_doc unassigned]
+def noncharacter : ParserT ε σ Char m Char := unassigned
 
 end GeneralCategory
 
