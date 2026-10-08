@@ -210,13 +210,16 @@ where
 /-! ### `drop` family -/
 
 /--
-`drop n p` parses exactly `n` occurrences of `p` (without backtracking), ignoring all outputs.
+`drop n p` parses exactly `n` occurrences of `p`, ignoring all outputs. Consumes no input on
+error.
 -/
 @[inline]
 def drop (n : Nat) (p : ParserT ε σ τ m α) : ParserT ε σ τ m PUnit :=
-  match n with
-  | 0 => return
-  | n+1 => p *> drop n p
+  withBacktracking (loop n)
+where
+  loop : Nat → ParserT ε σ τ m PUnit
+    | 0 => return
+    | n+1 => p *> loop n
 
 /--
 `dropUpTo n p` parses up to `n` occurrences of `p` (with backtracking) ignoring all outputs. This
@@ -228,7 +231,7 @@ def dropUpTo (n : Nat) (p : ParserT ε σ τ m α) : ParserT ε σ τ m PUnit :=
   | 0 => return
   | n+1 => do
     match ← option? p with
-    | some _ => drop n p
+    | some _ => dropUpTo n p
     | none => return
 
 /--
