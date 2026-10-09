@@ -36,10 +36,10 @@ def whitespace : ParserT ε σ Char m Char :=
   withErrorMessage "expected whitespace" do
     tokenFilter Unicode.isWhiteSpace
 
-/-- parse decimal digit character -/
+/-- parse decimal digit character (general category Nd) -/
 def digit : ParserT ε σ Char m (Fin 10) :=
   withErrorMessage "expected decimal digit" do
-    tokenMap Unicode.getDigit?
+    tokenMap fun c => if Unicode.isDecimal c then Unicode.getDigit? c else none
 
 /-- parse hexadecimal digit character -/
 def hexDigit : ParserT ε σ Char m (Fin 16) :=
