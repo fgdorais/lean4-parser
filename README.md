@@ -1,5 +1,11 @@
 # Lean 4 / Parser
 
+**Users are urged to use the Lean 4 ParseIt library instead: [github.com/fgdorais/lean4-parseit](https://github.com/fgdorais/lean4-parseit)**
+
+**Support for the Lean 4 Parser library is scheduled to end on June 30, 2027.**
+
+-----
+
 A parser combinator library for [Lean 4](https://leanprover.github.io/).
 
 Source documentation is available at [www.dorais.org/lean4-parser/doc/](https://www.dorais.org/lean4-parser/doc).
